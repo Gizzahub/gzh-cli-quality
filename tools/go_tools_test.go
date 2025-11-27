@@ -404,3 +404,64 @@ func TestGoTools_Execute_NotAvailable(t *testing.T) {
 	assert.False(t, result.Success)
 	assert.NotNil(t, result.Error)
 }
+
+func TestGoimportsTool_WithProjectRoot(t *testing.T) {
+	tool := NewGoimportsTool()
+	tmpDir := t.TempDir()
+
+	// Create a go.mod file
+	goModContent := "module github.com/test/myproject\n\ngo 1.24\n"
+	err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goModContent), 0o644)
+	assert.NoError(t, err)
+
+	// Create a test Go file
+	goFile := filepath.Join(tmpDir, "main.go")
+	err = os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644)
+	assert.NoError(t, err)
+
+	cmd := tool.BuildCommand([]string{goFile}, ExecuteOptions{
+		ProjectRoot: tmpDir,
+	})
+
+	cmdArgs := cmd.Args[1:]
+
+	// Should include -local flag with module name
+	assert.Contains(t, cmdArgs, "-local")
+	// Find the index of -local and check the next argument
+	for i, arg := range cmdArgs {
+		if arg == "-local" && i+1 < len(cmdArgs) {
+			assert.Equal(t, "github.com/test/myproject", cmdArgs[i+1])
+			break
+		}
+	}
+}
+
+func TestGoimportsTool_ProjectRootNoGoMod(t *testing.T) {
+	tool := NewGoimportsTool()
+	tmpDir := t.TempDir()
+
+	// No go.mod file - go list -m will return "command-line-arguments"
+
+	goFile := filepath.Join(tmpDir, "main.go")
+	err := os.WriteFile(goFile, []byte("package main\n"), 0o644)
+	assert.NoError(t, err)
+
+	cmd := tool.BuildCommand([]string{goFile}, ExecuteOptions{
+		ProjectRoot: tmpDir,
+	})
+
+	cmdArgs := cmd.Args[1:]
+
+	// Should include -local flag even without go.mod
+	// go list -m returns "command-line-arguments" in this case
+	assert.Contains(t, cmdArgs, "-local")
+
+	// Find and verify the module name
+	for i, arg := range cmdArgs {
+		if arg == "-local" && i+1 < len(cmdArgs) {
+			// Without go.mod, go list -m returns "command-line-arguments"
+			assert.Equal(t, "command-line-arguments", cmdArgs[i+1])
+			break
+		}
+	}
+}
