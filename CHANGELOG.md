@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2025-11-27
+
+### Added
+
+#### Documentation
+- **CI/CD Integration Guide** (docs/CI_INTEGRATION.md): Enhanced with 5 real-world scenarios
+  - Multi-language monorepo setup (Go + Python + TypeScript)
+  - Pre-commit staged file checking with auto-fix
+  - Large project parallel execution (10,000+ files)
+  - Fail-fast vs fail-safe branch strategies
+  - Caching for performance optimization (30s → 5s)
+  - Performance optimization tips and troubleshooting guide
+  - +393 lines of practical examples
+
+- **Pre-commit Hooks Guide** (docs/PRE_COMMIT_HOOKS.md): Comprehensive 946-line reference
+  - 3 installation methods (Git Hooks, pre-commit framework, Husky)
+  - 4 hook types (check-only, format-only, full, language-specific)
+  - 5 real-world scenarios with complete examples
+  - 5 performance optimization strategies
+  - 9 troubleshooting scenarios with solutions
+  - Best practices for gradual adoption
+
+- **Multi-Repository Workflows** (docs/MULTI_REPO_WORKFLOWS.md): Enterprise-scale 1,055-line guide
+  - 3 repository types (monorepo, polyrepo, hybrid)
+  - 4 workflow patterns (shared config, per-repo, template, submodules)
+  - Configuration management (base config, language overlays, overrides)
+  - 3 CI/CD strategies (reusable workflows, composite actions, shared scripts)
+  - Tool installation strategies (centralized versions, Docker images)
+  - Reporting and aggregation (dashboard, aggregation scripts)
+  - 3 real-world examples (microservices org, platform + libraries, multi-region teams)
+  - 8 best practices for enterprise adoption
+
+### Changed
+
+#### Documentation
+- **README.md**: Reorganized documentation section
+  - Split into "사용자 가이드" and "개발자 문서" categories
+  - Added links to all new comprehensive guides
+  - Updated installation instructions with @v0.1.1 version
+  - Removed "향후 릴리스 후" (after future release) disclaimer
+
+### Technical Details
+- Total documentation added: 2,408 lines (60KB)
+- New files: 2 (PRE_COMMIT_HOOKS.md, MULTI_REPO_WORKFLOWS.md)
+- Enhanced files: 2 (CI_INTEGRATION.md +393 lines, README.md +14 lines)
+- Documentation coverage: Beginner to enterprise use cases
+- Commits: 4 documentation commits
+
 ## [0.1.1] - 2025-11-27
 
 ### Fixed
@@ -204,6 +252,7 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ---
 
-[Unreleased]: https://github.com/Gizzahub/gzh-cli-quality/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/Gizzahub/gzh-cli-quality/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/Gizzahub/gzh-cli-quality/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Gizzahub/gzh-cli-quality/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Gizzahub/gzh-cli-quality/releases/tag/v0.1.0
