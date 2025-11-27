@@ -10,6 +10,7 @@
 - [Jenkins](#jenkins)
 - [Pre-commit Hooks](#pre-commit-hooks)
 - [Docker 통합](#docker-통합)
+- [테스트 커버리지 통합](#테스트-커버리지-통합)
 
 ---
 
@@ -960,7 +961,307 @@ tools:
 
 ---
 
+## 테스트 커버리지 통합
+
+### 커버리지 목표
+
+프로젝트는 다음 커버리지 목표를 유지합니다:
+
+| 패키지 | 최소 커버리지 | 권장 커버리지 | 현재 상태 |
+|--------|--------------|--------------|----------|
+| config | 80% | 90% | ✅ 85.1% |
+| detector | 50% | 70% | ✅ 53.3% |
+| git | 85% | 95% | ✅ 92.0% |
+| executor | 75% | 85% | ✅ 80.0% |
+| report | 90% | 95% | ✅ 95.3% |
+| tools | 15% | 30% | ✅ 16.0% |
+| **전체** | **40%** | **50%** | ✅ **45.9%** |
+
+### GitHub Actions - 커버리지 체크
+
+`.github/workflows/coverage.yml`:
+
+```yaml
+name: Test Coverage
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  coverage:
+    name: Test Coverage Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Run tests with coverage
+        run: |
+          go test ./... -coverprofile=coverage.out -covermode=atomic
+          go tool cover -func=coverage.out -o coverage.txt
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Current coverage: $COVERAGE%"
+
+          if (( $(echo "$COVERAGE < 40.0" | bc -l) )); then
+            echo "❌ Coverage $COVERAGE% is below minimum threshold of 40%"
+            exit 1
+          fi
+
+          echo "✅ Coverage $COVERAGE% meets minimum threshold"
+
+      - name: Generate coverage report
+        run: go tool cover -html=coverage.out -o coverage.html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.out
+            coverage.html
+            coverage.txt
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const coverage = fs.readFileSync('coverage.txt', 'utf8');
+            const lines = coverage.split('\n');
+
+            let body = '## 📊 Test Coverage Report\n\n';
+            body += '```\n' + lines.slice(-20).join('\n') + '\n```\n';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+```
+
+### GitLab CI - 커버리지 추적
+
+`.gitlab-ci.yml`:
+
+```yaml
+test:coverage:
+  stage: test
+  image: golang:1.24
+  script:
+    - go test ./... -coverprofile=coverage.out -covermode=atomic
+    - go tool cover -func=coverage.out
+
+  coverage: '/total:.*?(\d+\.\d+)%/'
+
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.out
+      - coverage.html
+```
+
+### CircleCI - 커버리지 배지
+
+`.circleci/config.yml`:
+
+```yaml
+jobs:
+  test-coverage:
+    docker:
+      - image: cimg/go:1.24
+    steps:
+      - checkout
+      - run:
+          name: Run tests with coverage
+          command: |
+            go test ./... -coverprofile=coverage.out
+            go tool cover -html=coverage.out -o coverage.html
+
+      - run:
+          name: Upload to Codecov
+          command: |
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov -f coverage.out
+
+      - store_artifacts:
+          path: coverage.html
+          destination: coverage-report
+```
+
+### 로컬 개발 - 커버리지 확인
+
+**전체 커버리지 확인:**
+
+```bash
+# 전체 테스트 실행 및 커버리지 생성
+go test ./... -coverprofile=coverage.out
+
+# 커버리지 요약 확인
+go tool cover -func=coverage.out
+
+# HTML 리포트 생성 및 브라우저 열기
+go tool cover -html=coverage.out -o coverage.html
+open coverage.html  # macOS
+xdg-open coverage.html  # Linux
+```
+
+**패키지별 커버리지 확인:**
+
+```bash
+# 특정 패키지만 테스트
+go test ./config/... -coverprofile=config_coverage.out
+go tool cover -func=config_coverage.out
+
+# 커버리지가 낮은 부분 찾기
+go tool cover -func=coverage.out | grep -v "100.0%" | sort -k3 -n
+```
+
+**커버리지 임계값 검증 스크립트:**
+
+`scripts/check-coverage.sh`:
+
+```bash
+#!/bin/bash
+
+MIN_COVERAGE=40.0
+
+echo "Running tests with coverage..."
+go test ./... -coverprofile=coverage.out -covermode=atomic
+
+if [ $? -ne 0 ]; then
+    echo "❌ Tests failed"
+    exit 1
+fi
+
+COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+
+echo "Current coverage: $COVERAGE%"
+echo "Minimum required: $MIN_COVERAGE%"
+
+if (( $(echo "$COVERAGE < $MIN_COVERAGE" | bc -l) )); then
+    echo "❌ Coverage is below minimum threshold"
+    exit 1
+fi
+
+echo "✅ Coverage meets minimum threshold"
+
+# 패키지별 커버리지 출력
+echo ""
+echo "Coverage by package:"
+go tool cover -func=coverage.out | grep -E "^github.com" | \
+    awk '{print $1 "\t" $3}' | \
+    sed 's/github.com\/Gizzahub\/gzh-cli-quality\///' | \
+    column -t
+```
+
+**사용:**
+
+```bash
+chmod +x scripts/check-coverage.sh
+./scripts/check-coverage.sh
+```
+
+### Pre-commit Hook - 커버리지 체크
+
+`.git/hooks/pre-commit` 또는 `.pre-commit-config.yaml`:
+
+```yaml
+- repo: local
+  hooks:
+    - id: test-coverage
+      name: Check test coverage
+      entry: scripts/check-coverage.sh
+      language: script
+      pass_filenames: false
+      always_run: true
+```
+
+### 커버리지 배지
+
+**README.md에 추가:**
+
+```markdown
+[![Coverage](https://img.shields.io/badge/coverage-45.9%25-brightgreen.svg)](https://github.com/Gizzahub/gzh-cli-quality)
+```
+
+**동적 배지 (Codecov):**
+
+```markdown
+[![codecov](https://codecov.io/gh/Gizzahub/gzh-cli-quality/branch/main/graph/badge.svg)](https://codecov.io/gh/Gizzahub/gzh-cli-quality)
+```
+
+**동적 배지 (Coveralls):**
+
+```markdown
+[![Coverage Status](https://coveralls.io/repos/github/Gizzahub/gzh-cli-quality/badge.svg?branch=main)](https://coveralls.io/github/Gizzahub/gzh-cli-quality?branch=main)
+```
+
+### 커버리지 개선 가이드
+
+**1. 테스트되지 않은 코드 찾기:**
+
+```bash
+# 커버리지가 0%인 파일 찾기
+go test ./... -coverprofile=coverage.out
+go tool cover -func=coverage.out | grep "0.0%" | awk '{print $1}'
+```
+
+**2. 중요도 기반 우선순위:**
+
+| 우선순위 | 패키지 유형 | 목표 커버리지 |
+|---------|-----------|-------------|
+| 높음 | 핵심 비즈니스 로직 (executor, git) | 80%+ |
+| 중간 | 유틸리티/도구 (config, detector) | 60%+ |
+| 낮음 | 외부 통합 (tools 구현체) | 30%+ |
+
+**3. 테스트 작성 가이드:**
+
+```go
+// 좋은 테스트: 명확한 의도, 독립적, 빠름
+func TestConfigLoad_ValidYAML(t *testing.T) {
+    tmpDir := t.TempDir()
+    configPath := filepath.Join(tmpDir, "config.yml")
+
+    yamlContent := `default_workers: 8
+timeout: "5m"`
+
+    err := os.WriteFile(configPath, []byte(yamlContent), 0o644)
+    require.NoError(t, err)
+
+    config, err := LoadConfig(configPath)
+    require.NoError(t, err)
+    assert.Equal(t, 8, config.DefaultWorkers)
+    assert.Equal(t, "5m", config.Timeout)
+}
+```
+
+**4. 테스트 커버리지 vs 품질:**
+
+- ✅ **의미있는 테스트**: 엣지 케이스, 에러 핸들링
+- ❌ **숫자 채우기**: getter/setter만 테스트
+
+---
+
 **관련 문서**:
 - [사용 예제](./EXAMPLES.md)
 - [도구 추가하기](./ADDING_TOOLS.md)
 - [API 레퍼런스](./API.md)
+- [Pre-commit Hooks 가이드](./PRE_COMMIT_HOOKS.md)
