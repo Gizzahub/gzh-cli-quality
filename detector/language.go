@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// Package detector provides language and tool detection capabilities for code quality analysis.
 package detector
 
 import (

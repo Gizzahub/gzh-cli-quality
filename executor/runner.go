@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// Package executor provides parallel execution of quality tools using worker pools.
 package executor
 
 import (

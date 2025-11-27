@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
+// Package tools provides quality tool implementations for multiple programming languages.
 package tools
 
 import "context"
