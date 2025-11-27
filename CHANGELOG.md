@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-11-27
+
+### Fixed
+
+#### Code Quality Improvements
+- **Linting**: Fixed all 50 linting errors across the codebase
+  - **errcheck** (38 instances): Added proper error handling for filepath.Match, strconv.Atoi, time.ParseDuration
+  - **staticcheck ST1000** (11 instances): Added package-level documentation comments
+  - **gocritic nestingReduce** (1 instance): Refactored nested conditionals to early-continue pattern
+- **CI/CD**: Fixed Windows test coverage profile flag format
+  - Changed `-coverprofile=coverage.out` to `-coverprofile coverage.out` to resolve path parsing issue
+
+#### Configuration
+- **golangci-lint**: Excluded cobra flag getter functions from errcheck validation
+- **Go Version**: Updated go.mod from 1.25.1 to 1.24.0 for CI compatibility
+
+### Changed
+- Improved code maintainability with proper error handling patterns
+- Enhanced CI pipeline reliability across all platforms (Linux, macOS, Windows)
+
+### Technical Details
+- All CI tests now pass successfully (Lint, Test, Build)
+- Code quality metrics: 0 linting errors (previously 50)
+- Test coverage: 34.4% (20 tests)
+- Commits: 4 quality improvement commits
+
 ## [0.1.0] - 2025-11-27
 
 ### Initial Release
@@ -178,5 +204,6 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ---
 
-[Unreleased]: https://github.com/Gizzahub/gzh-cli-quality/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Gizzahub/gzh-cli-quality/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/Gizzahub/gzh-cli-quality/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Gizzahub/gzh-cli-quality/releases/tag/v0.1.0
