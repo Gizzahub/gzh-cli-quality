@@ -199,7 +199,17 @@ func TestFindConfigFile_CurrentDirectory(t *testing.T) {
 
 	// Should find config
 	found := FindConfigFile()
-	assert.Equal(t, configPath, found)
+
+	// Resolve symlinks for both paths (macOS has /var -> /private/var)
+	expectedPath, err := filepath.EvalSymlinks(configPath)
+	require.NoError(t, err)
+	actualPath := found
+	if found != "" {
+		actualPath, err = filepath.EvalSymlinks(found)
+		require.NoError(t, err)
+	}
+
+	assert.Equal(t, expectedPath, actualPath)
 }
 
 func TestFindConfigFile_ParentDirectory(t *testing.T) {
@@ -227,7 +237,17 @@ func TestFindConfigFile_ParentDirectory(t *testing.T) {
 
 	// Should find config in parent
 	found := FindConfigFile()
-	assert.Equal(t, configPath, found)
+
+	// Resolve symlinks for both paths (macOS has /var -> /private/var)
+	expectedPath, err := filepath.EvalSymlinks(configPath)
+	require.NoError(t, err)
+	actualPath := found
+	if found != "" {
+		actualPath, err = filepath.EvalSymlinks(found)
+		require.NoError(t, err)
+	}
+
+	assert.Equal(t, expectedPath, actualPath)
 }
 
 func TestFindConfigFile_MultipleNames(t *testing.T) {
@@ -255,7 +275,17 @@ func TestFindConfigFile_MultipleNames(t *testing.T) {
 			require.NoError(t, err)
 
 			found := FindConfigFile()
-			assert.Equal(t, configPath, found)
+
+			// Resolve symlinks for both paths (macOS has /var -> /private/var)
+			expectedPath, err := filepath.EvalSymlinks(configPath)
+			require.NoError(t, err)
+			actualPath := found
+			if found != "" {
+				actualPath, err = filepath.EvalSymlinks(found)
+				require.NoError(t, err)
+			}
+
+			assert.Equal(t, expectedPath, actualPath)
 		})
 	}
 }
