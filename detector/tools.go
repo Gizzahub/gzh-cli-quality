@@ -130,7 +130,9 @@ func (d *ConfigFileDetector) ValidateConfig(toolName, configPath string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	// Tool-specific validation could be added here
 	// For now, we just verify the file is accessible

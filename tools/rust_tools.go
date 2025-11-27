@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+const (
+	severityInfo    = "info"
+	severityError   = "error"
+	severityWarning = "warning"
+)
+
 // RustfmtTool implements Rust formatting using rustfmt.
 type RustfmtTool struct {
 	*BaseTool
@@ -137,12 +143,12 @@ func (t *ClippyTool) ParseOutput(output string) []Issue {
 			continue
 		}
 
-		severity := "info"
+		severity := severityInfo
 		switch msg.Level {
-		case "error":
-			severity = "error"
-		case "warning":
-			severity = "warning"
+		case severityError:
+			severity = severityError
+		case severityWarning:
+			severity = severityWarning
 		}
 
 		rule := ""

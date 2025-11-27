@@ -19,6 +19,11 @@ import (
 	"github.com/Gizzahub/gzh-cli-quality/tools"
 )
 
+const (
+	statusSuccess = "✅"
+	statusFailure = "❌"
+)
+
 // QualityManager manages the quality command functionality.
 type QualityManager struct {
 	registry tools.ToolRegistry
@@ -259,9 +264,9 @@ func (m *QualityManager) displayResults(results []*tools.Result, duration time.D
 		totalIssues += len(result.Issues)
 
 		if verbose || !result.Success {
-			status := "✅"
+			status := statusSuccess
 			if !result.Success {
-				status = "❌"
+				status = statusFailure
 			}
 
 			fmt.Printf("%s %s (%s): %d개 파일, %v\n",

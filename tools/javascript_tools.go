@@ -156,12 +156,12 @@ func (t *ESLintTool) ParseOutput(output string) []Issue {
 	var issues []Issue
 	for _, file := range eslintResults {
 		for _, msg := range file.Messages {
-			severity := "info"
+			severity := severityInfo
 			switch msg.Severity {
 			case 1:
-				severity = "warning"
+				severity = severityWarning
 			case 2:
-				severity = "error"
+				severity = severityError
 			}
 
 			rule := ""
