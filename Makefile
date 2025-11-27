@@ -1,0 +1,47 @@
+.PHONY: help build install test lint clean
+
+# Variables
+BINARY_NAME=gzq
+VERSION?=dev
+COMMIT?=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
+DATE?=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+LDFLAGS=-ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
+
+help: ## Show this help message
+	@echo 'Usage: make [target]'
+	@echo ''
+	@echo 'Available targets:'
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+build: ## Build the binary
+	@echo "Building $(BINARY_NAME)..."
+	go build $(LDFLAGS) -o build/$(BINARY_NAME) ./cmd/gzq
+
+install: ## Install the binary to $GOPATH/bin
+	@echo "Installing $(BINARY_NAME)..."
+	go install $(LDFLAGS) ./cmd/gzq
+
+test: ## Run tests
+	@echo "Running tests..."
+	go test -v -race -coverprofile=coverage.out ./...
+
+test-coverage: test ## Run tests with coverage report
+	@echo "Generating coverage report..."
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report: coverage.html"
+
+lint: ## Run linters
+	@echo "Running linters..."
+	@command -v golangci-lint >/dev/null 2>&1 || { echo "golangci-lint not installed. Run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; exit 1; }
+	golangci-lint run --timeout 5m
+
+fmt: ## Format code
+	@echo "Formatting code..."
+	go fmt ./...
+	@command -v gofumpt >/dev/null 2>&1 && gofumpt -w . || echo "gofumpt not installed, using go fmt only"
+
+clean: ## Clean build artifacts
+	@echo "Cleaning..."
+	rm -rf build/ coverage.out coverage.html
+
+.DEFAULT_GOAL := help
