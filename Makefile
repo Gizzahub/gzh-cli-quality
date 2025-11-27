@@ -1,7 +1,7 @@
 .PHONY: help build install test test-integration test-all lint clean
 
 # Variables
-BINARY_NAME=gzq
+BINARY_NAME=gz-quality
 VERSION?=dev
 COMMIT?=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE?=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -15,11 +15,11 @@ help: ## Show this help message
 
 build: ## Build the binary
 	@echo "Building $(BINARY_NAME)..."
-	go build $(LDFLAGS) -o build/$(BINARY_NAME) ./cmd/gzq
+	go build $(LDFLAGS) -o build/$(BINARY_NAME) ./cmd/gz-quality
 
 install: ## Install the binary to $GOPATH/bin
 	@echo "Installing $(BINARY_NAME)..."
-	go install $(LDFLAGS) ./cmd/gzq
+	go install $(LDFLAGS) ./cmd/gz-quality
 
 test: ## Run unit tests
 	@echo "Running unit tests..."

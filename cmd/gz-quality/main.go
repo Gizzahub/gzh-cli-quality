@@ -18,7 +18,7 @@ var (
 
 func main() {
 	rootCmd := quality.NewQualityCmd()
-	rootCmd.Use = "gzq"
+	rootCmd.Use = "gz-quality"
 	rootCmd.Short = "Multi-language code quality tool orchestrator"
 	rootCmd.Version = fmt.Sprintf("%s (commit: %s, built: %s)", version, commit, date)
 

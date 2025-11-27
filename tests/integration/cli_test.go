@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-var gzqBinary string
+var gzQualityBinary string
 
 func TestMain(m *testing.M) {
 	// Get absolute path to project root
@@ -21,14 +21,14 @@ func TestMain(m *testing.M) {
 	}
 
 	projectRoot := filepath.Join(wd, "../..")
-	gzqBinary = filepath.Join(projectRoot, "build", "gzq")
+	gzQualityBinary = filepath.Join(projectRoot, "build", "gz-quality")
 
 	// Ensure binary is built
-	if _, err := os.Stat(gzqBinary); os.IsNotExist(err) {
+	if _, err := os.Stat(gzQualityBinary); os.IsNotExist(err) {
 		cmd := exec.Command("make", "build")
 		cmd.Dir = projectRoot
 		if err := cmd.Run(); err != nil {
-			panic("Failed to build gzq binary: " + err.Error())
+			panic("Failed to build gz-quality binary: " + err.Error())
 		}
 	}
 
@@ -36,10 +36,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestCLI_Version(t *testing.T) {
-	cmd := exec.Command(gzqBinary, "version")
+	cmd := exec.Command(gzQualityBinary, "version")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatalf("gzq version failed: %v\nOutput: %s", err, output)
+		t.Fatalf("gz-quality version failed: %v\nOutput: %s", err, output)
 	}
 
 	outputStr := string(output)
@@ -49,10 +49,10 @@ func TestCLI_Version(t *testing.T) {
 }
 
 func TestCLI_List(t *testing.T) {
-	cmd := exec.Command(gzqBinary, "list")
+	cmd := exec.Command(gzQualityBinary, "list")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatalf("gzq list failed: %v\nOutput: %s", err, output)
+		t.Fatalf("gz-quality list failed: %v\nOutput: %s", err, output)
 	}
 
 	outputStr := string(output)
@@ -88,10 +88,10 @@ func TestCLI_Help(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := exec.Command(gzqBinary, tt.args...)
+			cmd := exec.Command(gzQualityBinary, tt.args...)
 			output, err := cmd.CombinedOutput()
 			if err != nil {
-				t.Fatalf("gzq %v failed: %v\nOutput: %s", tt.args, err, output)
+				t.Fatalf("gz-quality %v failed: %v\nOutput: %s", tt.args, err, output)
 			}
 
 			outputStr := string(output)
@@ -113,11 +113,11 @@ func TestCLI_Analyze(t *testing.T) {
 	}
 
 	// Run analyze
-	cmd := exec.Command(gzqBinary, "analyze")
+	cmd := exec.Command(gzQualityBinary, "analyze")
 	cmd.Dir = tmpDir
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatalf("gzq analyze failed: %v\nOutput: %s", err, output)
+		t.Fatalf("gz-quality analyze failed: %v\nOutput: %s", err, output)
 	}
 
 	outputStr := string(output)
@@ -136,11 +136,11 @@ func TestCLI_Init(t *testing.T) {
 	}
 
 	// Run init
-	cmd := exec.Command(gzqBinary, "init")
+	cmd := exec.Command(gzQualityBinary, "init")
 	cmd.Dir = tmpDir
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatalf("gzq init failed: %v\nOutput: %s", err, output)
+		t.Fatalf("gz-quality init failed: %v\nOutput: %s", err, output)
 	}
 
 	// Check config file created
@@ -171,7 +171,7 @@ func TestCLI_DryRun(t *testing.T) {
 	}
 
 	// Run with --dry-run
-	cmd := exec.Command(gzqBinary, "run", "--dry-run")
+	cmd := exec.Command(gzQualityBinary, "run", "--dry-run")
 	cmd.Dir = tmpDir
 	output, _ := cmd.CombinedOutput()
 	// Note: May fail if no tools installed, but should show plan
@@ -184,7 +184,7 @@ func TestCLI_DryRun(t *testing.T) {
 }
 
 func TestCLI_InvalidCommand(t *testing.T) {
-	cmd := exec.Command(gzqBinary, "nonexistent")
+	cmd := exec.Command(gzQualityBinary, "nonexistent")
 	output, err := cmd.CombinedOutput()
 	if err == nil {
 		t.Error("Expected error for invalid command")
@@ -197,7 +197,7 @@ func TestCLI_InvalidCommand(t *testing.T) {
 }
 
 func TestCLI_InvalidFlag(t *testing.T) {
-	cmd := exec.Command(gzqBinary, "run", "--invalid-flag")
+	cmd := exec.Command(gzQualityBinary, "run", "--invalid-flag")
 	output, err := cmd.CombinedOutput()
 	if err == nil {
 		t.Error("Expected error for invalid flag")

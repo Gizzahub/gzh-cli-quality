@@ -6,9 +6,9 @@ before:
     - go test ./...
 
 builds:
-  - id: gzq
-    main: ./cmd/gzq
-    binary: gzq
+  - id: gz-quality
+    main: ./cmd/gz-quality
+    binary: gz-quality
     env:
       - CGO_ENABLED=0
     goos:
