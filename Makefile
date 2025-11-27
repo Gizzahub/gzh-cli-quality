@@ -1,4 +1,4 @@
-.PHONY: help build install test lint clean
+.PHONY: help build install test test-integration test-all lint clean
 
 # Variables
 BINARY_NAME=gzq
@@ -21,9 +21,16 @@ install: ## Install the binary to $GOPATH/bin
 	@echo "Installing $(BINARY_NAME)..."
 	go install $(LDFLAGS) ./cmd/gzq
 
-test: ## Run tests
-	@echo "Running tests..."
+test: ## Run unit tests
+	@echo "Running unit tests..."
 	go test -v -race -coverprofile=coverage.out ./...
+
+test-integration: build ## Run integration tests
+	@echo "Running integration tests..."
+	go test -v -tags=integration ./tests/integration/...
+
+test-all: test test-integration ## Run all tests (unit + integration)
+	@echo "✅ All tests passed"
 
 test-coverage: test ## Run tests with coverage report
 	@echo "Generating coverage report..."
