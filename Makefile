@@ -40,6 +40,13 @@ fmt: ## Format code
 	go fmt ./...
 	@command -v gofumpt >/dev/null 2>&1 && gofumpt -w . || echo "gofumpt not installed, using go fmt only"
 
+quality: fmt lint test ## Run all quality checks (format, lint, test)
+	@echo "✅ All quality checks passed"
+
+vet: ## Run go vet
+	@echo "Running go vet..."
+	go vet ./...
+
 clean: ## Clean build artifacts
 	@echo "Cleaning..."
 	rm -rf build/ coverage.out coverage.html
