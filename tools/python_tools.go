@@ -262,8 +262,14 @@ func (t *RuffTool) parseTextOutput(output string) []Issue {
 
 		matches := re.FindStringSubmatch(line)
 		if len(matches) == 6 {
-			lineNum, _ := strconv.Atoi(matches[2])
-			colNum, _ := strconv.Atoi(matches[3])
+			lineNum, err := strconv.Atoi(matches[2])
+			if err != nil {
+				lineNum = 0
+			}
+			colNum, err := strconv.Atoi(matches[3])
+			if err != nil {
+				colNum = 0
+			}
 
 			issues = append(issues, Issue{
 				File:     matches[1],

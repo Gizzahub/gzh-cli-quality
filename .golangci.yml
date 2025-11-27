@@ -34,6 +34,10 @@ linters-settings:
       - fmt.Println
       - fmt.Printf
       - (*os.File).Close
+      - (*github.com/spf13/pflag.FlagSet).GetBool
+      - (*github.com/spf13/pflag.FlagSet).GetString
+      - (*github.com/spf13/pflag.FlagSet).GetStringSlice
+      - (*github.com/spf13/pflag.FlagSet).GetInt
 
   errorlint:
     errorf: true

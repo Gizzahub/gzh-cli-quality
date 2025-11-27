@@ -268,14 +268,24 @@ func (c *Config) GetPreferredTools(language string) []string {
 // ShouldExclude checks if a file path should be excluded.
 func (c *Config) ShouldExclude(filePath string) bool {
 	for _, pattern := range c.Exclude {
-		if matched, _ := filepath.Match(pattern, filePath); matched {
+		matched, err := filepath.Match(pattern, filePath)
+		if err != nil {
+			// Invalid pattern, skip it
+			continue
+		}
+		if matched {
 			return true
 		}
 
 		// Also check if any parent directory matches
 		dir := filepath.Dir(filePath)
 		for dir != "." && dir != "/" {
-			if matched, _ := filepath.Match(pattern, dir); matched {
+			matched, err := filepath.Match(pattern, dir)
+			if err != nil {
+				// Invalid pattern, skip it
+				break
+			}
+			if matched {
 				return true
 			}
 			dir = filepath.Dir(dir)
@@ -294,7 +304,12 @@ func (c *Config) ShouldInclude(filePath string) bool {
 
 	// Check include patterns
 	for _, pattern := range c.Include {
-		if matched, _ := filepath.Match(pattern, filePath); matched {
+		matched, err := filepath.Match(pattern, filePath)
+		if err != nil {
+			// Invalid pattern, skip it
+			continue
+		}
+		if matched {
 			return !c.ShouldExclude(filePath)
 		}
 	}

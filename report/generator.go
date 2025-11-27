@@ -87,7 +87,10 @@ func (g *ReportGenerator) GenerateReport(results []*tools.Result, duration time.
 	// Process results
 	for _, result := range results {
 		// Parse duration
-		resultDuration, _ := time.ParseDuration(result.Duration)
+		resultDuration, err := time.ParseDuration(result.Duration)
+		if err != nil {
+			resultDuration = 0
+		}
 
 		toolResult := ToolResult{
 			Tool:           result.Tool,
