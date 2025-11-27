@@ -119,6 +119,9 @@ gzh-cli-quality/
 
 This project was extracted from the quality module of gzh-cli with the following changes:
 
+- **Binary Naming**:
+  - Binary renamed from `gzq` to `gz-quality` (follows gz- naming convention)
+  - Installation command: `go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.0`
 - **Removed Dependencies**:
   - No dependency on `internal/app` or `internal/logger`
   - Standalone binary with no external requirements
