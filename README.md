@@ -23,8 +23,24 @@
 
 ### 설치
 
+#### 소스에서 빌드
+
 ```bash
-go install github.com/Gizzahub/gzh-cli-quality@latest
+# 리포지토리 클론
+git clone https://github.com/Gizzahub/gzh-cli-quality.git
+cd gzh-cli-quality
+
+# 빌드 (build/ 디렉토리에 gzq 바이너리 생성)
+make build
+
+# 또는 $GOPATH/bin에 직접 설치
+make install
+```
+
+#### Go Install (향후 릴리스 후)
+
+```bash
+go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
 ```
 
 ### 기본 사용법
@@ -182,11 +198,53 @@ gzq tool ruff --fix
 - [docs/API.md](./docs/API.md) - API 레퍼런스
 - [docs/ADDING_TOOLS.md](./docs/ADDING_TOOLS.md) - 도구 추가 가이드
 
+## 개발
+
+### 프로젝트 빌드
+
+```bash
+# 의존성 다운로드
+go mod download
+
+# 빌드
+make build
+
+# 테스트 실행
+make test
+
+# 커버리지 리포트 생성
+make test-coverage
+
+# 린트 실행
+make lint
+
+# 전체 품질 검사 (포매팅 + 린트 + 테스트)
+make quality
+```
+
+### 바이너리 실행
+
+```bash
+# 빌드 후
+./build/gzq version
+./build/gzq list
+./build/gzq run --help
+
+# 또는 설치 후
+gzq version
+```
+
 ## 요구사항
 
+### 런타임
 - Go 1.24.0+
 - Git 2.0+
 - 각 언어별 품질 도구 (자동 설치 지원: `gzq install`)
+
+### 개발 환경
+- Go 1.24.0+
+- Make
+- golangci-lint (선택사항, `make lint` 실행시 필요)
 
 ## 라이선스
 
