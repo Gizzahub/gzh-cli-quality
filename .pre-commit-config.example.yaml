@@ -1,0 +1,80 @@
+# Example pre-commit configuration for gzh-cli-quality
+# Copy this file to .pre-commit-config.yaml and customize as needed
+#
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Usage:
+#   pre-commit run --all-files  # Run on all files
+#   pre-commit run              # Run on staged files
+#   git commit                  # Automatically runs on commit
+
+repos:
+  # gzh-cli-quality hooks
+  - repo: https://github.com/Gizzahub/gzh-cli-quality
+    rev: v1.0.0  # Use specific version or 'main' for latest
+    hooks:
+      # Option 1: Full quality check (format + lint)
+      - id: gzq-check
+        stages: [commit]
+
+      # Option 2: Format only (auto-fix)
+      # - id: gzq-format
+      #   stages: [commit]
+
+      # Option 3: Language-specific hooks
+      # - id: gzq-check-go
+      #   stages: [commit]
+      # - id: gzq-check-python
+      #   stages: [commit]
+      # - id: gzq-check-javascript
+      #   stages: [commit]
+      # - id: gzq-check-rust
+      #   stages: [commit]
+
+  # Optional: Additional hooks
+  # - repo: https://github.com/pre-commit/pre-commit-hooks
+  #   rev: v4.5.0
+  #   hooks:
+  #     - id: trailing-whitespace
+  #     - id: end-of-file-fixer
+  #     - id: check-yaml
+  #     - id: check-added-large-files
+  #       args: ['--maxkb=1000']
+
+  # # Go-specific hooks (if not using gzq)
+  # - repo: https://github.com/golangci/golangci-lint
+  #   rev: v1.55.2
+  #   hooks:
+  #     - id: golangci-lint
+
+  # # Python-specific hooks (if not using gzq)
+  # - repo: https://github.com/psf/black
+  #   rev: 23.12.1
+  #   hooks:
+  #     - id: black
+
+  # - repo: https://github.com/astral-sh/ruff-pre-commit
+  #   rev: v0.1.9
+  #   hooks:
+  #     - id: ruff
+  #       args: [--fix]
+  #     - id: ruff-format
+
+  # # JavaScript/TypeScript hooks (if not using gzq)
+  # - repo: https://github.com/pre-commit/mirrors-prettier
+  #   rev: v3.1.0
+  #   hooks:
+  #     - id: prettier
+
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: v8.56.0
+  #   hooks:
+  #     - id: eslint
+  #       files: \.[jt]sx?$
+  #       types: [file]
+
+# Global configuration
+fail_fast: false  # Continue running hooks even if one fails
+minimum_pre_commit_version: '2.20.0'
