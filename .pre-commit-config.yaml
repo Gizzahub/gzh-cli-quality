@@ -1,0 +1,83 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+
+repos:
+  # Go formatting and linting
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+        name: Go Format (gofmt)
+        description: Run gofmt on Go source files
+
+      - id: go-vet
+        name: Go Vet
+        description: Run go vet on Go source files
+
+      - id: go-mod-tidy
+        name: Go Mod Tidy
+        description: Ensure go.mod and go.sum are up to date
+
+  # Local hooks for this project
+  - repo: local
+    hooks:
+      - id: test-coverage
+        name: Check Test Coverage
+        entry: scripts/check-coverage.sh
+        language: script
+        pass_filenames: false
+        always_run: true
+        stages: [commit]
+        verbose: true
+
+      - id: go-test
+        name: Run Go Tests
+        entry: bash -c 'go test ./... -short'
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+      - id: go-build
+        name: Build Check
+        entry: bash -c 'go build ./...'
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+  # YAML linting
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+        name: Check YAML
+        description: Validate YAML files
+        args: ['--unsafe']  # Allow custom tags
+
+      - id: check-added-large-files
+        name: Check Large Files
+        description: Prevent committing large files
+        args: ['--maxkb=500']
+
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+        description: Remove trailing whitespace
+
+      - id: end-of-file-fixer
+        name: Fix End of Files
+        description: Ensure files end with newline
+
+      - id: check-merge-conflict
+        name: Check Merge Conflicts
+        description: Check for merge conflict markers
+
+      - id: mixed-line-ending
+        name: Check Line Endings
+        description: Ensure consistent line endings
+        args: ['--fix=lf']
+
+# Configuration
+default_language_version:
+  python: python3
+
+fail_fast: false
+minimum_pre_commit_version: '2.20.0'
