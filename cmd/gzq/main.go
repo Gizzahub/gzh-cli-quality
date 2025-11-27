@@ -6,6 +6,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/Gizzahub/gzh-cli-quality"
 )
 
 var (
@@ -15,12 +17,13 @@ var (
 )
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "version" {
-		fmt.Printf("gzh-cli-quality %s (commit: %s, built: %s)\n", version, commit, date)
-		os.Exit(0)
-	}
+	rootCmd := quality.NewQualityCmd()
+	rootCmd.Use = "gzq"
+	rootCmd.Short = "Multi-language code quality tool orchestrator"
+	rootCmd.Version = fmt.Sprintf("%s (commit: %s, built: %s)", version, commit, date)
 
-	fmt.Println("gzh-cli-quality - Multi-language code quality tool orchestrator")
-	fmt.Println("Coming soon...")
-	os.Exit(0)
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }

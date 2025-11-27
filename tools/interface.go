@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Gizzahub
+// Copyright (c) 2025 Archmagece
 // SPDX-License-Identifier: MIT
 
 package tools
@@ -9,9 +9,9 @@ import "context"
 type ToolType int
 
 const (
-	FORMAT ToolType = iota // 포매터
-	LINT                   // 린터
-	BOTH                   // 포매터+린터
+	FORMAT ToolType = iota
+	LINT
+	BOTH
 )
 
 func (t ToolType) String() string {
@@ -132,6 +132,15 @@ type Issue struct {
 	Suggestion string
 }
 
+// LanguageDetector detects programming languages in a project.
+type LanguageDetector interface {
+	// DetectLanguages scans a directory and returns detected languages
+	DetectLanguages(projectRoot string) ([]string, error)
+
+	// GetFilesByLanguage returns files grouped by language
+	GetFilesByLanguage(projectRoot string, languages []string) (map[string][]string, error)
+}
+
 // ToolRegistry manages available quality tools.
 type ToolRegistry interface {
 	// Register adds a tool to the registry
@@ -148,6 +157,15 @@ type ToolRegistry interface {
 
 	// FindTool finds a tool by name
 	FindTool(name string) QualityTool
+}
+
+// ConfigDetector finds configuration files for quality tools.
+type ConfigDetector interface {
+	// FindConfigs searches for tool configuration files
+	FindConfigs(projectRoot string, tools []QualityTool) map[string]string
+
+	// ValidateConfig checks if a configuration file is valid
+	ValidateConfig(toolName, configPath string) error
 }
 
 // ExecutionPlan represents a plan for executing quality tools.
@@ -175,4 +193,13 @@ type Task struct {
 
 	// Priority affects execution order (higher = earlier)
 	Priority int
+}
+
+// Executor runs quality tools according to an execution plan.
+type Executor interface {
+	// Execute runs the execution plan
+	Execute(ctx context.Context, plan *ExecutionPlan) ([]*Result, error)
+
+	// ExecuteParallel runs the plan with parallel execution
+	ExecuteParallel(ctx context.Context, plan *ExecutionPlan, workers int) ([]*Result, error)
 }
