@@ -12,7 +12,7 @@ bash hooks/install.sh
 
 이 스크립트는:
 - 기존 pre-commit hook을 백업
-- gzq pre-commit hook을 설치
+- gz-quality pre-commit hook을 설치
 - 실행 권한을 자동으로 설정
 
 ### 방법 2: 수동 설치
@@ -47,7 +47,7 @@ hook이 설치되면 `git commit` 시 자동으로 실행됩니다:
 ```bash
 git add .
 git commit -m "feat: add new feature"
-# → gzq check --staged 자동 실행
+# → gz-quality check --staged 자동 실행
 ```
 
 ### Hook 건너뛰기
@@ -62,15 +62,15 @@ git commit --no-verify -m "WIP: work in progress"
 
 ```bash
 # 포매팅만 실행
-export GZQ_MODE=format
+export GZ_QUALITY_MODE=format
 git commit -m "style: format code"
 
 # 포매팅 + 린팅 실행
-export GZQ_MODE=run
+export GZ_QUALITY_MODE=run
 git commit -m "refactor: improve code quality"
 
 # 체크만 실행 (기본값)
-export GZQ_MODE=check
+export GZ_QUALITY_MODE=check
 git commit -m "fix: resolve bug"
 ```
 
@@ -87,9 +87,9 @@ Git pre-commit hook 스크립트입니다.
 
 **설정 옵션**:
 ```bash
-export GZQ_CMD="gzq"           # gzq 명령어 경로
-export GZQ_MODE="check"        # 실행 모드 (check/format/run)
-export GZQ_FLAGS="--staged"    # 추가 플래그
+export GZ_QUALITY_CMD="gz-quality"           # gz-quality 명령어 경로
+export GZ_QUALITY_MODE="check"        # 실행 모드 (check/format/run)
+export GZ_QUALITY_FLAGS="--staged"    # 추가 플래그
 ```
 
 ### `install.sh`
@@ -98,7 +98,7 @@ Hook 설치 자동화 스크립트입니다.
 
 **기능**:
 - Git 저장소 확인
-- gzq 설치 여부 확인
+- gz-quality 설치 여부 확인
 - 기존 hook 백업
 - 새 hook 설치 및 권한 설정
 
@@ -112,12 +112,12 @@ bash hooks/install.sh
 pre-commit 프레임워크용 hook 정의 파일입니다.
 
 **제공 hooks**:
-- `gzq-check`: 전체 품질 검사
-- `gzq-format`: 포매팅만
-- `gzq-check-go`: Go 파일만
-- `gzq-check-python`: Python 파일만
-- `gzq-check-javascript`: JS/TS 파일만
-- `gzq-check-rust`: Rust 파일만
+- `gz-quality-check`: 전체 품질 검사
+- `gz-quality-format`: 포매팅만
+- `gz-quality-check-go`: Go 파일만
+- `gz-quality-check-python`: Python 파일만
+- `gz-quality-check-javascript`: JS/TS 파일만
+- `gz-quality-check-rust`: Rust 파일만
 
 ### `.pre-commit-config.example.yaml` (프로젝트 루트)
 
@@ -139,15 +139,15 @@ pre-commit install
 vim main.go
 
 # 2. 변경 사항 확인
-gzq check --changed
+gz-quality check --changed
 
 # 3. 자동 수정 적용
-gzq run --changed --fix
+gz-quality run --changed --fix
 
 # 4. Stage 및 커밋 (hook 자동 실행)
 git add main.go
 git commit -m "feat: implement new feature"
-# → pre-commit hook이 gzq check --staged 실행
+# → pre-commit hook이 gz-quality check --staged 실행
 ```
 
 ### CI와 함께 사용
@@ -157,14 +157,14 @@ git commit -m "feat: implement new feature"
 git commit
 
 # CI: 전체 검사
-gzq check --since main --report json
+gz-quality check --since main --report json
 ```
 
 ## 커스터마이징
 
 ### 특정 파일 제외
 
-`.gzquality.yml`에서 제외 패턴 설정:
+`.gz-qualityuality.yml`에서 제외 패턴 설정:
 
 ```yaml
 exclude:
@@ -181,12 +181,12 @@ exclude:
 ```bash
 # Go 전용 hook
 if git diff --cached --name-only | grep -q '\.go$'; then
-    gzq tool golangci-lint --staged
+    gz-quality tool golangci-lint --staged
 fi
 
 # Python 전용 hook
 if git diff --cached --name-only | grep -q '\.py$'; then
-    gzq tool ruff --staged --fix
+    gz-quality tool ruff --staged --fix
 fi
 ```
 
@@ -198,8 +198,8 @@ fi
 #!/bin/bash
 set -e
 
-# 1. gzq 품질 검사
-gzq check --staged
+# 1. gz-quality 품질 검사
+gz-quality check --staged
 
 # 2. 추가 검사 (예: 테스트)
 if git diff --cached --name-only | grep -q '_test\.go$'; then
@@ -212,20 +212,20 @@ fi
 
 ## 문제 해결
 
-### gzq를 찾을 수 없음
+### gz-quality를 찾을 수 없음
 
 ```bash
 # PATH 확인
 echo $PATH
 
-# gzq 위치 확인
-which gzq
+# gz-quality 위치 확인
+which gz-quality
 
 # PATH에 추가
 export PATH=$PATH:$(go env GOPATH)/bin
 
 # 또는 절대 경로 사용
-export GZQ_CMD="$HOME/go/bin/gzq"
+export GZ_QUALITY_CMD="$HOME/go/bin/gz-quality"
 ```
 
 ### Hook이 실행되지 않음
@@ -245,13 +245,13 @@ chmod +x .git/hooks/pre-commit
 
 ```bash
 # staged 파일만 검사 (기본값)
-export GZQ_FLAGS="--staged"
+export GZ_QUALITY_FLAGS="--staged"
 
 # 또는 포매팅만
-export GZQ_MODE=format
+export GZ_QUALITY_MODE=format
 
 # 또는 특정 도구만
-export GZQ_CMD="gzq tool gofumpt"
+export GZ_QUALITY_CMD="gz-quality tool gofumpt"
 ```
 
 ## 제거
@@ -277,4 +277,4 @@ rm .pre-commit-config.yaml
 
 ---
 
-**참고**: Hook은 로컬 개발 환경에서만 실행됩니다. CI/CD 파이프라인에서는 별도로 gzq를 실행해야 합니다.
+**참고**: Hook은 로컬 개발 환경에서만 실행됩니다. CI/CD 파이프라인에서는 별도로 gz-quality를 실행해야 합니다.

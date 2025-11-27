@@ -22,7 +22,7 @@ body:
     attributes:
       label: Proposed Solution
       description: Describe the solution you'd like
-      placeholder: I would like gzq to...
+      placeholder: I would like gz-quality to...
     validations:
       required: true
 
@@ -67,7 +67,7 @@ body:
       description: Show how you would use this feature
       placeholder: |
         ```bash
-        gzq run --new-flag
+        gz-quality run --new-flag
         ```
       render: shell
 

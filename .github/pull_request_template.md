@@ -35,7 +35,7 @@ Closes #
 **Test Configuration**:
 - OS: <!-- e.g., Ubuntu 22.04 -->
 - Go version: <!-- e.g., 1.24.0 -->
-- gzq version: <!-- e.g., dev -->
+- gz-quality version: <!-- e.g., dev -->
 
 ## Checklist
 

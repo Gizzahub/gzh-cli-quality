@@ -58,14 +58,14 @@ When using gzh-cli-quality:
 Always use the latest version:
 
 ```bash
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
+go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 ```
 
 ### 2. Review Tool Output
 
 - Carefully review changes made by `--fix` flag before committing
 - Use `--dry-run` to preview execution plan
-- Verify tool versions: `gzq version`
+- Verify tool versions: `gz-quality version`
 
 ### 3. Configuration Security
 
@@ -75,7 +75,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
 
 ### 4. CI/CD Integration
 
-- Run gzq in read-only mode in CI: `gzq check`
+- Run gz-quality in read-only mode in CI: `gz-quality check`
 - Don't use `--fix` in CI without manual review
 - Limit permissions for CI service accounts
 
@@ -108,7 +108,7 @@ gzh-cli-quality executes external commands. While we sanitize inputs:
 ### Network Access
 
 - No network access required for core functionality
-- Tool installation (`gzq install`) may download packages
+- Tool installation (`gz-quality install`) may download packages
 - Only uses official package managers (go install, pip, npm, cargo)
 
 ## Security Updates

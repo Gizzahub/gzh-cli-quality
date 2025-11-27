@@ -77,13 +77,13 @@ jobs:
 
       - name: Test binary
         run: |
-          ./build/gzq version
-          ./build/gzq list
-          ./build/gzq --help
+          ./build/gz-quality version
+          ./build/gz-quality list
+          ./build/gz-quality --help
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gzq-linux-amd64
-          path: build/gzq
+          name: gz-quality-linux-amd64
+          path: build/gz-quality
           retention-days: 7

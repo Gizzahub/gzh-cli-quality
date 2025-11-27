@@ -196,7 +196,7 @@ func TestNewTool(t *testing.T) {
 
 다음 정보를 포함해주세요:
 
-- gzq 버전: `gzq version`
+- gz-quality 버전: `gz-quality version`
 - Go 버전: `go version`
 - OS 및 아키텍처
 - 재현 단계

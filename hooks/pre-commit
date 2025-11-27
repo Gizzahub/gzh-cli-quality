@@ -18,17 +18,17 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-GZQ_CMD=${GZQ_CMD:-"gzq"}
-GZQ_MODE=${GZQ_MODE:-"check"}  # Options: check, format, run
-GZQ_FLAGS=${GZQ_FLAGS:-"--staged"}
+GZ_QUALITY_CMD=${GZ_QUALITY_CMD:-"gz-quality"}
+GZ_QUALITY_MODE=${GZ_QUALITY_MODE:-"check"}  # Options: check, format, run
+GZ_QUALITY_FLAGS=${GZ_QUALITY_FLAGS:-"--staged"}
 
 echo -e "${BLUE}🔍 Running gzh-cli-quality pre-commit hook...${NC}"
 
-# Check if gzq is installed
-if ! command -v "$GZQ_CMD" &> /dev/null; then
-    echo -e "${RED}❌ gzq not found in PATH${NC}"
+# Check if gz-quality is installed
+if ! command -v "$GZ_QUALITY_CMD" &> /dev/null; then
+    echo -e "${RED}❌ gz-quality not found in PATH${NC}"
     echo -e "${YELLOW}Install it with:${NC}"
-    echo -e "  go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest"
+    echo -e "  go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest"
     exit 1
 fi
 
@@ -38,16 +38,16 @@ if ! git diff --cached --name-only | grep -qE '\.(go|py|js|ts|tsx|jsx|rs)$'; the
     exit 0
 fi
 
-# Run gzq
-echo -e "${BLUE}Running: $GZQ_CMD $GZQ_MODE $GZQ_FLAGS${NC}"
+# Run gz-quality
+echo -e "${BLUE}Running: $GZ_QUALITY_CMD $GZ_QUALITY_MODE $GZ_QUALITY_FLAGS${NC}"
 
-if $GZQ_CMD $GZQ_MODE $GZQ_FLAGS; then
+if $GZ_QUALITY_CMD $GZ_QUALITY_MODE $GZ_QUALITY_FLAGS; then
     echo -e "${GREEN}✅ Quality check passed!${NC}"
     exit 0
 else
     echo -e "${RED}❌ Quality check failed${NC}"
     echo -e "${YELLOW}Fix the issues above or use:${NC}"
     echo -e "  git commit --no-verify  ${YELLOW}(to skip this check)${NC}"
-    echo -e "  gzq run --staged --fix  ${YELLOW}(to auto-fix formatting)${NC}"
+    echo -e "  gz-quality run --staged --fix  ${YELLOW}(to auto-fix formatting)${NC}"
     exit 1
 fi

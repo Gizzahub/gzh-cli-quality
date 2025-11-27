@@ -24,7 +24,7 @@
 ### 2.1 페르소나 1: 개인 개발자
 - **특징**: 멀티 언어 프로젝트 운영, 빠른 피드백 루프 필요
 - **니즈**: 커밋 전 빠른 품질 검사, 간단한 명령어
-- **사용 시나리오**: `gzq run --staged` 로 커밋할 파일만 검사
+- **사용 시나리오**: `gz-quality run --staged` 로 커밋할 파일만 검사
 
 ### 2.2 페르소나 2: 테크 리드
 - **특징**: 팀 코드 품질 표준 관리, CI/CD 파이프라인 설계
@@ -34,7 +34,7 @@
 ### 2.3 페르소나 3: DevOps 엔지니어
 - **특징**: 대규모 모노레포 관리, CI/CD 최적화
 - **니즈**: 빠른 실행, 캐싱, 점진적 검사
-- **사용 시나리오**: `gzq run --since main` 으로 변경분만 검사
+- **사용 시나리오**: `gz-quality run --since main` 으로 변경분만 검사
 
 ---
 
@@ -56,7 +56,7 @@
 ### 3.2 수용 기준 예시 (US-01)
 ```
 Given: Go, Python, JavaScript 파일이 있는 프로젝트
-When: `gzq run` 실행
+When: `gz-quality run` 실행
 Then: 각 언어에 맞는 도구가 자동 감지되어 실행됨
 And: 병렬 실행으로 처리 시간 최소화
 And: 결과가 통합된 형식으로 출력됨
@@ -78,16 +78,16 @@ And: 결과가 통합된 형식으로 출력됨
 ### 4.2 CLI 명령어 구조
 
 ```
-gzq                           # 도움말
-gzq run                       # 전체 실행
-gzq check                     # 린팅만 (변경 없이)
-gzq init                      # 설정 파일 생성
-gzq analyze                   # 프로젝트 분석
-gzq tool <name>               # 개별 도구 실행
-gzq install                   # 도구 설치
-gzq upgrade                   # 도구 업그레이드
-gzq version                   # 도구 버전 확인
-gzq list                      # 사용 가능한 도구 목록
+gz-quality                           # 도움말
+gz-quality run                       # 전체 실행
+gz-quality check                     # 린팅만 (변경 없이)
+gz-quality init                      # 설정 파일 생성
+gz-quality analyze                   # 프로젝트 분석
+gz-quality tool <name>               # 개별 도구 실행
+gz-quality install                   # 도구 설치
+gz-quality upgrade                   # 도구 업그레이드
+gz-quality version                   # 도구 버전 확인
+gz-quality list                      # 사용 가능한 도구 목록
 ```
 
 ### 4.3 주요 옵션
@@ -178,7 +178,7 @@ gzq list                      # 사용 가능한 도구 목록
 
 ### 8.2 도구 의존성
 - 각 언어별 품질 도구는 시스템에 설치되어 있어야 함
-- `gzq install` 로 자동 설치 지원
+- `gz-quality install` 로 자동 설치 지원
 
 ---
 

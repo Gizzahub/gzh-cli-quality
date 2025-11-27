@@ -22,11 +22,11 @@ if [ ! -d ".git" ]; then
     exit 1
 fi
 
-# Check if gzq is installed
-if ! command -v gzq &> /dev/null; then
-    echo -e "${YELLOW}⚠️  gzq not found in PATH${NC}"
+# Check if gz-quality is installed
+if ! command -v gz-quality &> /dev/null; then
+    echo -e "${YELLOW}⚠️  gz-quality not found in PATH${NC}"
     echo -e "${YELLOW}Install it with:${NC}"
-    echo -e "  go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest"
+    echo -e "  go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest"
     read -p "Continue installation anyway? (y/N) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -63,10 +63,10 @@ echo
 echo -e "${BLUE}Hook location:${NC} $HOOK_TARGET"
 echo
 echo -e "${BLUE}Configuration:${NC}"
-echo -e "  Set GZQ_MODE environment variable to customize behavior:"
-echo -e "    export GZQ_MODE=check    ${YELLOW}# Lint only (default)${NC}"
-echo -e "    export GZQ_MODE=format   ${YELLOW}# Format only${NC}"
-echo -e "    export GZQ_MODE=run      ${YELLOW}# Format + lint${NC}"
+echo -e "  Set GZ_QUALITY_MODE environment variable to customize behavior:"
+echo -e "    export GZ_QUALITY_MODE=check    ${YELLOW}# Lint only (default)${NC}"
+echo -e "    export GZ_QUALITY_MODE=format   ${YELLOW}# Format only${NC}"
+echo -e "    export GZ_QUALITY_MODE=run      ${YELLOW}# Format + lint${NC}"
 echo
 echo -e "${BLUE}Usage:${NC}"
 echo -e "  git commit               ${YELLOW}# Hook runs automatically${NC}"

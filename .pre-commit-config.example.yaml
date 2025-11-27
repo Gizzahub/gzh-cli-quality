@@ -16,21 +16,21 @@ repos:
     rev: v1.0.0  # Use specific version or 'main' for latest
     hooks:
       # Option 1: Full quality check (format + lint)
-      - id: gzq-check
+      - id: gz-quality-check
         stages: [commit]
 
       # Option 2: Format only (auto-fix)
-      # - id: gzq-format
+      # - id: gz-quality-format
       #   stages: [commit]
 
       # Option 3: Language-specific hooks
-      # - id: gzq-check-go
+      # - id: gz-quality-check-go
       #   stages: [commit]
-      # - id: gzq-check-python
+      # - id: gz-quality-check-python
       #   stages: [commit]
-      # - id: gzq-check-javascript
+      # - id: gz-quality-check-javascript
       #   stages: [commit]
-      # - id: gzq-check-rust
+      # - id: gz-quality-check-rust
       #   stages: [commit]
 
   # Optional: Additional hooks
@@ -43,13 +43,13 @@ repos:
   #     - id: check-added-large-files
   #       args: ['--maxkb=1000']
 
-  # # Go-specific hooks (if not using gzq)
+  # # Go-specific hooks (if not using gz-quality)
   # - repo: https://github.com/golangci/golangci-lint
   #   rev: v1.55.2
   #   hooks:
   #     - id: golangci-lint
 
-  # # Python-specific hooks (if not using gzq)
+  # # Python-specific hooks (if not using gz-quality)
   # - repo: https://github.com/psf/black
   #   rev: 23.12.1
   #   hooks:
@@ -62,7 +62,7 @@ repos:
   #       args: [--fix]
   #     - id: ruff-format
 
-  # # JavaScript/TypeScript hooks (if not using gzq)
+  # # JavaScript/TypeScript hooks (if not using gz-quality)
   # - repo: https://github.com/pre-commit/mirrors-prettier
   #   rev: v3.1.0
   #   hooks:

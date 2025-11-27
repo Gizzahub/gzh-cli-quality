@@ -43,11 +43,11 @@ jobs:
         with:
           go-version: '1.24'
 
-      - name: Install gzq
-        run: go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
+      - name: Install gz-quality
+        run: go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 
       - name: Run quality check
-        run: gzq check --report json --output quality-report.json
+        run: gz-quality check --report json --output quality-report.json
 
       - name: Upload quality report
         if: always()
@@ -66,7 +66,7 @@ jobs:
     echo "files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | tr '\n' ',')" >> $GITHUB_OUTPUT
 
 - name: Run quality check on changed files
-  run: gzq check --since origin/${{ github.base_ref }}
+  run: gz-quality check --since origin/${{ github.base_ref }}
 ```
 
 ### 매트릭스 빌드 (멀티 플랫폼)
@@ -83,8 +83,8 @@ steps:
   - uses: actions/setup-go@v5
     with:
       go-version: ${{ matrix.go }}
-  - run: go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
-  - run: gzq check
+  - run: go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
+  - run: gz-quality check
 ```
 
 ### 코멘트로 결과 표시
@@ -94,7 +94,7 @@ steps:
   id: quality
   continue-on-error: true
   run: |
-    gzq check --report markdown --output quality-report.md
+    gz-quality check --report markdown --output quality-report.md
     cat quality-report.md >> $GITHUB_STEP_SUMMARY
 
 - name: Comment PR
@@ -129,10 +129,10 @@ quality-check:
   stage: quality
   image: golang:1.24
   before_script:
-    - go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@${GZQ_VERSION}
+    - go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@${GZQ_VERSION}
     - export PATH=$PATH:$(go env GOPATH)/bin
   script:
-    - gzq check --report json --output quality-report.json
+    - gz-quality check --report json --output quality-report.json
   artifacts:
     reports:
       codequality: quality-report.json
@@ -152,7 +152,7 @@ quality-check:mr:
   extends: quality-check
   script:
     - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
-    - gzq check --since origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - gz-quality check --since origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
   only:
     - merge_requests
 ```
@@ -181,12 +181,12 @@ jobs:
           keys:
             - go-mod-{{ checksum "go.sum" }}
       - run:
-          name: Install gzq
-          command: go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
+          name: Install gz-quality
+          command: go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
       - run:
           name: Run quality check
           command: |
-            gzq check --report json --output /tmp/quality-report.json
+            gz-quality check --report json --output /tmp/quality-report.json
       - store_artifacts:
           path: /tmp/quality-report.json
           destination: quality-report
@@ -227,13 +227,13 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                sh 'go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest'
+                sh 'go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest'
             }
         }
 
         stage('Quality Check') {
             steps {
-                sh 'gzq check --report json --output quality-report.json'
+                sh 'gz-quality check --report json --output quality-report.json'
             }
         }
 
@@ -274,20 +274,20 @@ pipeline {
 
 ```bash
 #!/bin/bash
-# gzq pre-commit hook
+# gz-quality pre-commit hook
 
 set -e
 
 echo "🔍 Running quality checks on staged files..."
 
-# Check if gzq is installed
-if ! command -v gzq &> /dev/null; then
-    echo "❌ gzq not found. Install it with: go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest"
+# Check if gz-quality is installed
+if ! command -v gz-quality &> /dev/null; then
+    echo "❌ gz-quality not found. Install it with: go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest"
     exit 1
 fi
 
 # Run quality check on staged files
-if ! gzq check --staged; then
+if ! gz-quality check --staged; then
     echo "❌ Quality check failed. Please fix the issues before committing."
     exit 1
 fi
@@ -310,9 +310,9 @@ chmod +x .git/hooks/pre-commit
 repos:
   - repo: local
     hooks:
-      - id: gzq-check
-        name: gzq quality check
-        entry: gzq check
+      - id: gz-quality-check
+        name: gz-quality quality check
+        entry: gz-quality check
         language: system
         pass_filenames: false
         always_run: true
@@ -334,7 +334,7 @@ pre-commit install
 {
   "husky": {
     "hooks": {
-      "pre-commit": "gzq check --staged"
+      "pre-commit": "gz-quality check --staged"
     }
   }
 }
@@ -345,7 +345,7 @@ pre-commit install
 ```bash
 npm install --save-dev husky
 npx husky install
-npx husky add .husky/pre-commit "gzq check --staged"
+npx husky add .husky/pre-commit "gz-quality check --staged"
 ```
 
 ---
@@ -357,13 +357,13 @@ npx husky add .husky/pre-commit "gzq check --staged"
 ```dockerfile
 FROM golang:1.24-alpine AS builder
 
-# Install gzq
-RUN go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
+# Install gz-quality
+RUN go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 
 FROM alpine:latest
 
-# Copy gzq from builder
-COPY --from=builder /go/bin/gzq /usr/local/bin/gzq
+# Copy gz-quality from builder
+COPY --from=builder /go/bin/gz-quality /usr/local/bin/gz-quality
 
 # Install required tools (optional)
 RUN apk add --no-cache \
@@ -372,7 +372,7 @@ RUN apk add --no-cache \
 
 WORKDIR /workspace
 
-ENTRYPOINT ["gzq"]
+ENTRYPOINT ["gz-quality"]
 CMD ["check"]
 ```
 
@@ -380,11 +380,11 @@ CMD ["check"]
 
 ```bash
 # 빌드
-docker build -t gzq:latest .
+docker build -t gz-quality:latest .
 
 # 사용
-docker run --rm -v $(pwd):/workspace gzq:latest check
-docker run --rm -v $(pwd):/workspace gzq:latest run --dry-run
+docker run --rm -v $(pwd):/workspace gz-quality:latest check
+docker run --rm -v $(pwd):/workspace gz-quality:latest run --dry-run
 ```
 
 ### Docker Compose
@@ -403,8 +403,8 @@ services:
       - go-cache:/go
     command: >
       sh -c "
-        go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest &&
-        /go/bin/gzq check --report json --output quality-report.json
+        go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest &&
+        /go/bin/gz-quality check --report json --output quality-report.json
       "
 
 volumes:
@@ -427,11 +427,11 @@ docker-compose run --rm quality-check
 # GitHub Actions
 - name: Run quality check
   if: github.event_name == 'pull_request'
-  run: gzq check --since origin/${{ github.base_ref }}
+  run: gz-quality check --since origin/${{ github.base_ref }}
 
 - name: Run full quality check
   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  run: gzq check
+  run: gz-quality check
 ```
 
 ### 캐싱
@@ -463,19 +463,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: gzq run --files="**/*.go"
+      - run: gz-quality run --files="**/*.go"
 
   quality-python:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: gzq run --files="**/*.py"
+      - run: gz-quality run --files="**/*.py"
 
   quality-javascript:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: gzq run --files="**/*.js,**/*.ts"
+      - run: gz-quality run --files="**/*.js,**/*.ts"
 ```
 
 ### 실패 허용 (경고만)
@@ -484,13 +484,13 @@ jobs:
 # GitHub Actions
 - name: Run quality check (warning only)
   continue-on-error: true
-  run: gzq check
+  run: gz-quality check
 
 # GitLab CI
 quality-check:
   allow_failure: true
   script:
-    - gzq check
+    - gz-quality check
 ```
 
 ---
@@ -501,17 +501,17 @@ quality-check:
 
 ```bash
 # Pull Request에서
-gzq check --since origin/main
+gz-quality check --since origin/main
 
 # Staged 파일만
-gzq check --staged
+gz-quality check --staged
 ```
 
 ### 2. 리포트 저장
 
 ```bash
 # CI에서 JSON 리포트 생성
-gzq check --report json --output quality-report.json
+gz-quality check --report json --output quality-report.json
 
 # 아티팩트로 저장
 # GitHub Actions: uses: actions/upload-artifact
@@ -524,23 +524,23 @@ gzq check --report json --output quality-report.json
 # GitHub Actions
 - name: Run quality check
   timeout-minutes: 10
-  run: gzq check
+  run: gz-quality check
 
 # GitLab CI
 quality-check:
   timeout: 10m
   script:
-    - gzq check
+    - gz-quality check
 ```
 
 ### 4. 도구 버전 고정
 
 ```bash
 # 특정 버전 설치
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@v1.0.0
+go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v1.0.0
 
 # 최신 버전
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
+go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 ```
 
 ---
@@ -554,7 +554,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
 export PATH=$PATH:$(go env GOPATH)/bin
 
 # 또는 절대 경로 사용
-$(go env GOPATH)/bin/gzq check
+$(go env GOPATH)/bin/gz-quality check
 ```
 
 ### Git history가 없음
@@ -570,7 +570,7 @@ $(go env GOPATH)/bin/gzq check
 
 ```yaml
 # Docker에서 권한 문제
-docker run --rm -v $(pwd):/workspace -u $(id -u):$(id -g) gzq:latest check
+docker run --rm -v $(pwd):/workspace -u $(id -u):$(id -g) gz-quality:latest check
 ```
 
 ---

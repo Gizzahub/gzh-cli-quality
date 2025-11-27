@@ -1,52 +1,52 @@
 # Pre-commit hooks for gzh-cli-quality
 # See https://pre-commit.com for more information
 
-- id: gzq-check
-  name: gzq quality check
-  description: Run gzq quality check on staged files
-  entry: gzq check --staged
+- id: gz-quality-check
+  name: gz-quality quality check
+  description: Run gz-quality quality check on staged files
+  entry: gz-quality check --staged
   language: golang
   additional_dependencies: []
   pass_filenames: false
   always_run: true
 
-- id: gzq-format
-  name: gzq format
-  description: Run gzq formatting on staged files
-  entry: gzq run --staged --format-only --fix
+- id: gz-quality-format
+  name: gz-quality format
+  description: Run gz-quality formatting on staged files
+  entry: gz-quality run --staged --format-only --fix
   language: golang
   additional_dependencies: []
   pass_filenames: false
   always_run: true
 
-- id: gzq-check-go
-  name: gzq check Go files
-  description: Run gzq quality check on Go files only
-  entry: gzq check
+- id: gz-quality-check-go
+  name: gz-quality check Go files
+  description: Run gz-quality quality check on Go files only
+  entry: gz-quality check
   language: golang
   types: [go]
   pass_filenames: false
 
-- id: gzq-check-python
-  name: gzq check Python files
-  description: Run gzq quality check on Python files only
-  entry: gzq check
+- id: gz-quality-check-python
+  name: gz-quality check Python files
+  description: Run gz-quality quality check on Python files only
+  entry: gz-quality check
   language: golang
   types: [python]
   pass_filenames: false
 
-- id: gzq-check-javascript
-  name: gzq check JavaScript/TypeScript files
-  description: Run gzq quality check on JS/TS files only
-  entry: gzq check
+- id: gz-quality-check-javascript
+  name: gz-quality check JavaScript/TypeScript files
+  description: Run gz-quality quality check on JS/TS files only
+  entry: gz-quality check
   language: golang
   types_or: [javascript, jsx, ts, tsx]
   pass_filenames: false
 
-- id: gzq-check-rust
-  name: gzq check Rust files
-  description: Run gzq quality check on Rust files only
-  entry: gzq check
+- id: gz-quality-check-rust
+  name: gz-quality check Rust files
+  description: Run gz-quality quality check on Rust files only
+  entry: gz-quality check
   language: golang
   types: [rust]
   pass_filenames: false

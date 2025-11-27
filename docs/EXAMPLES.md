@@ -1,6 +1,6 @@
 # gzh-cli-quality 사용 예제
 
-실제 프로젝트에서 `gzq`를 활용하는 다양한 사용 사례와 예제입니다.
+실제 프로젝트에서 `gz-quality`를 활용하는 다양한 사용 사례와 예제입니다.
 
 ## 목차
 
@@ -18,33 +18,33 @@
 
 ```bash
 # 모든 파일에 대해 포매팅 + 린팅 실행
-gzq run
+gz-quality run
 
 # 상세 출력
-gzq run --verbose
+gz-quality run --verbose
 
 # 실행 계획만 확인 (실제 실행 안 함)
-gzq run --dry-run
+gz-quality run --dry-run
 ```
 
 ### 2. 자동 수정 적용
 
 ```bash
 # 포매팅 도구가 자동으로 코드 수정
-gzq run --fix
+gz-quality run --fix
 
 # 포매팅만 수정 (린팅은 검사만)
-gzq run --format-only --fix
+gz-quality run --format-only --fix
 ```
 
 ### 3. 린팅만 실행 (코드 수정 없이 검사만)
 
 ```bash
 # 모든 린터 실행
-gzq check
+gz-quality check
 
 # 특정 파일만 검사
-gzq check --files="*.go,*.py"
+gz-quality check --files="*.go,*.py"
 ```
 
 ---
@@ -55,10 +55,10 @@ gzq check --files="*.go,*.py"
 
 ```bash
 # 1. staged 파일만 검사
-gzq check --staged
+gz-quality check --staged
 
 # 2. staged 파일 포매팅 + 검사
-gzq run --staged --fix
+gz-quality run --staged --fix
 
 # 3. 이슈가 없으면 커밋
 git commit -m "feat: implement new feature"
@@ -70,21 +70,21 @@ git commit -m "feat: implement new feature"
 
 ```bash
 # main 브랜치 이후 변경된 파일만 검사
-gzq check --since main
+gz-quality check --since main
 
 # 리포트 생성
-gzq check --since main --report json --output pr-quality-report.json
+gz-quality check --since main --report json --output pr-quality-report.json
 ```
 
 ### 작업 중인 파일만 검사
 
 ```bash
 # 변경된 모든 파일 (staged + modified + untracked)
-gzq check --changed
+gz-quality check --changed
 
 # 특정 커밋 이후 변경 파일
-gzq check --since HEAD~5
-gzq check --since v1.0.0
+gz-quality check --since HEAD~5
+gz-quality check --since v1.0.0
 ```
 
 ---
@@ -95,16 +95,16 @@ gzq check --since v1.0.0
 
 ```bash
 # Go 파일만 검사
-gzq tool gofumpt
-gzq tool goimports
-gzq tool golangci-lint
+gz-quality tool gofumpt
+gz-quality tool goimports
+gz-quality tool golangci-lint
 
 # 병렬로 모든 Go 도구 실행
-gzq run --format-only  # gofumpt + goimports
-gzq check              # golangci-lint
+gz-quality run --format-only  # gofumpt + goimports
+gz-quality check              # golangci-lint
 
 # golangci-lint에 추가 옵션 전달
-gzq tool golangci-lint -- --enable-all
+gz-quality tool golangci-lint -- --enable-all
 ```
 
 **프로젝트 설정 (`.gzquality.yml`)**:
@@ -132,13 +132,13 @@ tools:
 
 ```bash
 # Python 파일만 검사
-gzq tool black --fix
-gzq tool ruff --fix
-gzq tool pylint
+gz-quality tool black --fix
+gz-quality tool ruff --fix
+gz-quality tool pylint
 
 # isort 대신 ruff 사용
-gzq run --format-only  # black + ruff format
-gzq check              # ruff lint + pylint
+gz-quality run --format-only  # black + ruff format
+gz-quality check              # ruff lint + pylint
 ```
 
 **프로젝트 설정**:
@@ -172,12 +172,12 @@ exclude:
 
 ```bash
 # JS/TS 파일 검사
-gzq tool prettier --fix
-gzq tool eslint --fix
-gzq tool tsc
+gz-quality tool prettier --fix
+gz-quality tool eslint --fix
+gz-quality tool tsc
 
 # 특정 디렉토리만
-gzq run --files="src/**/*.ts"
+gz-quality run --files="src/**/*.ts"
 ```
 
 **프로젝트 설정**:
@@ -214,11 +214,11 @@ exclude:
 
 ```bash
 # Rust 파일 검사
-gzq tool rustfmt
-gzq tool clippy
+gz-quality tool rustfmt
+gz-quality tool clippy
 
 # cargo-fmt 사용
-gzq tool cargo-fmt
+gz-quality tool cargo-fmt
 ```
 
 **프로젝트 설정**:
@@ -246,15 +246,15 @@ exclude:
 
 ```bash
 # 전체 레포지토리 검사
-gzq run --workers 8
+gz-quality run --workers 8
 
 # 특정 서비스만
-cd services/backend && gzq run
-cd services/frontend && gzq run
+cd services/backend && gz-quality run
+cd services/frontend && gz-quality run
 
 # 특정 언어만
-gzq run --files="**/*.go"
-gzq run --files="**/*.ts,**/*.tsx"
+gz-quality run --files="**/*.go"
+gz-quality run --files="**/*.ts,**/*.tsx"
 ```
 
 **루트 설정 (`.gzquality.yml`)**:
@@ -290,11 +290,11 @@ exclude:
 
 ```bash
 # 워커 수 증가 (CPU 코어 수에 맞춤)
-gzq run --workers 16
+gz-quality run --workers 16
 
 # 타임아웃 설정
 export GZQ_TIMEOUT=10m
-gzq run
+gz-quality run
 ```
 
 **설정 파일**:
@@ -309,13 +309,13 @@ parallel_execution: true
 
 ```bash
 # JSON 리포트
-gzq check --report json --output quality-report.json
+gz-quality check --report json --output quality-report.json
 
 # HTML 리포트
-gzq check --report html --output quality-report.html
+gz-quality check --report html --output quality-report.html
 
 # Markdown 리포트
-gzq check --report markdown --output quality-report.md
+gz-quality check --report markdown --output quality-report.md
 ```
 
 ### 특정 도구 비활성화
@@ -362,70 +362,70 @@ exclude:
 
 ```bash
 # 1. 도구 목록 확인
-gzq list
+gz-quality list
 
 # 2. 누락된 도구 설치
-gzq install golangci-lint
-gzq install ruff
-gzq install prettier
+gz-quality install golangci-lint
+gz-quality install ruff
+gz-quality install prettier
 
 # 3. 모든 도구 설치
-gzq install
+gz-quality install
 ```
 
 ### 특정 도구만 실행
 
 ```bash
 # tool 명령어 사용
-gzq tool gofumpt --staged
-gzq tool eslint --changed
+gz-quality tool gofumpt --staged
+gz-quality tool eslint --changed
 
 # 추가 인자 전달
-gzq tool golangci-lint -- --enable-all --max-issues-per-linter 0
+gz-quality tool golangci-lint -- --enable-all --max-issues-per-linter 0
 ```
 
 ### 성능 문제
 
 ```bash
 # 1. 변경된 파일만 검사
-gzq check --changed
+gz-quality check --changed
 
 # 2. 워커 수 조정
-gzq run --workers 2  # 낮은 리소스 환경
+gz-quality run --workers 2  # 낮은 리소스 환경
 
 # 3. 타임아웃 증가
-gzq run --timeout 15m
+gz-quality run --timeout 15m
 
 # 4. 병렬 실행 비활성화
-gzq run --workers 1
+gz-quality run --workers 1
 ```
 
 ### 설정 파일 디버깅
 
 ```bash
 # 1. 프로젝트 분석
-gzq analyze
+gz-quality analyze
 
 # 2. 설정 파일 재생성
 rm .gzquality.yml
-gzq init
+gz-quality init
 
 # 3. 실행 계획 확인
-gzq run --dry-run --verbose
+gz-quality run --dry-run --verbose
 ```
 
 ### 도구 버전 확인
 
 ```bash
 # 모든 도구 버전 확인
-gzq version
+gz-quality version
 
 # 특정 도구 업그레이드
-gzq upgrade golangci-lint
-gzq upgrade ruff
+gz-quality upgrade golangci-lint
+gz-quality upgrade ruff
 
 # 모든 도구 업그레이드
-gzq upgrade
+gz-quality upgrade
 ```
 
 ---
@@ -436,39 +436,39 @@ gzq upgrade
 
 ```bash
 # 작업 중: 변경된 파일만 포매팅
-gzq run --changed --format-only --fix
+gz-quality run --changed --format-only --fix
 
 # 커밋 전: staged 파일 전체 검사
-gzq check --staged
+gz-quality check --staged
 
 # PR 전: since main 전체 검사
-gzq check --since main --report json
+gz-quality check --since main --report json
 ```
 
 ### 2. 점진적 도입
 
 ```bash
 # Phase 1: 포매팅만 적용
-gzq run --format-only --fix
+gz-quality run --format-only --fix
 
 # Phase 2: 경고 수준 린팅
-gzq check  # 설정 파일에서 strict 모드 끄기
+gz-quality check  # 설정 파일에서 strict 모드 끄기
 
 # Phase 3: 엄격한 린팅
-gzq check  # 설정 파일에서 strict 모드 켜기
+gz-quality check  # 설정 파일에서 strict 모드 켜기
 ```
 
 ### 3. 대규모 코드베이스
 
 ```bash
 # 1단계: 변경 파일만
-gzq run --changed --fix
+gz-quality run --changed --fix
 
 # 2단계: 커밋 후 전체 검사 (CI)
-gzq check --report json
+gz-quality check --report json
 
 # 3단계: 점진적으로 전체 수정
-gzq run --fix
+gz-quality run --fix
 ```
 
 ---

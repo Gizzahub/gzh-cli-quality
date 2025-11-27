@@ -2,12 +2,12 @@
 
 ## 1. CLI 명령어 레퍼런스
 
-### 1.1 gzq run
+### 1.1 gz-quality run
 
 모든 포매팅 및 린팅 도구를 실행합니다.
 
 ```bash
-gzq run [flags]
+gz-quality run [flags]
 ```
 
 **플래그**:
@@ -30,37 +30,37 @@ gzq run [flags]
 
 **예시**:
 ```bash
-gzq run --staged --fix
-gzq run --since main --report json --output report.json
-gzq run --format-only --workers 8
+gz-quality run --staged --fix
+gz-quality run --since main --report json --output report.json
+gz-quality run --format-only --workers 8
 ```
 
 ---
 
-### 1.2 gzq check
+### 1.2 gz-quality check
 
 린팅만 실행합니다 (파일 수정 없음).
 
 ```bash
-gzq check [flags]
+gz-quality check [flags]
 ```
 
-**플래그**: `gzq run`과 동일 (단, `--fix` 무시됨)
+**플래그**: `gz-quality run`과 동일 (단, `--fix` 무시됨)
 
 **예시**:
 ```bash
-gzq check --staged
-gzq check --since HEAD~5
+gz-quality check --staged
+gz-quality check --since HEAD~5
 ```
 
 ---
 
-### 1.3 gzq init
+### 1.3 gz-quality init
 
 프로젝트 설정 파일(.gzquality.yml)을 생성합니다.
 
 ```bash
-gzq init [flags]
+gz-quality init [flags]
 ```
 
 **플래그**:
@@ -72,19 +72,19 @@ gzq init [flags]
 
 **예시**:
 ```bash
-gzq init
-gzq init --force
-gzq init --output custom-quality.yml
+gz-quality init
+gz-quality init --force
+gz-quality init --output custom-quality.yml
 ```
 
 ---
 
-### 1.4 gzq analyze
+### 1.4 gz-quality analyze
 
 프로젝트를 분석하고 권장 도구를 표시합니다.
 
 ```bash
-gzq analyze [flags]
+gz-quality analyze [flags]
 ```
 
 **플래그**:
@@ -115,33 +115,33 @@ gzq analyze [flags]
 
 ---
 
-### 1.5 gzq tool
+### 1.5 gz-quality tool
 
 특정 도구를 직접 실행합니다.
 
 ```bash
-gzq tool <tool-name> [flags]
+gz-quality tool <tool-name> [flags]
 ```
 
 **지원 도구**: gofumpt, goimports, golangci-lint, black, ruff, pylint, prettier, eslint, tsc, rustfmt, cargo-fmt, clippy
 
-**플래그**: `gzq run`과 동일한 Git/실행 플래그 지원
+**플래그**: `gz-quality run`과 동일한 Git/실행 플래그 지원
 
 **예시**:
 ```bash
-gzq tool ruff --staged --fix
-gzq tool golangci-lint --since main
-gzq tool prettier --files "src/**/*.ts"
+gz-quality tool ruff --staged --fix
+gz-quality tool golangci-lint --since main
+gz-quality tool prettier --files "src/**/*.ts"
 ```
 
 ---
 
-### 1.6 gzq install
+### 1.6 gz-quality install
 
 품질 도구를 설치합니다.
 
 ```bash
-gzq install [tool-name] [flags]
+gz-quality install [tool-name] [flags]
 ```
 
 **플래그**:
@@ -153,36 +153,36 @@ gzq install [tool-name] [flags]
 
 **예시**:
 ```bash
-gzq install                    # 프로젝트에 필요한 도구
-gzq install golangci-lint      # 특정 도구
-gzq install --language Python  # Python 도구만
-gzq install --all              # 모든 지원 도구
+gz-quality install                    # 프로젝트에 필요한 도구
+gz-quality install golangci-lint      # 특정 도구
+gz-quality install --language Python  # Python 도구만
+gz-quality install --all              # 모든 지원 도구
 ```
 
 ---
 
-### 1.7 gzq upgrade
+### 1.7 gz-quality upgrade
 
 도구를 최신 버전으로 업그레이드합니다.
 
 ```bash
-gzq upgrade [tool-name] [flags]
+gz-quality upgrade [tool-name] [flags]
 ```
 
 **예시**:
 ```bash
-gzq upgrade                # 모든 도구
-gzq upgrade golangci-lint  # 특정 도구
+gz-quality upgrade                # 모든 도구
+gz-quality upgrade golangci-lint  # 특정 도구
 ```
 
 ---
 
-### 1.8 gzq version
+### 1.8 gz-quality version
 
 설치된 도구 버전을 표시합니다.
 
 ```bash
-gzq version [flags]
+gz-quality version [flags]
 ```
 
 **플래그**:
@@ -205,12 +205,12 @@ gzh-cli-quality v1.0.0
 
 ---
 
-### 1.9 gzq list
+### 1.9 gz-quality list
 
 사용 가능한 도구 목록을 표시합니다.
 
 ```bash
-gzq list [flags]
+gz-quality list [flags]
 ```
 
 **플래그**:

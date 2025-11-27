@@ -33,15 +33,15 @@ This is the first release of gzh-cli-quality, a multi-language code quality tool
 - **Tool Management**: Install, upgrade, version checking commands
 
 #### CLI Commands
-- `gzq run`: Run all formatting and linting tools
-- `gzq check`: Run linting only (no file modifications)
-- `gzq init`: Generate project configuration
-- `gzq analyze`: Analyze project and recommend tools
-- `gzq tool <name>`: Run specific tool directly
-- `gzq install`: Install quality tools
-- `gzq upgrade`: Upgrade quality tools
-- `gzq version`: Check installed tool versions
-- `gzq list`: List available tools
+- `gz-quality run`: Run all formatting and linting tools
+- `gz-quality check`: Run linting only (no file modifications)
+- `gz-quality init`: Generate project configuration
+- `gz-quality analyze`: Analyze project and recommend tools
+- `gz-quality tool <name>`: Run specific tool directly
+- `gz-quality install`: Install quality tools
+- `gz-quality upgrade`: Upgrade quality tools
+- `gz-quality version`: Check installed tool versions
+- `gz-quality list`: List available tools
 
 #### Documentation
 - **Design Documents** (72KB total):
@@ -97,7 +97,7 @@ This is the first release of gzh-cli-quality, a multi-language code quality tool
 #### Project Structure
 ```
 gzh-cli-quality/
-├── cmd/gzq/           # CLI entry point
+├── cmd/gz-quality/           # CLI entry point
 ├── quality.go         # Quality manager and commands
 ├── tools/             # Quality tool implementations
 ├── config/            # Configuration management
@@ -136,7 +136,7 @@ make build
 
 #### Using Go Install (after release)
 ```bash
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@v0.1.0
+go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.0
 ```
 
 #### Pre-built Binaries
@@ -146,21 +146,21 @@ Download from [GitHub Releases](https://github.com/Gizzahub/gzh-cli-quality/rele
 
 ```bash
 # Initialize configuration
-gzq init
+gz-quality init
 
 # Run quality checks
-gzq run
+gz-quality run
 
 # Check staged files before commit
-gzq check --staged
+gz-quality check --staged
 
 # Generate report
-gzq check --report json --output quality-report.json
+gz-quality check --report json --output quality-report.json
 ```
 
 ### Known Limitations
 
-- Quality tools must be installed separately (`gzq install`)
+- Quality tools must be installed separately (`gz-quality install`)
 - Coverage reporting requires external tools
 - Some tools may not be available on all platforms
 

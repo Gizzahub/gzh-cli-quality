@@ -91,7 +91,7 @@ release:
 
     **Using Go Install:**
     ```bash
-    go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@{{.Version}}
+    go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@{{.Version}}
     ```
 
     **Using Pre-built Binaries:**

@@ -77,7 +77,7 @@ PRD.md에서 정의한 제품 목표를 구체적인 기술 요구사항으로 �
 
 #### FR-3.1: run 명령어
 ```
-명령: gzq run [flags]
+명령: gz-quality run [flags]
 동작: 모든 포매터 및 린터 실행
 기본: 프로젝트 전체 파일 대상
 옵션: --format-only, --lint-only, --fix, --dry-run
@@ -85,16 +85,16 @@ PRD.md에서 정의한 제품 목표를 구체적인 기술 요구사항으로 �
 
 #### FR-3.2: check 명령어
 ```
-명령: gzq check [flags]
+명령: gz-quality check [flags]
 동작: 린팅만 실행 (파일 수정 없음)
 용도: CI/CD 검증, PR 체크
 ```
 
 #### FR-3.3: tool 명령어
 ```
-명령: gzq tool <tool-name> [flags]
+명령: gz-quality tool <tool-name> [flags]
 동작: 특정 도구만 직접 실행
-예시: gzq tool ruff --staged
+예시: gz-quality tool ruff --staged
 옵션: 모든 Git 플래그 지원
 ```
 
@@ -111,14 +111,14 @@ PRD.md에서 정의한 제품 목표를 구체적인 기술 요구사항으로 �
 
 #### FR-4.1: 도구 감지
 ```
-명령: gzq analyze
+명령: gz-quality analyze
 동작: 프로젝트 언어 감지 및 설치된 도구 확인
 출력: 언어별 권장 도구, 설치 상태, 버전 정보
 ```
 
 #### FR-4.2: 도구 설치
 ```
-명령: gzq install [tool-name]
+명령: gz-quality install [tool-name]
 동작:
   - tool-name 지정: 특정 도구 설치
   - tool-name 미지정: 프로젝트에 필요한 모든 도구 설치
@@ -131,21 +131,21 @@ PRD.md에서 정의한 제품 목표를 구체적인 기술 요구사항으로 �
 
 #### FR-4.3: 도구 업그레이드
 ```
-명령: gzq upgrade [tool-name]
+명령: gz-quality upgrade [tool-name]
 동작: 도구를 최신 버전으로 업그레이드
 출력: 업그레이드 전/후 버전 표시
 ```
 
 #### FR-4.4: 버전 확인
 ```
-명령: gzq version
+명령: gz-quality version
 동작: 모든 설치된 도구의 버전 표시
 출력: 테이블 형식으로 도구명, 버전, 경로 표시
 ```
 
 #### FR-4.5: 도구 목록
 ```
-명령: gzq list
+명령: gz-quality list
 동작: 지원되는 모든 도구 목록 표시
 출력: 도구명, 언어, 타입, 설치 상태
 ```
@@ -243,7 +243,7 @@ include: []
 
 #### FR-6.3: 설정 자동 생성
 ```
-명령: gzq init
+명령: gz-quality init
 동작: 프로젝트 분석 후 .gzquality.yml 생성
 옵션: --force (기존 파일 덮어쓰기)
 ```
@@ -252,7 +252,7 @@ include: []
 ```
 1. CLI 플래그 (최우선)
 2. 프로젝트 설정 (.gzquality.yml)
-3. 사용자 설정 (~/.config/gzq/config.yml)
+3. 사용자 설정 (~/.config/gz-quality/config.yml)
 4. 기본값
 ```
 
@@ -340,7 +340,7 @@ include: []
 형식: 명확하고 실행 가능한 메시지
 예시:
   ❌ golangci-lint 미설치
-  💡 설치: gzq install golangci-lint
+  💡 설치: gz-quality install golangci-lint
 ```
 
 ---
@@ -407,7 +407,7 @@ type ToolRegistry interface {
 
 #### IR-1.1: 명령어 형식
 ```
-gzq <command> [subcommand] [flags] [args]
+gz-quality <command> [subcommand] [flags] [args]
 ```
 
 #### IR-1.2: 플래그 규칙

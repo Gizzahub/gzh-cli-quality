@@ -30,7 +30,7 @@
 git clone https://github.com/Gizzahub/gzh-cli-quality.git
 cd gzh-cli-quality
 
-# 빌드 (build/ 디렉토리에 gzq 바이너리 생성)
+# 빌드 (build/ 디렉토리에 gz-quality 바이너리 생성)
 make build
 
 # 또는 $GOPATH/bin에 직접 설치
@@ -40,42 +40,42 @@ make install
 #### Go Install (향후 릴리스 후)
 
 ```bash
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@latest
+go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 ```
 
 ### 기본 사용법
 
 ```bash
 # 전체 품질 검사 실행
-gzq run
+gz-quality run
 
 # staged 파일만 검사 (커밋 전 체크)
-gzq run --staged
+gz-quality run --staged
 
 # 린팅만 실행 (파일 수정 없음)
-gzq check
+gz-quality check
 
 # 자동 수정 적용
-gzq run --fix
+gz-quality run --fix
 
 # 특정 도구만 실행
-gzq tool ruff --staged
-gzq tool golangci-lint --since main
+gz-quality tool ruff --staged
+gz-quality tool golangci-lint --since main
 ```
 
 ## CLI 명령어
 
 | 명령어 | 설명 |
 |--------|------|
-| `gzq run` | 모든 포매팅 및 린팅 도구 실행 |
-| `gzq check` | 린팅만 실행 (변경 없이 검사) |
-| `gzq init` | 프로젝트 설정 파일 생성 |
-| `gzq analyze` | 프로젝트 분석 및 권장 도구 표시 |
-| `gzq tool <name>` | 특정 도구 직접 실행 |
-| `gzq install` | 품질 도구 설치 |
-| `gzq upgrade` | 품질 도구 업그레이드 |
-| `gzq version` | 도구 버전 확인 |
-| `gzq list` | 사용 가능한 도구 목록 |
+| `gz-quality run` | 모든 포매팅 및 린팅 도구 실행 |
+| `gz-quality check` | 린팅만 실행 (변경 없이 검사) |
+| `gz-quality init` | 프로젝트 설정 파일 생성 |
+| `gz-quality analyze` | 프로젝트 분석 및 권장 도구 표시 |
+| `gz-quality tool <name>` | 특정 도구 직접 실행 |
+| `gz-quality install` | 품질 도구 설치 |
+| `gz-quality upgrade` | 품질 도구 업그레이드 |
+| `gz-quality version` | 도구 버전 확인 |
+| `gz-quality list` | 사용 가능한 도구 목록 |
 
 ### 주요 옵션
 
@@ -107,7 +107,7 @@ gzq tool golangci-lint --since main
 ### 자동 설정 생성
 
 ```bash
-gzq init
+gz-quality init
 ```
 
 ### `.gzquality.yml` 예시
@@ -150,30 +150,30 @@ exclude:
 
 ```bash
 # staged 파일에 포매팅 적용 후 린팅
-gzq run --staged --fix
+gz-quality run --staged --fix
 
 # 린팅 이슈만 확인 (수정 없이)
-gzq check --staged
+gz-quality check --staged
 ```
 
 ### PR 검사 (CI/CD)
 
 ```bash
 # main 브랜치 이후 변경 파일 검사
-gzq check --since main
+gz-quality check --since main
 
 # JSON 리포트 생성
-gzq check --since main --report json --output quality-report.json
+gz-quality check --since main --report json --output quality-report.json
 ```
 
 ### 특정 언어만 검사
 
 ```bash
 # Go 도구만 실행
-gzq tool gofumpt && gzq tool golangci-lint
+gz-quality tool gofumpt && gz-quality tool golangci-lint
 
 # Python 도구만 실행
-gzq tool ruff --fix
+gz-quality tool ruff --fix
 ```
 
 ## 출력 예시
@@ -226,12 +226,12 @@ make quality
 
 ```bash
 # 빌드 후
-./build/gzq version
-./build/gzq list
-./build/gzq run --help
+./build/gz-quality version
+./build/gz-quality list
+./build/gz-quality run --help
 
 # 또는 설치 후
-gzq version
+gz-quality version
 ```
 
 ## 요구사항
@@ -239,7 +239,7 @@ gzq version
 ### 런타임
 - Go 1.24.0+
 - Git 2.0+
-- 각 언어별 품질 도구 (자동 설치 지원: `gzq install`)
+- 각 언어별 품질 도구 (자동 설치 지원: `gz-quality install`)
 
 ### 개발 환경
 - Go 1.24.0+

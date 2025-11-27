@@ -41,9 +41,9 @@ body:
   - type: input
     id: version
     attributes:
-      label: gzq Version
-      description: What version of gzq are you running?
-      placeholder: "Output of: gzq version"
+      label: gz-quality Version
+      description: What version of gz-quality are you running?
+      placeholder: "Output of: gz-quality version"
     validations:
       required: true
 

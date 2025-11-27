@@ -365,7 +365,7 @@ type LanguageConfig struct {
 
 ```
 1. 기본값 (DefaultConfig)
-2. 사용자 전역 설정 (~/.config/gzq/config.yml)
+2. 사용자 전역 설정 (~/.config/gz-quality/config.yml)
 3. 프로젝트 설정 (.gzquality.yml)
 4. CLI 플래그 (최우선)
 ```
@@ -413,12 +413,12 @@ type Summary struct {
 
 ## 4. 데이터 플로우
 
-### 4.1 `gzq run` 실행 흐름
+### 4.1 `gz-quality run` 실행 흐름
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ 1. CLI 명령 파싱                                              │
-│    gzq run --staged --fix --workers 4                         │
+│    gz-quality run --staged --fix --workers 4                         │
 └──────────────────────────┬───────────────────────────────────┘
                            ▼
 ┌──────────────────────────────────────────────────────────────┐
