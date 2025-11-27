@@ -816,16 +816,17 @@ func (c *Config) ToYAML() (string, error) {
 	sb.WriteString("languages:\n")
 
 	for lang, config := range c.Languages {
-		if config.Enabled {
-			sb.WriteString(fmt.Sprintf("  %s:\n", lang))
-			sb.WriteString(fmt.Sprintf("    enabled: %t\n", config.Enabled))
-			sb.WriteString("    tools:\n")
-			for tool, toolConfig := range config.Tools {
-				sb.WriteString(fmt.Sprintf("      %s:\n", tool))
-				sb.WriteString(fmt.Sprintf("        enabled: %t\n", toolConfig.Enabled))
-			}
-			sb.WriteString("\n")
+		if !config.Enabled {
+			continue
 		}
+		sb.WriteString(fmt.Sprintf("  %s:\n", lang))
+		sb.WriteString(fmt.Sprintf("    enabled: %t\n", config.Enabled))
+		sb.WriteString("    tools:\n")
+		for tool, toolConfig := range config.Tools {
+			sb.WriteString(fmt.Sprintf("      %s:\n", tool))
+			sb.WriteString(fmt.Sprintf("        enabled: %t\n", toolConfig.Enabled))
+		}
+		sb.WriteString("\n")
 	}
 
 	return sb.String(), nil
