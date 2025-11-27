@@ -37,9 +37,13 @@ make build
 make install
 ```
 
-#### Go Install (향후 릴리스 후)
+#### Go Install
 
 ```bash
+# 최신 안정 버전
+go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.1
+
+# 또는 최신 개발 버전
 go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 ```
 
@@ -191,6 +195,15 @@ gz-quality tool ruff --fix
 ```
 
 ## 문서
+
+### 사용자 가이드
+
+- [docs/EXAMPLES.md](./docs/EXAMPLES.md) - 사용 예제 및 워크플로우
+- [docs/CI_INTEGRATION.md](./docs/CI_INTEGRATION.md) - CI/CD 통합 가이드 (GitHub Actions, GitLab CI, CircleCI 등)
+- [docs/PRE_COMMIT_HOOKS.md](./docs/PRE_COMMIT_HOOKS.md) - Pre-commit Hooks 완벽 가이드
+- [docs/MULTI_REPO_WORKFLOWS.md](./docs/MULTI_REPO_WORKFLOWS.md) - 멀티 리포지토리 워크플로우 패턴
+
+### 개발자 문서
 
 - [PRD.md](./PRD.md) - 제품 요구사항
 - [REQUIREMENTS.md](./REQUIREMENTS.md) - 상세 요구사항
