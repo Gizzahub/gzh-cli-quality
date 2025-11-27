@@ -1,0 +1,104 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: gzq
+    main: ./cmd/gzq
+    binary: gzq
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+    flags:
+      - -trimpath
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+      - ARCHITECTURE.md
+      - PRD.md
+      - REQUIREMENTS.md
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - 'README'
+  groups:
+    - title: 'New Features'
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      order: 0
+    - title: 'Bug Fixes'
+      regexp: '^.*?fix(\(.+\))??!?:.+$'
+      order: 1
+    - title: 'Performance Improvements'
+      regexp: '^.*?perf(\(.+\))??!?:.+$'
+      order: 2
+    - title: 'Refactorings'
+      regexp: '^.*?refactor(\(.+\))??!?:.+$'
+      order: 3
+    - title: 'Other Changes'
+      order: 999
+
+release:
+  github:
+    owner: Gizzahub
+    name: gzh-cli-quality
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## gzh-cli-quality {{.Version}}
+
+    Multi-language code quality tool orchestrator for Go, Python, JavaScript/TypeScript, and Rust projects.
+
+    ### Installation
+
+    **Using Go Install:**
+    ```bash
+    go install github.com/Gizzahub/gzh-cli-quality/cmd/gzq@{{.Version}}
+    ```
+
+    **Using Pre-built Binaries:**
+    Download the appropriate binary for your platform below.
+
+  footer: |
+    **Full Changelog**: https://github.com/Gizzahub/gzh-cli-quality/compare/{{.PreviousTag}}...{{.Tag}}
+
+    ---
+    For issues and feature requests, please visit: https://github.com/Gizzahub/gzh-cli-quality/issues
