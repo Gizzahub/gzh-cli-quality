@@ -1,7 +1,7 @@
 # gzh-cli-quality
 
 [![Go Version](https://img.shields.io/badge/Go-1.24-blue.svg)](https://golang.org/doc/go1.24)
-[![Coverage](https://img.shields.io/badge/coverage-45.9%25-brightgreen.svg)](https://github.com/Gizzahub/gzh-cli-quality/actions/workflows/coverage.yml)
+[![Coverage](https://img.shields.io/badge/coverage-76.2%25-brightgreen.svg)](./coverage.html)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 멀티 언어 코드 품질 도구 오케스트레이터 - Go, Python, JavaScript/TypeScript, Rust 프로젝트의 포매팅과 린팅을 하나의 명령어로 통합 실행합니다.
