@@ -13,6 +13,7 @@
 - **Git 통합**: staged/changed 파일만 선택적 처리
 - **무설정 시작**: 언어/도구 자동 감지로 즉시 사용
 - **멀티 리포트**: JSON, HTML, Markdown 출력 지원
+- **고성능**: 나노초 수준 최적화 (Registry 조회 14ns, 필터링 8ns)
 
 ## 지원 도구
 
@@ -214,6 +215,8 @@ gz-quality tool ruff --fix
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - 시스템 아키텍처
 - [docs/API.md](./docs/API.md) - API 레퍼런스
 - [docs/ADDING_TOOLS.md](./docs/ADDING_TOOLS.md) - 도구 추가 가이드
+- [docs/TESTING.md](./docs/TESTING.md) - 테스트 가이드 (76.2% 커버리지)
+- [docs/BENCHMARKS.md](./docs/BENCHMARKS.md) - 성능 벤치마크 (27개 벤치마크, 기준 성능 메트릭)
 
 ## 개발
 
@@ -231,6 +234,9 @@ make test
 
 # 커버리지 리포트 생성
 make test-coverage
+
+# 성능 벤치마크 실행
+go test -bench=. -benchmem ./tools ./detector ./executor
 
 # 린트 실행
 make lint
