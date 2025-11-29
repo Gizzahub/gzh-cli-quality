@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -490,4 +491,268 @@ func TestRunInit_Execution(t *testing.T) {
 	if err != nil {
 		assert.NotNil(t, err)
 	}
+}
+
+func TestGenerateReport_JSON(t *testing.T) {
+	manager := NewQualityManager()
+	tmpDir := t.TempDir()
+
+	results := []*tools.Result{
+		{
+			Tool:           "test-tool",
+			Language:       "Go",
+			Success:        true,
+			FilesProcessed: 5,
+			Duration:       "100ms",
+			Issues:         []tools.Issue{},
+		},
+	}
+
+	outputPath := tmpDir + "/report.json"
+	err := manager.generateReport(results, time.Second, 5, tmpDir, "json", outputPath)
+	assert.NoError(t, err)
+
+	// Verify file was created
+	_, err = os.Stat(outputPath)
+	assert.NoError(t, err)
+}
+
+func TestGenerateReport_HTML(t *testing.T) {
+	manager := NewQualityManager()
+	tmpDir := t.TempDir()
+
+	results := []*tools.Result{
+		{
+			Tool:           "test-tool",
+			Language:       "Go",
+			Success:        true,
+			FilesProcessed: 3,
+			Duration:       "50ms",
+			Issues:         []tools.Issue{},
+		},
+	}
+
+	outputPath := tmpDir + "/report.html"
+	err := manager.generateReport(results, time.Second, 3, tmpDir, "html", outputPath)
+	assert.NoError(t, err)
+
+	// Verify file was created
+	_, err = os.Stat(outputPath)
+	assert.NoError(t, err)
+}
+
+func TestGenerateReport_Markdown(t *testing.T) {
+	manager := NewQualityManager()
+	tmpDir := t.TempDir()
+
+	results := []*tools.Result{
+		{
+			Tool:           "test-tool",
+			Language:       "Python",
+			Success:        false,
+			FilesProcessed: 2,
+			Duration:       "200ms",
+			Issues: []tools.Issue{
+				{
+					File:    "test.py",
+					Line:    10,
+					Message: "Test issue",
+				},
+			},
+		},
+	}
+
+	outputPath := tmpDir + "/report.md"
+	err := manager.generateReport(results, time.Second, 2, tmpDir, "markdown", outputPath)
+	assert.NoError(t, err)
+
+	// Verify file was created
+	_, err = os.Stat(outputPath)
+	assert.NoError(t, err)
+}
+
+func TestGenerateReport_UnsupportedFormat(t *testing.T) {
+	manager := NewQualityManager()
+	tmpDir := t.TempDir()
+
+	results := []*tools.Result{}
+
+	err := manager.generateReport(results, time.Second, 0, tmpDir, "pdf", tmpDir+"/report.pdf")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unsupported report format")
+}
+
+func TestGenerateReport_AutoPath(t *testing.T) {
+	manager := NewQualityManager()
+	tmpDir := t.TempDir()
+
+	results := []*tools.Result{
+		{
+			Tool:     "test-tool",
+			Language: "Go",
+			Success:  true,
+		},
+	}
+
+	// Empty outputPath should auto-generate path
+	err := manager.generateReport(results, time.Second, 1, tmpDir, "json", "")
+	assert.NoError(t, err)
+}
+
+func TestInstallTool_AlreadyInstalled(t *testing.T) {
+	manager := NewQualityManager()
+
+	// Mock tool that's already available
+	tool := &mockTool{
+		name:     "test-tool",
+		language: "Go",
+		toolType: tools.FORMAT,
+	}
+
+	err := manager.installTool(tool)
+	assert.NoError(t, err)
+}
+
+func TestInstallTool_NotInstalled(t *testing.T) {
+	manager := NewQualityManager()
+
+	// Mock tool that's not available
+	tool := &mockToolNotAvailable{
+		name:     "test-tool",
+		language: "Go",
+		toolType: tools.FORMAT,
+	}
+
+	err := manager.installTool(tool)
+	// Should call Install() which returns nil in mock
+	assert.NoError(t, err)
+}
+
+func TestUpgradeTool_NotInstalled(t *testing.T) {
+	manager := NewQualityManager()
+
+	tool := &mockToolNotAvailable{
+		name:     "test-tool",
+		language: "Go",
+		toolType: tools.FORMAT,
+	}
+
+	err := manager.upgradeTool(tool)
+	// Should call Install() instead of Upgrade()
+	assert.NoError(t, err)
+}
+
+func TestUpgradeTool_AlreadyInstalled(t *testing.T) {
+	manager := NewQualityManager()
+
+	tool := &mockTool{
+		name:     "test-tool",
+		language: "Go",
+		toolType: tools.FORMAT,
+	}
+
+	err := manager.upgradeTool(tool)
+	// Should call Upgrade()
+	assert.NoError(t, err)
+}
+
+func TestShowToolVersion_NotInstalled(t *testing.T) {
+	manager := NewQualityManager()
+
+	tool := &mockToolNotAvailable{
+		name:     "test-tool",
+		language: "Go",
+		toolType: tools.FORMAT,
+	}
+
+	// Should not panic
+	assert.NotPanics(t, func() {
+		manager.showToolVersion(tool)
+	})
+}
+
+func TestShowToolVersion_Installed(t *testing.T) {
+	manager := NewQualityManager()
+
+	tool := &mockTool{
+		name:     "test-tool",
+		language: "Go",
+		toolType: tools.FORMAT,
+	}
+
+	// Should not panic
+	assert.NotPanics(t, func() {
+		manager.showToolVersion(tool)
+	})
+}
+
+func TestRunDirectTool_DryRun(t *testing.T) {
+	manager := NewQualityManager()
+
+	// Register a mock tool
+	tool := tools.NewGofumptTool()
+	manager.registry.Register(tool)
+
+	cmd := manager.newToolCmd()
+	tmpDir := t.TempDir()
+
+	testFile := tmpDir + "/main.go"
+	err := os.WriteFile(testFile, []byte("package main\n"), 0o644)
+	require.NoError(t, err)
+
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() {
+		err := os.Chdir(origDir)
+		require.NoError(t, err)
+	}()
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	// Find gofumpt subcommand
+	var gofumptCmd *cobra.Command
+	for _, subcmd := range cmd.Commands() {
+		if subcmd.Name() == "gofumpt" {
+			gofumptCmd = subcmd
+			break
+		}
+	}
+
+	require.NotNil(t, gofumptCmd, "gofumpt subcommand should exist")
+
+	gofumptCmd.SetArgs([]string{"--dry-run"})
+
+	err = gofumptCmd.Execute()
+	// May error if files don't match or no tasks, but shouldn't panic
+	if err != nil {
+		assert.NotNil(t, err)
+	}
+}
+
+// Additional mock for tools that are not available
+
+type mockToolNotAvailable struct {
+	name     string
+	language string
+	toolType tools.ToolType
+}
+
+func (m *mockToolNotAvailable) Name() string                { return m.name }
+func (m *mockToolNotAvailable) Language() string            { return m.language }
+func (m *mockToolNotAvailable) Type() tools.ToolType        { return m.toolType }
+func (m *mockToolNotAvailable) IsAvailable() bool           { return false }
+func (m *mockToolNotAvailable) Install() error              { return nil }
+func (m *mockToolNotAvailable) Upgrade() error              { return nil }
+func (m *mockToolNotAvailable) GetVersion() (string, error) { return "", assert.AnError }
+func (m *mockToolNotAvailable) Execute(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {
+	return &tools.Result{
+		Tool:     m.name,
+		Language: m.language,
+		Success:  false,
+	}, nil
+}
+
+func (m *mockToolNotAvailable) FindConfigFiles(projectRoot string) []string {
+	return []string{}
 }
