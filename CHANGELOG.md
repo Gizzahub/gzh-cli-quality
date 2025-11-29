@@ -40,6 +40,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated README badge to reflect 76.2% coverage
   - Coverage tracking in CI/CD pipeline
 
+- **Performance Benchmarks** (27 benchmarks, 960 lines)
+  - **Tools Package**: 11 benchmarks (`tools/bench_test.go`, 261 lines)
+    - File filtering: 471ns (small), 21μs (1000 files)
+    - Command building: 86μs with 260 allocations
+    - JSON parsing: 3-4μs per parse (golangci-lint, eslint, ruff, clippy)
+    - Registry operations: 14ns lookup (zero allocations)
+
+  - **Detector Package**: 9 benchmarks (`detector/bench_test.go`, 224 lines)
+    - Language detection: 70μs (10 files), 485μs (100 files)
+    - Tool availability: 7ns (cached)
+    - Config discovery: 44μs
+    - Project analysis: 149μs
+
+  - **Executor Package**: 7 benchmarks (`executor/bench_test.go`, 222 lines)
+    - Plan creation: 190ns (5 tasks), 4μs (100 tasks)
+    - Parallel execution: 6-38μs with good scalability
+    - Tool filtering: 8ns (zero allocations)
+
+  - **Documentation**: `docs/BENCHMARKS.md` (253 lines)
+    - Baseline performance metrics on Apple M1 Ultra
+    - Optimization insights and scalability analysis
+    - Performance characteristics and bottleneck identification
+    - Benchmark maintenance guidelines
+
 ### Fixed
 
 #### Testing
