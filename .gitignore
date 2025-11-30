@@ -12,6 +12,10 @@
 *.out
 coverage.html
 
+# Benchmark results
+bench.txt
+bench-new.txt
+
 # Build directory
 build/
 dist/

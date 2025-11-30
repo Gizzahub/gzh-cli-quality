@@ -1,4 +1,4 @@
-.PHONY: help build install test test-integration test-all lint clean
+.PHONY: help build install test test-integration test-all bench bench-compare bench-save lint clean
 
 # Variables
 BINARY_NAME=gz-quality
@@ -36,6 +36,32 @@ test-coverage: test ## Run tests with coverage report
 	@echo "Generating coverage report..."
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report: coverage.html"
+
+bench: ## Run performance benchmarks
+	@echo "Running benchmarks..."
+	go test -bench=. -benchmem ./tools ./detector ./executor
+
+bench-save: ## Run benchmarks and save results to bench.txt
+	@echo "Running benchmarks and saving to bench.txt..."
+	go test -bench=. -benchmem ./tools ./detector ./executor | tee bench.txt
+	@echo "✅ Benchmark results saved to bench.txt"
+
+bench-compare: ## Compare current benchmarks with saved baseline (requires bench.txt)
+	@echo "Running benchmarks for comparison..."
+	@if [ ! -f bench.txt ]; then \
+		echo "❌ No baseline found. Run 'make bench-save' first to create bench.txt"; \
+		exit 1; \
+	fi
+	@echo "Comparing with baseline (bench.txt)..."
+	@go test -bench=. -benchmem ./tools ./detector ./executor > bench-new.txt 2>&1
+	@echo ""
+	@echo "=== Benchmark Comparison ==="
+	@echo "Baseline: bench.txt"
+	@echo "Current:  bench-new.txt"
+	@echo ""
+	@echo "Use 'benchstat bench.txt bench-new.txt' for detailed comparison"
+	@echo "(Install benchstat: go install golang.org/x/perf/cmd/benchstat@latest)"
+	@rm -f bench-new.txt
 
 lint: ## Run linters
 	@echo "Running linters..."
