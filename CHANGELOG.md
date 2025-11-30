@@ -64,6 +64,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Performance characteristics and bottleneck identification
     - Benchmark maintenance guidelines
 
+#### Build Infrastructure
+- **Makefile Benchmark Targets** (`Makefile`)
+  - `make bench`: Run all 27 benchmarks with memory stats
+  - `make bench-save`: Save baseline to bench.txt
+  - `make bench-compare`: Compare with baseline (regression detection)
+  - Integration with benchstat for statistical analysis
+  - Added bench.txt to .gitignore
+
+#### CI/CD Infrastructure
+- **Benchmark GitHub Actions Workflow** (`.github/workflows/benchmarks.yml`, 218 lines)
+  - Automated performance monitoring on PRs and pushes
+  - Baseline comparison against base branch
+  - PR comments with detailed benchmark reports
+  - Performance regression detection (>10% threshold)
+  - Artifact storage (30 day retention)
+  - Statistical analysis with benchstat
+  - GitHub Step Summary integration
+
 ### Fixed
 
 #### Testing
