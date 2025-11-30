@@ -1,0 +1,219 @@
+name: Benchmarks
+
+on:
+  pull_request:
+    branches: [ master, main, develop ]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/benchmarks.yml'
+  push:
+    branches: [ master, main ]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: read
+  pull-requests: write  # For PR comments
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for comparing with base branch
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: true
+
+      - name: Run benchmarks (current)
+        run: |
+          echo "Running benchmarks on current branch..."
+          make bench-save
+          mv bench.txt bench-current.txt
+
+      - name: Checkout base branch (for comparison)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git checkout origin/${{ github.base_ref }}
+
+      - name: Run benchmarks (base)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Running benchmarks on base branch..."
+          go test -bench=. -benchmem ./tools ./detector ./executor > bench-base.txt 2>&1 || true
+
+      - name: Switch back to PR branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git checkout -
+
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+
+      - name: Compare benchmarks
+        if: github.event_name == 'pull_request'
+        id: compare
+        run: |
+          echo "Comparing benchmarks..."
+          if [ -f bench-base.txt ] && [ -f bench-current.txt ]; then
+            benchstat bench-base.txt bench-current.txt > bench-comparison.txt || true
+            echo "COMPARISON_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "COMPARISON_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for performance regressions
+        if: github.event_name == 'pull_request' && steps.compare.outputs.COMPARISON_EXISTS == 'true'
+        id: regression
+        run: |
+          echo "Checking for significant performance regressions..."
+
+          # Extract performance changes and check for regressions >10%
+          REGRESSIONS=$(grep -E '\+[0-9]+\.[0-9]+%' bench-comparison.txt | grep -v '\+[0-9]\.[0-9]+%' | wc -l || true)
+
+          echo "REGRESSION_COUNT=$REGRESSIONS" >> $GITHUB_OUTPUT
+
+          if [ "$REGRESSIONS" -gt 0 ]; then
+            echo "⚠️ Found $REGRESSIONS potential performance regressions"
+            echo "HAS_REGRESSIONS=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ No significant performance regressions detected"
+            echo "HAS_REGRESSIONS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate benchmark report
+        if: github.event_name == 'pull_request'
+        id: report
+        run: |
+          cat > benchmark-report.md <<'REPORT_EOF'
+          ## 📊 Performance Benchmark Report
+
+          **Branch**: `${{ github.head_ref }}`
+          **Base**: `${{ github.base_ref }}`
+          **Commit**: `${{ github.event.pull_request.head.sha }}`
+
+          REPORT_EOF
+
+          if [ -f bench-comparison.txt ]; then
+            echo "### Benchmark Comparison" >> benchmark-report.md
+            echo "" >> benchmark-report.md
+            echo '```' >> benchmark-report.md
+            cat bench-comparison.txt >> benchmark-report.md
+            echo '```' >> benchmark-report.md
+            echo "" >> benchmark-report.md
+
+            # Add interpretation
+            echo "### Interpretation" >> benchmark-report.md
+            echo "" >> benchmark-report.md
+            echo "- **Positive %**: Performance improvement (faster) ✅" >> benchmark-report.md
+            echo "- **Negative %**: Performance regression (slower) ⚠️" >> benchmark-report.md
+            echo "- **~**: No significant change" >> benchmark-report.md
+            echo "" >> benchmark-report.md
+
+            if [ "${{ steps.regression.outputs.HAS_REGRESSIONS }}" == "true" ]; then
+              echo "⚠️ **Warning**: This PR contains ${{ steps.regression.outputs.REGRESSION_COUNT }} potential performance regression(s) >10%" >> benchmark-report.md
+              echo "" >> benchmark-report.md
+              echo "Please review the benchmark results and ensure the performance impact is acceptable." >> benchmark-report.md
+            else
+              echo "✅ No significant performance regressions detected." >> benchmark-report.md
+            fi
+          else
+            echo "ℹ️ Benchmark comparison not available." >> benchmark-report.md
+          fi
+
+          echo "" >> benchmark-report.md
+          echo "---" >> benchmark-report.md
+          echo "*Generated by [Benchmark CI](.github/workflows/benchmarks.yml)*" >> benchmark-report.md
+
+      - name: Comment PR with benchmark results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('benchmark-report.md', 'utf8');
+
+            // Find existing benchmark comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const benchmarkComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Performance Benchmark Report')
+            );
+
+            if (benchmarkComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: benchmarkComment.id,
+                body: report
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+              });
+            }
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            bench-current.txt
+            bench-base.txt
+            bench-comparison.txt
+            benchmark-report.md
+          retention-days: 30
+
+      - name: Fail on severe regressions
+        if: github.event_name == 'pull_request' && steps.regression.outputs.HAS_REGRESSIONS == 'true'
+        run: |
+          echo "::warning::Performance regressions detected. Review benchmark results before merging."
+          # Uncomment below to fail CI on regressions
+          # exit 1
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Benchmark Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Total benchmarks: 27 (11 tools + 9 detector + 7 executor)" >> $GITHUB_STEP_SUMMARY
+          echo "- Platform: ubuntu-latest" >> $GITHUB_STEP_SUMMARY
+          echo "- Go version: 1.24" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f bench-current.txt ]; then
+            echo "### Current Branch Results" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -10 bench-current.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ github.event_name }}" == "pull_request" ] && [ -f bench-comparison.txt ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Comparison vs Base" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            head -20 bench-comparison.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

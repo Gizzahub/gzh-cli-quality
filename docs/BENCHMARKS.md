@@ -198,44 +198,79 @@ This document contains baseline performance benchmarks for the gzh-cli-quality p
 
 ## Running Benchmarks
 
-### Run all benchmarks
+### Using Make (Recommended)
 
 ```bash
-go test -bench=. -benchmem ./tools ./detector ./executor
+# Run all benchmarks
+make bench
+
+# Save baseline for comparison
+make bench-save
+
+# Compare with baseline (detects regressions)
+make bench-compare
 ```
 
-### Run specific package benchmarks
+### Using Go Test Directly
 
 ```bash
+# Run all benchmarks
+go test -bench=. -benchmem ./tools ./detector ./executor
+
+# Run specific package benchmarks
 go test -bench=. -benchmem ./tools
 go test -bench=. -benchmem ./detector
 go test -bench=. -benchmem ./executor
-```
 
-### Run specific benchmark
-
-```bash
+# Run specific benchmark
 go test -bench=BenchmarkFilterFilesByExtensions ./tools
 go test -bench=BenchmarkExecutor_ExecuteParallel ./executor
-```
 
-### Run with more iterations for accuracy
-
-```bash
+# Run with more iterations for accuracy
 go test -bench=. -benchtime=10s ./tools
 ```
 
-### Compare benchmarks (after changes)
+### Statistical Comparison with benchstat
 
 ```bash
+# Install benchstat
+go install golang.org/x/perf/cmd/benchstat@latest
+
 # Save baseline
 go test -bench=. -benchmem ./... > old.txt
 
 # Make changes...
 
-# Compare
+# Save new results
 go test -bench=. -benchmem ./... > new.txt
-benchcmp old.txt new.txt
+
+# Compare with statistical analysis
+benchstat old.txt new.txt
+```
+
+### CI/CD Integration
+
+Benchmarks run automatically on:
+- Every pull request (with comparison to base branch)
+- Pushes to master/main branches
+- Manual workflow dispatch
+
+**Features**:
+- Automatic baseline comparison
+- PR comments with performance analysis
+- Performance regression detection (>10% slower)
+- Benchmark results stored as artifacts (30 days)
+
+**Workflow**: `.github/workflows/benchmarks.yml`
+
+**Interpreting CI Results**:
+```
+name        old time/op  new time/op  delta
+Filter-20   453ns ± 2%   412ns ± 1%  -9.05%  (p=0.000 n=10+10)
+
+Positive delta (+X%): Performance regression (slower) ⚠️
+Negative delta (-X%): Performance improvement (faster) ✅
+~: No significant change
 ```
 
 ## Benchmark Maintenance
