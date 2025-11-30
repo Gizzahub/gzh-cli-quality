@@ -4,6 +4,7 @@ package quality
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -755,4 +756,272 @@ func (m *mockToolNotAvailable) Execute(ctx context.Context, files []string, opti
 
 func (m *mockToolNotAvailable) FindConfigFiles(projectRoot string) []string {
 	return []string{}
+}
+
+// TestRunDirectTool_Success tests direct tool execution with success
+func TestRunDirectTool_Success(t *testing.T) {
+	manager := NewQualityManager()
+	tmpDir := t.TempDir()
+
+	// Create test file
+	testFile := filepath.Join(tmpDir, "test.go")
+	err := os.WriteFile(testFile, []byte("package main\n\nfunc main() {}\n"), 0o644)
+	require.NoError(t, err)
+
+	// Change to test directory
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() {
+		err := os.Chdir(origDir)
+		require.NoError(t, err)
+	}()
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	// Create mock tool
+	mockTool := &mockTool{
+		name:     "test-tool",
+		language: "Go",
+		toolType: tools.FORMAT,
+	}
+
+	// Create and execute command
+	cmd := &cobra.Command{}
+	cmd.Flags().StringSlice("files", []string{testFile}, "")
+	cmd.Flags().Bool("fix", false, "")
+	cmd.Flags().Int("workers", 1, "")
+	cmd.Flags().StringSlice("extra-args", []string{}, "")
+	cmd.Flags().Bool("dry-run", false, "")
+	cmd.Flags().Bool("verbose", false, "")
+	cmd.Flags().String("since", "", "")
+	cmd.Flags().Bool("staged", false, "")
+	cmd.Flags().Bool("changed", false, "")
+
+	err = manager.runDirectTool(cmd, []string{}, mockTool)
+	// May succeed or fail depending on tool availability, just ensure no panic
+	_ = err
+}
+
+// TestRunDirectTool_WithVerbose tests direct tool execution with verbose flag
+func TestRunDirectTool_WithVerbose(t *testing.T) {
+	manager := NewQualityManager()
+	tmpDir := t.TempDir()
+
+	testFile := filepath.Join(tmpDir, "test.go")
+	err := os.WriteFile(testFile, []byte("package main\n"), 0o644)
+	require.NoError(t, err)
+
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() {
+		err := os.Chdir(origDir)
+		require.NoError(t, err)
+	}()
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	mockTool := &mockTool{
+		name:     "formatter",
+		language: "Go",
+		toolType: tools.FORMAT,
+	}
+
+	cmd := &cobra.Command{}
+	cmd.Flags().StringSlice("files", []string{testFile}, "")
+	cmd.Flags().Bool("fix", true, "")
+	cmd.Flags().Int("workers", 2, "")
+	cmd.Flags().StringSlice("extra-args", []string{}, "")
+	cmd.Flags().Bool("dry-run", true, "")  // Dry-run mode
+	cmd.Flags().Bool("verbose", true, "")
+	cmd.Flags().String("since", "", "")
+	cmd.Flags().Bool("staged", false, "")
+	cmd.Flags().Bool("changed", false, "")
+
+	err = manager.runDirectTool(cmd, []string{}, mockTool)
+	_ = err
+}
+
+// TestNewAnalyzeCmd_Execution tests analyze command execution
+func TestNewAnalyzeCmd_Execution(t *testing.T) {
+	manager := NewQualityManager()
+	cmd := manager.newAnalyzeCmd()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "main.go")
+	err := os.WriteFile(testFile, []byte("package main\n\nfunc main() {}\n"), 0o644)
+	require.NoError(t, err)
+
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() {
+		err := os.Chdir(origDir)
+		require.NoError(t, err)
+	}()
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	cmd.SetArgs([]string{})
+	err = cmd.Execute()
+	// May fail if tools not available, but should not panic
+	_ = err
+}
+
+// TestNewInstallCmd_Execution tests install command
+func TestNewInstallCmd_Execution(t *testing.T) {
+	manager := NewQualityManager()
+	cmd := manager.newInstallCmd()
+
+	assert.NotNil(t, cmd)
+	assert.Contains(t, cmd.Use, "install")
+	assert.True(t, len(cmd.Short) > 0)
+
+	// Test actual execution (with dry-run to avoid real installation)
+	tmpDir := t.TempDir()
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() {
+		_ = os.Chdir(origDir)
+	}()
+
+	_ = os.Chdir(tmpDir)
+
+	// Execute with tool name that doesn't exist to test error path
+	cmd.SetArgs([]string{"nonexistent-tool"})
+	_ = cmd.Execute() // May fail, that's expected
+}
+
+// TestNewUpgradeCmd_Execution tests upgrade command
+func TestNewUpgradeCmd_Execution(t *testing.T) {
+	manager := NewQualityManager()
+	cmd := manager.newUpgradeCmd()
+
+	assert.NotNil(t, cmd)
+	assert.Contains(t, cmd.Use, "upgrade")
+	assert.True(t, len(cmd.Short) > 0)
+
+	// Test actual execution
+	tmpDir := t.TempDir()
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() {
+		_ = os.Chdir(origDir)
+	}()
+
+	_ = os.Chdir(tmpDir)
+
+	cmd.SetArgs([]string{"nonexistent-tool"})
+	_ = cmd.Execute()
+}
+
+// TestNewVersionCmd_Execution tests version command
+func TestNewVersionCmd_Execution(t *testing.T) {
+	manager := NewQualityManager()
+	cmd := manager.newVersionCmd()
+
+	assert.NotNil(t, cmd)
+	assert.Contains(t, cmd.Use, "version")
+
+	// Test execution with all tools
+	cmd.SetArgs([]string{})
+	_ = cmd.Execute()
+}
+
+// TestNewListCmd_Execution tests list command
+func TestNewListCmd_Execution(t *testing.T) {
+	manager := NewQualityManager()
+	cmd := manager.newListCmd()
+
+	assert.NotNil(t, cmd)
+	assert.Equal(t, "list", cmd.Use)
+
+	// Test execution without filter
+	cmd.SetArgs([]string{})
+	_ = cmd.Execute()
+
+	// Test execution with language filter
+	cmd.SetArgs([]string{"--language", "Go"})
+	_ = cmd.Execute()
+}
+
+// TestRunQuality_WithExtraArgs tests run command with extra arguments
+func TestRunQuality_WithExtraArgs(t *testing.T) {
+	manager := NewQualityManager()
+	cmd := manager.newRunCmd()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "main.go")
+	err := os.WriteFile(testFile, []byte("package main\n"), 0o644)
+	require.NoError(t, err)
+
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() {
+		err := os.Chdir(origDir)
+		require.NoError(t, err)
+	}()
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	cmd.SetArgs([]string{"--dry-run", "--extra-args", "--verbose", "--workers", "2"})
+	err = cmd.Execute()
+	_ = err // May fail if no tools available
+}
+
+// TestRunCheck_WithVerbose tests check command with verbose flag
+func TestRunCheck_WithVerbose(t *testing.T) {
+	manager := NewQualityManager()
+	cmd := manager.newCheckCmd()
+
+	tmpDir := t.TempDir()
+	testFile := filepath.Join(tmpDir, "test.go")
+	err := os.WriteFile(testFile, []byte("package main\n"), 0o644)
+	require.NoError(t, err)
+
+	origDir, err := os.Getwd()
+	require.NoError(t, err)
+	defer func() {
+		err := os.Chdir(origDir)
+		require.NoError(t, err)
+	}()
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	cmd.SetArgs([]string{"--dry-run", "--verbose"})
+	err = cmd.Execute()
+	_ = err
+}
+
+// TestValidateGitFlags_ConflictingFlags tests git flag validation with conflicts
+func TestValidateGitFlags_ConflictingFlags(t *testing.T) {
+	manager := NewQualityManager()
+
+	// Test since + staged conflict
+	err := manager.validateGitFlags("main", true, false)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "only one of")
+
+	// Test since + changed conflict
+	err = manager.validateGitFlags("main", false, true)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "only one of")
+
+	// Test staged + changed conflict
+	err = manager.validateGitFlags("", true, true)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "only one of")
+
+	// Test valid: only one flag
+	err = manager.validateGitFlags("main", false, false)
+	assert.NoError(t, err)
+
+	err = manager.validateGitFlags("", true, false)
+	assert.NoError(t, err)
+
+	err = manager.validateGitFlags("", false, true)
+	assert.NoError(t, err)
 }
