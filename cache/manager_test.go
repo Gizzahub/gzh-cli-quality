@@ -14,15 +14,18 @@ import (
 
 func TestCacheManager_GetSet(t *testing.T) {
 	tmpDir := t.TempDir()
+	cacheDir := filepath.Join(tmpDir, "cache")
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
 
-	manager, err := NewCacheManager(tmpDir, 100*1024*1024, 24*time.Hour)
+	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
 		t.Fatalf("Failed to create cache manager: %v", err)
 	}
 	defer manager.Close()
 
 	// Create test file for key generation
-	testFile := filepath.Join(tmpDir, "test.go")
+	testFile := filepath.Join(filesDir, "test.go")
 	os.WriteFile(testFile, []byte("package main"), 0644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
@@ -61,14 +64,17 @@ func TestCacheManager_GetSet(t *testing.T) {
 
 func TestCacheManager_Invalidate(t *testing.T) {
 	tmpDir := t.TempDir()
+	cacheDir := filepath.Join(tmpDir, "cache")
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
 
-	manager, err := NewCacheManager(tmpDir, 100*1024*1024, 24*time.Hour)
+	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer manager.Close()
 
-	testFile := filepath.Join(tmpDir, "test.go")
+	testFile := filepath.Join(filesDir, "test.go")
 	os.WriteFile(testFile, []byte("package main"), 0644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
@@ -95,14 +101,17 @@ func TestCacheManager_Invalidate(t *testing.T) {
 
 func TestCacheManager_Stats(t *testing.T) {
 	tmpDir := t.TempDir()
+	cacheDir := filepath.Join(tmpDir, "cache")
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
 
-	manager, err := NewCacheManager(tmpDir, 100*1024*1024, 24*time.Hour)
+	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer manager.Close()
 
-	testFile := filepath.Join(tmpDir, "test.go")
+	testFile := filepath.Join(filesDir, "test.go")
 	os.WriteFile(testFile, []byte("package main"), 0644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
@@ -117,6 +126,9 @@ func TestCacheManager_Stats(t *testing.T) {
 	// Add entry
 	result := &tools.Result{Success: true}
 	manager.Set(key, result)
+
+	// Wait for async operations to complete
+	time.Sleep(50 * time.Millisecond)
 
 	// Stats should update
 	stats = manager.Stats()
@@ -141,15 +153,18 @@ func TestCacheManager_Stats(t *testing.T) {
 
 func TestCacheManager_Cleanup_Age(t *testing.T) {
 	tmpDir := t.TempDir()
+	cacheDir := filepath.Join(tmpDir, "cache")
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
 
 	// Set maxAge to 1 nanosecond for testing
-	manager, err := NewCacheManager(tmpDir, 100*1024*1024, 1*time.Nanosecond)
+	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 1*time.Nanosecond)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer manager.Close()
 
-	testFile := filepath.Join(tmpDir, "test.go")
+	testFile := filepath.Join(filesDir, "test.go")
 	os.WriteFile(testFile, []byte("package main"), 0644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
@@ -175,15 +190,18 @@ func TestCacheManager_Cleanup_Age(t *testing.T) {
 
 func TestCacheManager_Cleanup_Size(t *testing.T) {
 	tmpDir := t.TempDir()
+	cacheDir := filepath.Join(tmpDir, "cache")
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
 
 	// Set very small maxSize for testing
-	manager, err := NewCacheManager(tmpDir, 100, 24*time.Hour)
+	manager, err := NewCacheManager(cacheDir, 100, 24*time.Hour)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer manager.Close()
 
-	testFile := filepath.Join(tmpDir, "test.go")
+	testFile := filepath.Join(filesDir, "test.go")
 	os.WriteFile(testFile, []byte("package main"), 0644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
@@ -196,6 +214,9 @@ func TestCacheManager_Cleanup_Size(t *testing.T) {
 		manager.Set(key, result)
 		time.Sleep(10 * time.Millisecond) // Ensure different access times
 	}
+
+	// Wait for async cleanup from Set() to complete
+	time.Sleep(100 * time.Millisecond)
 
 	// Force cleanup
 	if err := manager.Cleanup(); err != nil {
@@ -211,14 +232,17 @@ func TestCacheManager_Cleanup_Size(t *testing.T) {
 
 func TestCacheManager_InvalidateAll(t *testing.T) {
 	tmpDir := t.TempDir()
+	cacheDir := filepath.Join(tmpDir, "cache")
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
 
-	manager, err := NewCacheManager(tmpDir, 100*1024*1024, 24*time.Hour)
+	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer manager.Close()
 
-	testFile := filepath.Join(tmpDir, "test.go")
+	testFile := filepath.Join(filesDir, "test.go")
 	os.WriteFile(testFile, []byte("package main"), 0644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
@@ -230,6 +254,9 @@ func TestCacheManager_InvalidateAll(t *testing.T) {
 		result := &tools.Result{Success: true}
 		manager.Set(key, result)
 	}
+
+	// Wait for async operations to complete
+	time.Sleep(50 * time.Millisecond)
 
 	stats := manager.Stats()
 	if stats.Entries != 3 {
@@ -255,14 +282,17 @@ func TestCacheManager_InvalidateAll(t *testing.T) {
 
 func TestCacheManager_OnlySuccessful(t *testing.T) {
 	tmpDir := t.TempDir()
+	cacheDir := filepath.Join(tmpDir, "cache")
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
 
-	manager, err := NewCacheManager(tmpDir, 100*1024*1024, 24*time.Hour)
+	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer manager.Close()
 
-	testFile := filepath.Join(tmpDir, "test.go")
+	testFile := filepath.Join(filesDir, "test.go")
 	os.WriteFile(testFile, []byte("package main"), 0644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
@@ -307,14 +337,17 @@ func TestCacheManager_Disabled(t *testing.T) {
 
 func TestCacheManager_AccessCount(t *testing.T) {
 	tmpDir := t.TempDir()
+	cacheDir := filepath.Join(tmpDir, "cache")
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
 
-	manager, err := NewCacheManager(tmpDir, 100*1024*1024, 24*time.Hour)
+	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer manager.Close()
 
-	testFile := filepath.Join(tmpDir, "test.go")
+	testFile := filepath.Join(filesDir, "test.go")
 	os.WriteFile(testFile, []byte("package main"), 0644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}

@@ -122,13 +122,13 @@ func (fs *FilesystemStorage) List() ([]string, error) {
 			return nil
 		}
 
-		// Convert path back to key
-		relPath, err := filepath.Rel(fs.basePath, path)
-		if err != nil {
-			return err
-		}
+		// Extract key from filename
+		// Path format: basePath/results/{tool}/{shard}/{key}.json
+		// We want just the {key} part without .json extension
+		filename := filepath.Base(path)
+		key := filename[:len(filename)-len(filepath.Ext(filename))]
 
-		keys = append(keys, relPath)
+		keys = append(keys, key)
 		return nil
 	})
 
