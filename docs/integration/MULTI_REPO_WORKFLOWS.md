@@ -1046,8 +1046,8 @@ Schedule quarterly reviews:
 
 - [CI Integration Guide](./CI_INTEGRATION.md) - CI/CD integration patterns
 - [Pre-commit Hooks Guide](./PRE_COMMIT_HOOKS.md) - Local quality checks
-- [Configuration Reference](./API.md) - Complete configuration options
-- [Usage Examples](./EXAMPLES.md) - Detailed usage examples
+- [Configuration Reference](../developer/API.md) - Complete configuration options
+- [Usage Examples](../user/02-examples.md) - Detailed usage examples
 
 ---
 

@@ -1261,7 +1261,7 @@ timeout: "5m"`
 ---
 
 **관련 문서**:
-- [사용 예제](./EXAMPLES.md)
-- [도구 추가하기](./ADDING_TOOLS.md)
-- [API 레퍼런스](./API.md)
+- [사용 예제](../user/02-examples.md)
+- [도구 추가하기](../developer/ADDING_TOOLS.md)
+- [API 레퍼런스](../developer/API.md)
 - [Pre-commit Hooks 가이드](./PRE_COMMIT_HOOKS.md)

@@ -267,9 +267,9 @@ git commit -m "test"  # 자동으로 품질 검사 실행
 
 ### 더 알아보기
 
-- 📖 [기본 사용법](./02-basic-usage.md) - 모든 명령어 상세 설명
+- 📖 [사용 예제](./02-examples.md) - 실전 워크플로우 패턴
 - ⚙️ [설정 가이드](./03-configuration.md) - 프로젝트 맞춤 설정
-- 🔄 [워크플로우](./04-workflows.md) - 실전 워크플로우 패턴
+- ❓ [FAQ](./06-faq.md) - 자주 묻는 질문 (30개)
 - 🔧 [문제 해결](./05-troubleshooting.md) - 흔한 문제와 해결 방법
 - 🤖 [CI/CD 통합](../integration/CI_INTEGRATION.md) - GitHub Actions, GitLab CI 등
 

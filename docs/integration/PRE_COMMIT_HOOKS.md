@@ -936,9 +936,9 @@ echo "Hook took $((END - START)) seconds"
 ## Related Documentation
 
 - [CI Integration Guide](./CI_INTEGRATION.md) - Integrate with CI/CD
-- [Usage Examples](./EXAMPLES.md) - Complete usage examples
-- [Configuration Reference](./API.md) - Configuration options
-- [hooks/README.md](../hooks/README.md) - Git hooks reference (Korean)
+- [Usage Examples](../user/02-examples.md) - Complete usage examples
+- [Configuration Reference](../developer/API.md) - Configuration options
+- [Multi-Repo Workflows](./MULTI_REPO_WORKFLOWS.md) - Large-scale project patterns
 
 ---
 
