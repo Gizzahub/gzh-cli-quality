@@ -228,6 +228,8 @@ gz-quality tool ruff --fix
 
 #### 실전 가이드
 - [사용 예제](./docs/user/02-examples.md) - 실전 워크플로우 패턴
+- **[Migration Guide](./docs/user/07-migration.md)** 🔄 - 기존 도구에서 전환하기 (837줄)
+- **[Cookbook](./docs/user/08-cookbook.md)** 📚 - 10가지 실전 레시피 (1143줄)
 - [CI/CD 통합](./docs/integration/CI_INTEGRATION.md) - GitHub Actions, GitLab CI, CircleCI
 - [Pre-commit Hooks](./docs/integration/PRE_COMMIT_HOOKS.md) - 커밋 전 자동 검사
 - [멀티 리포지토리](./docs/integration/MULTI_REPO_WORKFLOWS.md) - 대규모 프로젝트
