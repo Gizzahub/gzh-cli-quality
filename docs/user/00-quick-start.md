@@ -261,6 +261,103 @@ git commit -m "test"  # 자동으로 품질 검사 실행
 
 ---
 
+## 워크플로우 시각화
+
+### 일반적인 개발 워크플로우
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      개발 → 커밋 워크플로우                        │
+└─────────────────────────────────────────────────────────────────┘
+
+  1. 코드 작성
+     ↓
+  2. 변경 파일 확인
+     $ git status
+     ↓
+  3. 빠른 포매팅 (변경 파일만)
+     $ gz-quality run --changed --format-only --fix
+     ↓
+  4. 전체 품질 검사
+     $ gz-quality check --changed
+     ↓
+  5. 이슈가 있다면?
+     ├─→ [Yes] → 수정 후 3단계로
+     └─→ [No]  → 다음 단계로
+     ↓
+  6. Stage & Commit
+     $ git add .
+     $ git commit -m "feat: add feature"
+     ↓
+  7. Push
+     $ git push
+```
+
+### 커밋 전 체크 워크플로우
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Pre-commit 품질 체크                           │
+└─────────────────────────────────────────────────────────────────┘
+
+  $ git add <files>
+     ↓
+  $ git commit -m "message"
+     ↓
+  [Pre-commit Hook 실행]
+     ↓
+  $ gz-quality run --staged --fix
+     ↓
+     ├─ 포매팅 ─→ gofumpt, black, prettier (자동 수정)
+     ↓
+     ├─ 린팅 ─→ golangci-lint, ruff, eslint (검사만)
+     ↓
+     ├─ 결과 집계
+     ↓
+     ├─→ [✅ 성공] → 커밋 진행
+     └─→ [❌ 실패] → 커밋 중단
+                    ↓
+                    수정 필요
+                    $ git add <fixed-files>
+                    $ git commit -m "message"
+```
+
+### PR 검토 워크플로우
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      PR 생성 전 검증                              │
+└─────────────────────────────────────────────────────────────────┘
+
+  1. 브랜치 작업 완료
+     $ git checkout feature/new-feature
+     ↓
+  2. main 브랜치 이후 변경사항 검사
+     $ gz-quality check --since main
+     ↓
+  3. 리포트 생성 (CI/CD용)
+     $ gz-quality check --since main \
+       --report json --output quality-report.json
+     ↓
+  4. 결과 확인
+     ├─→ [✅ 모두 통과] → PR 생성
+     │                   $ gh pr create
+     │                   ↓
+     │                   CI/CD 자동 검증
+     │                   ↓
+     │                   코드 리뷰
+     │                   ↓
+     │                   병합
+     │
+     └─→ [⚠️ 이슈 발견] → 수정 필요
+                        ↓
+                        $ gz-quality run --since main --fix
+                        ↓
+                        2단계로
+```
+
+---
+
 ## 다음 단계
 
 축하합니다! 이제 gzh-cli-quality의 기본 사용법을 익혔습니다.
