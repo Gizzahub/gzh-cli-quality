@@ -271,8 +271,8 @@ rm .pre-commit-config.yaml
 
 ## 관련 문서
 
-- [CI 통합 가이드](../docs/CI_INTEGRATION.md)
-- [사용 예제](../docs/EXAMPLES.md)
+- [CI 통합 가이드](../docs/integration/CI_INTEGRATION.md)
+- [사용 예제](../docs/user/02-examples.md)
 - [기여 가이드](../CONTRIBUTING.md)
 
 ---

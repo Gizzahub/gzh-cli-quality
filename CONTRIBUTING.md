@@ -167,7 +167,7 @@ func TestNewTool(t *testing.T) {
 
 ## 새로운 도구 추가
 
-새로운 품질 도구를 추가하는 방법은 [docs/ADDING_TOOLS.md](docs/ADDING_TOOLS.md)를 참조하세요.
+새로운 품질 도구를 추가하는 방법은 [docs/developer/ADDING_TOOLS.md](docs/developer/ADDING_TOOLS.md)를 참조하세요.
 
 ### 체크리스트
 
