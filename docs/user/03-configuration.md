@@ -49,7 +49,7 @@ gz-quality init --force
 
 # 커스텀 경로에 생성
 gz-quality init --output custom-config.yml
-```
+```bash
 
 **생성되는 내용**:
 - 감지된 언어 기반 도구 설정
@@ -64,7 +64,7 @@ vim .gzquality.yml
 
 # 또는
 touch .gzquality.yml
-```
+```yaml
 
 ---
 
@@ -88,7 +88,7 @@ default_workers: 2
 
 # 순차 실행
 default_workers: 1
-```
+```bash
 
 **권장값**:
 - 개발 환경: CPU 코어 수
@@ -108,7 +108,7 @@ timeout: "30m"
 
 # 빠른 체크
 timeout: "2m"
-```
+```yaml
 
 **형식**: `"<숫자><단위>"` (단위: `s`, `m`, `h`)
 
@@ -135,7 +135,7 @@ tools:
     env:                       # 환경 변수
       KEY: "value"
     timeout: "<시간>"          # 도구별 타임아웃
-```
+```yaml
 
 ### enabled (활성화)
 
@@ -153,7 +153,7 @@ tools:
   golangci-lint:
     enabled: true
     # CI에서만 전체 검사
-```
+```yaml
 
 ### priority (우선순위)
 
@@ -180,7 +180,7 @@ tools:
   # 타입체커: 우선순위 3 (가장 나중)
   tsc:
     priority: 3
-```
+```yaml
 
 **권장 우선순위**:
 - 10: 포매터 (gofumpt, black, prettier, rustfmt)
@@ -202,7 +202,7 @@ tools:
 
   eslint:
     config_file: "config/.eslintrc.json"  # 하위 디렉토리
-```
+```yaml
 
 **자동 감지**: 설정하지 않으면 도구의 기본 위치에서 자동 탐색
 - golangci-lint: `.golangci.yml`, `.golangci.yaml`
@@ -226,7 +226,7 @@ tools:
 
   prettier:
     args: ["--single-quote", "--trailing-comma=all"]
-```
+```yaml
 
 ### env (환경 변수)
 
@@ -242,7 +242,7 @@ tools:
   ruff:
     env:
       RUFF_CACHE_DIR: "/tmp/ruff-cache"
-```
+```yaml
 
 ### timeout (도구별 타임아웃)
 
@@ -258,7 +258,7 @@ tools:
   # 빠른 도구는 짧게
   gofumpt:
     timeout: "30s"
-```
+```yaml
 
 ---
 
@@ -274,7 +274,7 @@ languages:
     enabled: true|false        # 언어 처리 여부
     preferred_tools: [<도구목록>]  # 사용할 도구 (순서대로)
     extensions: [<확장자목록>]  # 파일 확장자
-```
+```yaml
 
 ### Go 설정
 
@@ -290,7 +290,7 @@ languages:
       - .go
       - .mod
       - .sum
-```
+```yaml
 
 ### Python 설정
 
@@ -305,7 +305,7 @@ languages:
     extensions:
       - .py
       - .pyi
-```
+```yaml
 
 ### JavaScript/TypeScript 설정
 
@@ -333,7 +333,7 @@ languages:
       - .tsx
       - .mts
       - .cts
-```
+```yaml
 
 ### Rust 설정
 
@@ -346,7 +346,7 @@ languages:
       - clippy
     extensions:
       - .rs
-```
+```bash
 
 ---
 
@@ -362,7 +362,7 @@ languages:
 exclude:
   - "<glob 패턴>"
   - "<glob 패턴>"
-```
+```bash
 
 **일반적인 제외 패턴**:
 
@@ -403,7 +403,7 @@ exclude:
   # 미니파이
   - "**/*.min.js"
   - "**/*.min.css"
-```
+```bash
 
 **패턴 문법**:
 - `*`: 임의의 문자열 (슬래시 제외)
@@ -430,7 +430,7 @@ exclude:
 
   # 복수 확장자
   - "**/*.{min.js,min.css,map}"
-```
+```bash
 
 ### include (포함 패턴)
 
@@ -442,7 +442,7 @@ exclude:
 
 include:
   - "generated/important.go"  # exclude되어도 포함
-```
+```bash
 
 **사용 예**:
 
@@ -456,7 +456,7 @@ exclude:
 include:
   - "src/api_gen.go"         # 이 파일은 검사
   - "models/*.generated.ts"  # 이 디렉토리는 검사
-```
+```yaml
 
 ---
 
@@ -495,7 +495,7 @@ exclude:
   - "**/*.pb.go"
   - "**/*_gen.go"
   - "testdata/**"
-```
+```yaml
 
 ### 예제 2: Python 데이터 사이언스
 
@@ -532,7 +532,7 @@ exclude:
   - "data/**"          # 데이터 파일
   - "models/**"        # 학습된 모델
   - "notebooks/old/**" # 오래된 노트북
-```
+```yaml
 
 ### 예제 3: React + TypeScript 프론트엔드
 
@@ -574,7 +574,7 @@ exclude:
   - "public/static/**"
   - "**/*.min.js"
   - "**/*.bundle.js"
-```
+```yaml
 
 ### 예제 4: 멀티 언어 모노레포
 
@@ -630,7 +630,7 @@ exclude:
   # 서비스별
   - "services/legacy/**"      # 레거시 서비스 제외
   - "services/*/testdata/**"  # 모든 서비스의 testdata
-```
+```yaml
 
 ---
 
@@ -653,13 +653,13 @@ tools:
     timeout: "10m"
 
   # 로컬과 동일한 포매터 설정
-```
+```bash
 
 **사용법**:
 ```bash
 # CI에서
 gz-quality check --config .gzquality.ci.yml --since main
-```
+```bash
 
 ### 환경별 설정
 
@@ -672,7 +672,7 @@ gz-quality check --config .gzquality.ci.yml --since main
 
 # Pre-commit
 .gzquality.precommit.yml # 초고속 검사
-```
+```yaml
 
 **Pre-commit 예**:
 ```yaml
@@ -693,7 +693,7 @@ tools:
     enabled: false
   eslint:
     enabled: false
-```
+```yaml
 
 ### 팀별 설정
 
@@ -717,7 +717,7 @@ exclude:
   # 팀 표준 제외 패턴
   - "vendor/**"
   - "node_modules/**"
-```
+```bash
 
 ### 도구 버전 고정
 
@@ -730,7 +730,7 @@ exclude:
     go install mvdan.cc/gofumpt@v0.6.0
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
     pip install black==24.1.0 ruff==0.1.14
-```
+```python
 
 ---
 
@@ -744,7 +744,7 @@ yamllint .gzquality.yml
 
 # 또는
 python3 -c "import yaml; yaml.safe_load(open('.gzquality.yml'))"
-```
+```bash
 
 ### 설정 테스트
 
@@ -754,7 +754,7 @@ gz-quality run --dry-run --verbose
 
 # 특정 파일로 테스트
 gz-quality run --files="main.go" --dry-run
-```
+```bash
 
 ### 설정 디버깅
 
@@ -764,7 +764,7 @@ gz-quality run --verbose
 
 # 특정 도구만 테스트
 gz-quality tool gofumpt --dry-run --verbose
-```
+```yaml
 
 ---
 
@@ -788,7 +788,7 @@ tools:
   black:
     enabled: true
     args: ["--line-length=100"]
-```
+```bash
 
 **Make에서**:
 ```makefile
@@ -804,7 +804,7 @@ lint:
     ruff check .
 
 # 이후 (gz-quality run 하나로 통합)
-```
+```bash
 
 ---
 

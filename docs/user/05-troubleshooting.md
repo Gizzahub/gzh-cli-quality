@@ -22,7 +22,7 @@ gzh-cli-quality 사용 중 발생하는 흔한 문제와 해결 방법을 안내
 ```bash
 $ gz-quality version
 bash: gz-quality: command not found
-```
+```bash
 
 **원인**: `$PATH`에 Go bin 디렉토리가 없음
 
@@ -43,12 +43,12 @@ source ~/.zshrc
 
 # 3. 확인
 gz-quality version
-```
+```bash
 
 **대안**: 절대 경로로 실행
 ```bash
 $(go env GOPATH)/bin/gz-quality version
-```
+```bash
 
 ---
 
@@ -58,7 +58,7 @@ $(go env GOPATH)/bin/gz-quality version
 ```bash
 $ go version
 bash: go: command not found
-```
+```bash
 
 **원인**: Go가 설치되지 않음
 
@@ -68,21 +68,21 @@ bash: go: command not found
 ```bash
 brew install go
 go version
-```
+```bash
 
 **Linux (Ubuntu/Debian)**:
 ```bash
 sudo apt update
 sudo apt install golang-go
 go version
-```
+```bash
 
 **공식 바이너리 설치**:
 1. https://go.dev/dl/ 에서 다운로드
 2. 설치 후 PATH 설정:
 ```bash
 export PATH=$PATH:/usr/local/go/bin
-```
+```bash
 
 ---
 
@@ -92,7 +92,7 @@ export PATH=$PATH:/usr/local/go/bin
 ```bash
 $ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.0
 go: github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.0: invalid version
-```
+```bash
 
 **원인**: 존재하지 않는 버전 태그
 
@@ -107,7 +107,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 
 # 3. 특정 커밋 설치
 go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@commit-hash
-```
+```bash
 
 ---
 
@@ -119,7 +119,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@commit-hash
 ```bash
 $ gz-quality run
 Error: No quality tools found for this project
-```
+```bash
 
 **원인**: 도구가 설치되지 않았거나 감지되지 않음
 
@@ -143,7 +143,7 @@ pip install black ruff pylint
 
 # JavaScript 도구
 npm install -g prettier eslint typescript
-```
+```bash
 
 ---
 
@@ -153,7 +153,7 @@ npm install -g prettier eslint typescript
 ```bash
 $ gz-quality run
 Error: fork/exec /usr/local/bin/gofumpt: permission denied
-```
+```bash
 
 **원인**: 도구 실행 권한 없음
 
@@ -171,7 +171,7 @@ ls -la /usr/local/bin/gofumpt
 
 # 4. 필요시 재설치
 go install mvdan.cc/gofumpt@latest
-```
+```bash
 
 ---
 
@@ -201,7 +201,7 @@ exclude:
 
 # 4. 특정 파일 강제 포함
 gz-quality run --files="tests/test_main.py"
-```
+```yaml
 
 ---
 
@@ -238,7 +238,7 @@ gz-quality run --format-only --fix
 
 # 5. 캐시 활용 (도구별 설정)
 # golangci-lint는 자동으로 캐시 사용
-```
+```bash
 
 **추가 팁**:
 ```bash
@@ -247,7 +247,7 @@ time gz-quality run
 
 # 병목 지점 찾기
 gz-quality run --verbose 2>&1 | grep "duration"
-```
+```bash
 
 ---
 
@@ -257,7 +257,7 @@ gz-quality run --verbose 2>&1 | grep "duration"
 ```bash
 $ gz-quality run
 fatal error: out of memory
-```
+```bash
 
 **원인**: 대용량 파일 또는 너무 많은 병렬 워커
 
@@ -281,7 +281,7 @@ exclude:
 # 4. 시스템 메모리 확인
 free -h  # Linux
 vm_stat  # macOS
-```
+```bash
 
 ---
 
@@ -313,7 +313,7 @@ golangci-lint cache status
 
 # 4. 캐시 정리 후 재실행
 golangci-lint cache clean
-```
+```yaml
 
 ---
 
@@ -347,7 +347,7 @@ line-length = 88
 # pyproject.toml
 [tool.ruff]
 format = true
-```
+```bash
 
 ---
 
@@ -372,7 +372,7 @@ npm install --save-dev eslint-config-prettier
 # 3. 확인
 gz-quality run --format-only --fix
 gz-quality check
-```
+```bash
 
 ---
 
@@ -382,7 +382,7 @@ gz-quality check
 ```bash
 $ gz-quality tool tsc
 Error: Cannot find module 'typescript'
-```
+```bash
 
 **해결 방법**:
 
@@ -398,7 +398,7 @@ npx tsc --init
 
 # 4. 실행
 gz-quality tool tsc
-```
+```bash
 
 ---
 
@@ -410,7 +410,7 @@ gz-quality tool tsc
 ```bash
 $ gz-quality run --staged
 No files to process
-```
+```bash
 
 **원인**: Staged 파일이 없음
 
@@ -428,7 +428,7 @@ gz-quality run --staged
 
 # 4. 변경된 파일로 테스트
 gz-quality run --changed
-```
+```bash
 
 ---
 
@@ -438,7 +438,7 @@ gz-quality run --changed
 ```bash
 $ gz-quality run --since main
 Error: invalid commit reference: main
-```
+```bash
 
 **원인**: 브랜치 이름이 다름 (master vs main)
 
@@ -458,7 +458,7 @@ gz-quality run --since abc1234
 
 # 4. 상대 참조 사용
 gz-quality run --since HEAD~5
-```
+```bash
 
 ---
 
@@ -468,7 +468,7 @@ gz-quality run --since HEAD~5
 ```bash
 $ gz-quality run --staged
 Error: git command not found
-```
+```bash
 
 **해결 방법**:
 
@@ -485,7 +485,7 @@ git --version
 
 # 3. PATH 설정 (필요시)
 export PATH="/usr/bin:$PATH"
-```
+```yaml
 
 ---
 
@@ -519,7 +519,7 @@ tools:
 
 # 4. 실행 계획 확인
 gz-quality run --dry-run --verbose
-```
+```yaml
 
 ---
 
@@ -548,7 +548,7 @@ golangci-lint run --config .golangci.yml --fast
 
 # 4. Verbose 모드로 확인
 gz-quality run --verbose
-```
+```bash
 
 ---
 
@@ -560,7 +560,7 @@ gz-quality run --verbose
 ```yaml
 # GitHub Actions 로그
 Error: gofumpt: command not found
-```
+```bash
 
 **해결 방법**:
 
@@ -594,7 +594,7 @@ jobs:
 
       - name: Run quality check
         run: gz-quality check --since origin/${{ github.base_ref }}
-```
+```bash
 
 ---
 
@@ -618,7 +618,7 @@ jobs:
             --since origin/main \
             --timeout 20m \
             --workers 4
-```
+```bash
 
 ```yaml
 # 2. 변경된 파일만 검사
@@ -626,7 +626,7 @@ jobs:
   run: |
     # PR의 변경 파일만
     gz-quality check --since origin/${{ github.base_ref }}
-```
+```yaml
 
 ```yaml
 # 3. 느린 도구 비활성화
@@ -643,7 +643,7 @@ jobs:
 
 - name: Run quality check
   run: gz-quality check
-```
+```bash
 
 ---
 
@@ -653,7 +653,7 @@ jobs:
 ```bash
 $ docker run myimage gz-quality run
 Error: permission denied
-```
+```bash
 
 **해결 방법**:
 
@@ -676,7 +676,7 @@ WORKDIR /app
 
 # 실행
 CMD ["gz-quality", "run"]
-```
+```bash
 
 ```bash
 # Docker Compose
@@ -686,7 +686,7 @@ services:
     user: "1000:1000"  # UID:GID
     volumes:
       - ./:/app:rw      # 읽기/쓰기 권한
-```
+```bash
 
 ---
 
@@ -699,12 +699,12 @@ services:
 gz-quality version
 go version
 git --version
-```
+```bash
 
 ### 2단계: Verbose 모드 실행
 ```bash
 gz-quality run --verbose --dry-run
-```
+```bash
 
 ### 3단계: 설정 초기화
 ```bash
@@ -716,7 +716,7 @@ gz-quality init
 
 # 테스트
 gz-quality run
-```
+```bash
 
 ### 4단계: 캐시 정리
 ```bash
@@ -728,7 +728,7 @@ golangci-lint cache clean
 
 # 재설치
 go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
-```
+```bash
 
 ### 5단계: 이슈 리포트
 
@@ -740,7 +740,7 @@ gz-quality version > debug.txt
 go version >> debug.txt
 git --version >> debug.txt
 gz-quality run --verbose --dry-run >> debug.txt 2>&1
-```
+```bash
 
 https://github.com/Gizzahub/gzh-cli-quality/issues/new 에 `debug.txt` 내용 첨부
 

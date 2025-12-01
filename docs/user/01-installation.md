@@ -49,7 +49,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.1
 
 # 설치 확인
 gz-quality version
-```
+```bash
 
 **PATH 설정**:
 
@@ -70,7 +70,7 @@ set -Ua fish_user_paths (go env GOPATH)/bin
 # 확인
 which gz-quality
 gz-quality version
-```
+```bash
 
 ---
 
@@ -91,7 +91,7 @@ make build
 
 # 4. (선택) 시스템에 설치
 make install  # $GOPATH/bin에 설치
-```
+```bash
 
 **빌드 옵션**:
 
@@ -106,7 +106,7 @@ go build -o build/gz-quality ./cmd/gz-quality
 GOOS=linux GOARCH=amd64 go build -o build/gz-quality-linux-amd64 ./cmd/gz-quality
 GOOS=darwin GOARCH=arm64 go build -o build/gz-quality-darwin-arm64 ./cmd/gz-quality
 GOOS=windows GOARCH=amd64 go build -o build/gz-quality-windows-amd64.exe ./cmd/gz-quality
-```
+```bash
 
 ---
 
@@ -127,7 +127,7 @@ sudo mv gz-quality-linux-amd64 /usr/local/bin/gz-quality
 
 # 확인
 gz-quality version
-```
+```bash
 
 **macOS (Intel)**:
 ```bash
@@ -142,7 +142,7 @@ sudo mv gz-quality-darwin-amd64 /usr/local/bin/gz-quality
 
 # 확인
 gz-quality version
-```
+```bash
 
 **macOS (Apple Silicon)**:
 ```bash
@@ -157,7 +157,7 @@ sudo mv gz-quality-darwin-arm64 /usr/local/bin/gz-quality
 
 # 확인
 gz-quality version
-```
+```bash
 
 **Windows (PowerShell)**:
 ```powershell
@@ -169,7 +169,7 @@ Move-Item gz-quality.exe C:\Windows\System32\
 
 # 확인
 gz-quality version
-```
+```bash
 
 ---
 
@@ -186,7 +186,7 @@ docker run --rm -v $(pwd):/workspace gz-quality:latest run
 
 # Alias 설정
 alias gz-quality='docker run --rm -v $(pwd):/workspace gz-quality:latest'
-```
+```bash
 
 **Docker Compose**:
 
@@ -199,12 +199,12 @@ services:
     volumes:
       - .:/workspace
     working_dir: /workspace
-```
+```bash
 
 ```bash
 # 실행
 docker-compose run --rm quality run
-```
+```bash
 
 ---
 
@@ -227,7 +227,7 @@ gz-quality install --language Python
 
 # 모든 지원 도구 설치
 gz-quality install --all
-```
+```bash
 
 ---
 
@@ -241,7 +241,7 @@ go install mvdan.cc/gofumpt@latest
 
 # 확인
 gofumpt -version
-```
+```bash
 
 #### goimports (필수)
 
@@ -251,7 +251,7 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 # 확인
 goimports -h
-```
+```bash
 
 #### golangci-lint (필수)
 
@@ -268,7 +268,7 @@ Move-Item golangci-lint.exe $env:GOPATH\bin\
 
 # 확인
 golangci-lint --version
-```
+```bash
 
 ---
 
@@ -288,7 +288,7 @@ uv tool install black
 
 # 확인
 black --version
-```
+```bash
 
 #### ruff (필수)
 
@@ -304,7 +304,7 @@ uv tool install ruff
 
 # 확인
 ruff --version
-```
+```bash
 
 #### pylint (선택)
 
@@ -317,7 +317,7 @@ pipx install pylint
 
 # 확인
 pylint --version
-```
+```bash
 
 **Python 도구 PATH 설정**:
 
@@ -327,7 +327,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # pipx로 설치한 경우 (자동으로 PATH 추가됨)
 pipx ensurepath
-```
+```bash
 
 ---
 
@@ -341,7 +341,7 @@ node --version
 
 # npm 버전 확인
 npm --version
-```
+```bash
 
 **Node.js 설치 (필요시)**:
 
@@ -355,7 +355,7 @@ sudo apt-get install -y nodejs
 
 # Windows (Chocolatey)
 choco install nodejs
-```
+```bash
 
 #### prettier (필수)
 
@@ -368,7 +368,7 @@ npm install --save-dev prettier
 
 # 확인
 prettier --version
-```
+```bash
 
 #### eslint (필수)
 
@@ -381,7 +381,7 @@ npm install --save-dev eslint
 
 # 확인
 eslint --version
-```
+```bash
 
 #### TypeScript (TypeScript 프로젝트 전용)
 
@@ -394,7 +394,7 @@ npm install --save-dev typescript
 
 # 확인
 tsc --version
-```
+```bash
 
 ---
 
@@ -406,7 +406,7 @@ tsc --version
 # Rust 버전 확인
 rustc --version
 cargo --version
-```
+```bash
 
 **Rust 설치 (필요시)**:
 
@@ -416,7 +416,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Windows
 # https://rustup.rs/ 에서 rustup-init.exe 다운로드 후 실행
-```
+```bash
 
 #### rustfmt (필수)
 
@@ -427,7 +427,7 @@ rustup component add rustfmt
 # 확인
 rustfmt --version
 cargo fmt --version
-```
+```bash
 
 #### clippy (필수)
 
@@ -437,7 +437,7 @@ rustup component add clippy
 
 # 확인
 cargo clippy --version
-```
+```bash
 
 ---
 
@@ -458,11 +458,11 @@ gz-quality list
 
 # 설치된 도구만 표시
 gz-quality list --installed
-```
+```bash
 
 ### 출력 예시
 
-```
+```bash
 gzh-cli-quality v0.1.1
 
 설치된 도구:
@@ -476,7 +476,7 @@ gzh-cli-quality v0.1.1
   tsc           5.3.3       /usr/local/bin/tsc
 
 ✅ 8개 도구 설치됨
-```
+```bash
 
 ---
 
@@ -497,7 +497,7 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 # 영구 적용 (.bashrc, .zshrc 등에 추가)
 echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.bashrc
 source ~/.bashrc
-```
+```json
 
 ---
 
@@ -510,13 +510,13 @@ source ~/.bashrc
 **macOS**:
 ```bash
 brew install go
-```
+```bash
 
 **Linux (Ubuntu/Debian)**:
 ```bash
 sudo apt update
 sudo apt install golang-go
-```
+```bash
 
 **Windows**:
 1. https://go.dev/dl/ 에서 설치 프로그램 다운로드
@@ -544,7 +544,7 @@ echo $PATH
 
 # 4. 수동 설치 (예: gofumpt)
 go install mvdan.cc/gofumpt@latest
-```
+```bash
 
 ---
 
@@ -565,7 +565,7 @@ pip install --user black ruff
 # npm은 prefix 설정
 npm config set prefix ~/.npm-global
 export PATH=~/.npm-global/bin:$PATH
-```
+```bash
 
 **Windows**:
 - PowerShell을 관리자 권한으로 실행
@@ -583,7 +583,7 @@ export PATH=~/.npm-global/bin:$PATH
 xattr -d com.apple.quarantine /usr/local/bin/gz-quality
 
 # 2. 또는 시스템 환경설정에서 "보안 및 개인 정보 보호" → "일반" → "확인 없이 열기"
-```
+```bash
 
 ---
 
@@ -603,7 +603,7 @@ sudo systemctl start docker
 
 # 현재 사용자를 docker 그룹에 추가
 sudo usermod -aG docker $USER
-```
+```bash
 
 ---
 
@@ -620,7 +620,7 @@ cd gzh-cli-quality
 git pull
 make build
 make install
-```
+```bash
 
 ### 품질 도구 업그레이드
 
@@ -637,7 +637,7 @@ go install mvdan.cc/gofumpt@latest           # Go 도구
 pip install --upgrade black ruff             # Python 도구
 npm update -g prettier eslint typescript     # Node 도구
 rustup update                                # Rust 도구
-```
+```bash
 
 ---
 
@@ -654,7 +654,7 @@ rm /usr/local/bin/gz-quality
 
 # Docker 이미지 제거
 docker rmi gz-quality:latest
-```
+```bash
 
 ### 품질 도구 제거
 
@@ -674,7 +674,7 @@ npm uninstall -g prettier eslint typescript
 
 # Rust 도구
 rustup component remove rustfmt clippy
-```
+```bash
 
 ---
 

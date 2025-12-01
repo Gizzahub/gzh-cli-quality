@@ -30,7 +30,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 
 # 확인
 gz-quality version
-```
+```bash
 
 **상세**: [설치 가이드](./01-installation.md) 참조
 
@@ -56,7 +56,7 @@ gz-quality version
 ```bash
 # 설정 파일 생성
 gz-quality init
-```
+```bash
 
 **상세**: [설정 가이드](./03-configuration.md) 참조
 
@@ -74,7 +74,7 @@ gz-quality run
 
 # 자동 수정 적용
 gz-quality run --fix
-```
+```bash
 
 ---
 
@@ -88,7 +88,7 @@ gz-quality run --staged --fix
 
 # 커밋
 git commit -m "feat: add new feature"
-```
+```bash
 
 ---
 
@@ -102,7 +102,7 @@ gz-quality check --since main
 
 # 리포트 생성
 gz-quality check --since main --report json --output report.json
-```
+```bash
 
 ---
 
@@ -119,7 +119,7 @@ gz-quality tool ruff --fix
 
 # TypeScript 타입 체크
 gz-quality tool tsc
-```
+```bash
 
 ---
 
@@ -133,7 +133,7 @@ gz-quality check
 
 # Staged 파일 검사
 gz-quality check --staged
-```
+```yaml
 
 ---
 
@@ -150,7 +150,7 @@ tools:
   golangci-lint:
     enabled: true
     timeout: "5m"   # 또는 타임아웃 설정
-```
+```bash
 
 ---
 
@@ -171,7 +171,7 @@ source ~/.bashrc
 # 추가 (zsh)
 echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
 source ~/.zshrc
-```
+```bash
 
 **상세**: [문제 해결 가이드 Q1](./05-troubleshooting.md#q1-gz-quality-command-not-found-에러)
 
@@ -190,7 +190,7 @@ gz-quality install
 
 # 확인
 gz-quality list --installed
-```
+```yaml
 
 ---
 
@@ -209,7 +209,7 @@ gz-quality run --workers 8
 tools:
   pylint:
     enabled: false
-```
+```bash
 
 **상세**: [성능 최적화](./05-troubleshooting.md#q7-실행이-너무-느림-5분-이상)
 
@@ -225,7 +225,7 @@ exclude:
   - "vendor/**"
   - "**/*_gen.go"
   - "dist/**"
-```
+```bash
 
 ---
 
@@ -239,7 +239,7 @@ exclude:
     go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
     gz-quality install
     gz-quality check --since origin/${{ github.base_ref }}
-```
+```bash
 
 **상세**: [CI/CD 통합 가이드](../integration/CI_INTEGRATION.md)
 
@@ -260,7 +260,7 @@ EOF
 
 # 실행 권한
 chmod +x .git/hooks/pre-commit
-```
+```bash
 
 **상세**: [Pre-commit Hooks 가이드](../integration/PRE_COMMIT_HOOKS.md)
 
@@ -280,7 +280,7 @@ git commit -m "chore: add quality config"
 
 # 팀원들은 자동으로 사용
 gz-quality run
-```
+```yaml
 
 ---
 
@@ -304,7 +304,7 @@ exclude:
   - "**/node_modules/**"
   - "**/vendor/**"
   - "**/dist/**"
-```
+```bash
 
 **예제**: [설정 가이드 - 멀티 언어 모노레포](./03-configuration.md#예제-4-멀티-언어-모노레포)
 
@@ -320,7 +320,7 @@ docker build -t gz-quality https://github.com/Gizzahub/gzh-cli-quality.git
 
 # 실행
 docker run --rm -v $(pwd):/workspace gz-quality run
-```
+```bash
 
 **상세**: [설치 가이드 - Docker](./01-installation.md#방법-4-docker)
 
@@ -339,7 +339,7 @@ docker run --rm -v $(pwd):/workspace gz-quality run
 
 # 실행
 gz-quality check --config .gzquality.ci.yml
-```
+```bash
 
 ---
 
@@ -377,13 +377,13 @@ lint:
     golangci-lint run
     ruff check .
     eslint .
-```
+```bash
 
 **이후 (gz-quality)**:
 ```bash
 # 하나의 명령어로 통합
 gz-quality run
-```
+```bash
 
 **장점**:
 - 병렬 실행으로 더 빠름
@@ -434,7 +434,7 @@ gz-quality check --since main
 gz-quality run --workers 16
 
 # 3. 캐싱 활용 (golangci-lint 자동)
-```
+```bash
 
 **예제**: [멀티 리포지토리 워크플로우](../integration/MULTI_REPO_WORKFLOWS.md)
 

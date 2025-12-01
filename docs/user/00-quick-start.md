@@ -20,7 +20,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 
 # 설치 확인
 gz-quality version
-```
+```bash
 
 ### 방법 2: 소스에서 빌드
 
@@ -34,7 +34,7 @@ make build
 
 # 바이너리는 build/gz-quality에 생성됨
 ./build/gz-quality version
-```
+```bash
 
 ### 설치 확인
 
@@ -44,7 +44,7 @@ gz-quality version
 
 # 출력 예시:
 # gzh-cli-quality v0.1.1
-```
+```bash
 
 **문제 발생 시**: [문제 해결 가이드](./05-troubleshooting.md#설치-문제) 참조
 
@@ -60,10 +60,10 @@ cd /path/to/your/project
 
 # 프로젝트 분석 (어떤 도구가 필요한지 확인)
 gz-quality analyze
-```
+```bash
 
 **출력 예시**:
-```
+```bash
 📊 프로젝트 분석 결과
 
 감지된 언어:
@@ -78,7 +78,7 @@ gz-quality analyze
   Python:
     ✓ black (설치됨)
     ✗ ruff (미설치)
-```
+```bash
 
 ### 필요한 도구 설치
 
@@ -89,7 +89,7 @@ gz-quality install
 # 또는 특정 도구만 설치
 gz-quality install golangci-lint
 gz-quality install ruff
-```
+```bash
 
 ### 첫 품질 검사
 
@@ -99,10 +99,10 @@ gz-quality run
 
 # 상세 출력 보기
 gz-quality run --verbose
-```
+```bash
 
 **출력 예시**:
-```
+```python
 🔍 프로젝트 분석 중...
 📋 실행 계획: 4개 도구, 23개 파일
 ⚡ 실행 중 (4 workers)...
@@ -114,7 +114,7 @@ gz-quality run --verbose
     main.py:18:1 error: missing docstring (D100)
     config.py:5:80 warning: line too long (E501)
 ✨ 완료: 2.4s, 23 files, 3 issues
-```
+```bash
 
 ---
 
@@ -131,7 +131,7 @@ git add README.md
 
 # staged 파일만 검사
 gz-quality run --staged
-```
+```bash
 
 ### 자동 수정 적용
 
@@ -144,14 +144,14 @@ git add .
 
 # 린팅만 검사 (수정 없이)
 gz-quality check --staged
-```
+```bash
 
 ### 커밋
 
 ```bash
 # 이슈가 없으면 커밋
 git commit -m "docs: update README"
-```
+```bash
 
 ---
 
@@ -172,7 +172,7 @@ gz-quality check --changed
 # 4. 커밋
 git add .
 git commit -m "feat: add new feature"
-```
+```bash
 
 ### 패턴 2: PR 전 전체 검사
 
@@ -182,7 +182,7 @@ gz-quality check --since main
 
 # 리포트 생성 (CI/CD 용)
 gz-quality check --since main --report json --output quality-report.json
-```
+```bash
 
 ### 패턴 3: 특정 도구만 실행
 
@@ -195,7 +195,7 @@ gz-quality tool ruff
 
 # golangci-lint에 추가 옵션 전달
 gz-quality tool golangci-lint -- --enable-all
-```
+```bash
 
 ---
 
@@ -208,7 +208,7 @@ gz-quality tool golangci-lint -- --enable-all
 gz-quality init
 
 # .gzquality.yml 파일이 생성됨
-```
+```yaml
 
 ### 기본 설정 예시
 
@@ -229,7 +229,7 @@ exclude:
   - "vendor/**"
   - "node_modules/**"
   - ".git/**"
-```
+```bash
 
 **설정 상세**: [설정 가이드](./03-configuration.md) 참조
 
@@ -255,7 +255,7 @@ chmod +x pre-commit
 # 테스트
 git add .
 git commit -m "test"  # 자동으로 품질 검사 실행
-```
+```bash
 
 **상세 가이드**: [Pre-commit Hooks](../integration/PRE_COMMIT_HOOKS.md) 참조
 

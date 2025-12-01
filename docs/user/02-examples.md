@@ -25,7 +25,7 @@ gz-quality run --verbose
 
 # 실행 계획만 확인 (실제 실행 안 함)
 gz-quality run --dry-run
-```
+```bash
 
 ### 2. 자동 수정 적용
 
@@ -35,7 +35,7 @@ gz-quality run --fix
 
 # 포매팅만 수정 (린팅은 검사만)
 gz-quality run --format-only --fix
-```
+```bash
 
 ### 3. 린팅만 실행 (코드 수정 없이 검사만)
 
@@ -45,7 +45,7 @@ gz-quality check
 
 # 특정 파일만 검사
 gz-quality check --files="*.go,*.py"
-```
+```bash
 
 ---
 
@@ -62,7 +62,7 @@ gz-quality run --staged --fix
 
 # 3. 이슈가 없으면 커밋
 git commit -m "feat: implement new feature"
-```
+```bash
 
 **팁**: Pre-commit hook으로 자동화 ([CI 통합](#ci-통합) 참조)
 
@@ -74,7 +74,7 @@ gz-quality check --since main
 
 # 리포트 생성
 gz-quality check --since main --report json --output pr-quality-report.json
-```
+```bash
 
 ### 작업 중인 파일만 검사
 
@@ -85,7 +85,7 @@ gz-quality check --changed
 # 특정 커밋 이후 변경 파일
 gz-quality check --since HEAD~5
 gz-quality check --since v1.0.0
-```
+```bash
 
 ---
 
@@ -105,7 +105,7 @@ gz-quality check              # golangci-lint
 
 # golangci-lint에 추가 옵션 전달
 gz-quality tool golangci-lint -- --enable-all
-```
+```yaml
 
 **프로젝트 설정 (`.gzquality.yml`)**:
 
@@ -126,7 +126,7 @@ tools:
   gofumpt:
     enabled: true
     priority: 10
-```
+```bash
 
 ### Python 프로젝트
 
@@ -139,7 +139,7 @@ gz-quality tool pylint
 # isort 대신 ruff 사용
 gz-quality run --format-only  # black + ruff format
 gz-quality check              # ruff lint + pylint
-```
+```yaml
 
 **프로젝트 설정**:
 
@@ -166,7 +166,7 @@ exclude:
   - "venv/**"
   - ".venv/**"
   - "__pycache__/**"
-```
+```bash
 
 ### JavaScript/TypeScript 프로젝트
 
@@ -178,7 +178,7 @@ gz-quality tool tsc
 
 # 특정 디렉토리만
 gz-quality run --files="src/**/*.ts"
-```
+```yaml
 
 **프로젝트 설정**:
 
@@ -208,7 +208,7 @@ exclude:
   - "node_modules/**"
   - "dist/**"
   - "build/**"
-```
+```bash
 
 ### Rust 프로젝트
 
@@ -219,7 +219,7 @@ gz-quality tool clippy
 
 # cargo-fmt 사용
 gz-quality tool cargo-fmt
-```
+```yaml
 
 **프로젝트 설정**:
 
@@ -240,7 +240,7 @@ tools:
 
 exclude:
   - "target/**"
-```
+```bash
 
 ### 멀티 언어 모노레포
 
@@ -255,7 +255,7 @@ cd services/frontend && gz-quality run
 # 특정 언어만
 gz-quality run --files="**/*.go"
 gz-quality run --files="**/*.ts,**/*.tsx"
-```
+```yaml
 
 **루트 설정 (`.gzquality.yml`)**:
 
@@ -280,7 +280,7 @@ exclude:
   - ".venv/**"
   - "dist/**"
   - "build/**"
-```
+```bash
 
 ---
 
@@ -295,7 +295,7 @@ gz-quality run --workers 16
 # 타임아웃 설정
 export GZQ_TIMEOUT=10m
 gz-quality run
-```
+```yaml
 
 **설정 파일**:
 
@@ -303,7 +303,7 @@ gz-quality run
 default_workers: 16
 timeout: "10m"
 parallel_execution: true
-```
+```bash
 
 ### 리포트 생성
 
@@ -316,7 +316,7 @@ gz-quality check --report html --output quality-report.html
 
 # Markdown 리포트
 gz-quality check --report markdown --output quality-report.md
-```
+```yaml
 
 ### 특정 도구 비활성화
 
@@ -328,7 +328,7 @@ tools:
   golangci-lint:
     enabled: true
     config_file: ".golangci.yml"
-```
+```bash
 
 ### 파일 제외 패턴
 
@@ -352,7 +352,7 @@ exclude:
   # 테스트 데이터
   - "testdata/**"
   - "fixtures/**"
-```
+```bash
 
 ---
 
@@ -371,7 +371,7 @@ gz-quality install prettier
 
 # 3. 모든 도구 설치
 gz-quality install
-```
+```bash
 
 ### 특정 도구만 실행
 
@@ -382,7 +382,7 @@ gz-quality tool eslint --changed
 
 # 추가 인자 전달
 gz-quality tool golangci-lint -- --enable-all --max-issues-per-linter 0
-```
+```bash
 
 ### 성능 문제
 
@@ -398,7 +398,7 @@ gz-quality run --timeout 15m
 
 # 4. 병렬 실행 비활성화
 gz-quality run --workers 1
-```
+```bash
 
 ### 설정 파일 디버깅
 
@@ -412,7 +412,7 @@ gz-quality init
 
 # 3. 실행 계획 확인
 gz-quality run --dry-run --verbose
-```
+```bash
 
 ### 도구 버전 확인
 
@@ -426,7 +426,7 @@ gz-quality upgrade ruff
 
 # 모든 도구 업그레이드
 gz-quality upgrade
-```
+```bash
 
 ---
 
@@ -443,7 +443,7 @@ gz-quality check --staged
 
 # PR 전: since main 전체 검사
 gz-quality check --since main --report json
-```
+```bash
 
 ### 2. 점진적 도입
 
@@ -456,7 +456,7 @@ gz-quality check  # 설정 파일에서 strict 모드 끄기
 
 # Phase 3: 엄격한 린팅
 gz-quality check  # 설정 파일에서 strict 모드 켜기
-```
+```bash
 
 ### 3. 대규모 코드베이스
 
@@ -469,7 +469,7 @@ gz-quality check --report json
 
 # 3단계: 점진적으로 전체 수정
 gz-quality run --fix
-```
+```bash
 
 ---
 
