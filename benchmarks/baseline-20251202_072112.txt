@@ -1,0 +1,60 @@
+gz-quality Performance Baseline Benchmark
+==========================================
+
+Date: 2025년 12월  2일 화요일 07시 21분 12초 KST
+Version: v0.2.0-4-g2926703
+Commit: 2926703
+Platform: Darwin arm64
+CPU: Apple M1 Ultra
+Memory: 68719476736
+Go Version: go version go1.25.4 darwin/arm64
+
+Project Statistics
+------------------
+
+File counts:
+  Go files: 34
+  Python files: 1
+  TypeScript files: 0
+  JavaScript files: 1
+
+  Total Go lines: 12744
+
+Benchmark Scenarios
+-------------------
+
+Scenario 1: Full check (all files)
+Command: gz-quality run
+
+  Execution time: 0m1.328s
+  Exit code: 0
+
+Scenario 2: Staged files check
+Command: gz-quality run --staged
+
+  Execution time: 0m0.060s
+
+Scenario 3: Check only (no modifications)
+Command: gz-quality check
+
+  Execution time: 0m0.299s
+
+Scenario 4: Single tool execution
+Command: gz-quality tool golangci-lint
+
+  Execution time: 0m0.076s
+
+Scenario 5: Worker count impact
+
+  Workers: 1
+  Command: gz-quality run --workers 1
+    Execution time: 0m0.933s
+
+  Workers: 2
+  Command: gz-quality run --workers 2
+    Execution time: 0m0.592s
+
+  Workers: 4
+  Command: gz-quality run --workers 4
+    Execution time: 0m0.414s
+
