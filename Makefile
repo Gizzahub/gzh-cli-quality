@@ -1,11 +1,23 @@
-.PHONY: help build install test test-integration test-all bench bench-compare bench-save lint clean
+.PHONY: help build build-all install test test-integration test-all test-coverage bench bench-compare bench-save lint fmt vet quality clean deps run
 
 # Variables
-BINARY_NAME=gz-quality
+BINARY_NAME=gzh-quality
+INSTALL_NAME=gz-quality
+BUILD_DIR=build
+MAIN_PATH=cmd/quality/main.go
 VERSION?=dev
 COMMIT?=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE?=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS=-ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
+
+# Go parameters
+GOCMD=go
+GOBUILD=$(GOCMD) build
+GOTEST=$(GOCMD) test
+GOINSTALL=$(GOCMD) install
+GOMOD=$(GOCMD) mod
+GOFMT=$(GOCMD) fmt
+GOVET=$(GOCMD) vet
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -15,35 +27,51 @@ help: ## Show this help message
 
 build: ## Build the binary
 	@echo "Building $(BINARY_NAME)..."
-	go build $(LDFLAGS) -o build/$(BINARY_NAME) ./cmd/gz-quality
+	@mkdir -p $(BUILD_DIR)
+	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
+	@echo "Binary built: $(BUILD_DIR)/$(BINARY_NAME)"
 
-install: ## Install the binary to $GOPATH/bin
-	@echo "Installing $(BINARY_NAME)..."
-	go install $(LDFLAGS) ./cmd/gz-quality
+build-all: ## Build for multiple platforms
+	@echo "Building for multiple platforms..."
+	@mkdir -p $(BUILD_DIR)
+	GOOS=linux GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 $(MAIN_PATH)
+	GOOS=darwin GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 $(MAIN_PATH)
+	GOOS=darwin GOARCH=arm64 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 $(MAIN_PATH)
+	@echo "Built binaries:"
+	@ls -lh $(BUILD_DIR)/
+
+install: build ## Install the binary to $GOPATH/bin
+	@echo "Installing $(INSTALL_NAME)..."
+	@mkdir -p $(GOPATH)/bin
+	@cp $(BUILD_DIR)/$(BINARY_NAME) $(GOPATH)/bin/$(INSTALL_NAME)
+	@echo "✅ Installed $(INSTALL_NAME) to $(GOPATH)/bin/$(INSTALL_NAME)"
 
 test: ## Run unit tests
 	@echo "Running unit tests..."
-	go test -v -race -coverprofile=coverage.out ./...
+	$(GOTEST) -v -race -coverprofile=coverage.out ./...
 
 test-integration: build ## Run integration tests
 	@echo "Running integration tests..."
-	go test -v -tags=integration ./tests/integration/...
+	$(GOTEST) -v -tags=integration ./tests/integration/...
 
 test-all: test test-integration ## Run all tests (unit + integration)
 	@echo "✅ All tests passed"
 
 test-coverage: test ## Run tests with coverage report
 	@echo "Generating coverage report..."
-	go tool cover -html=coverage.out -o coverage.html
+	$(GOCMD) tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report: coverage.html"
+	@command -v open >/dev/null 2>&1 && open coverage.html || \
+	 command -v xdg-open >/dev/null 2>&1 && xdg-open coverage.html || \
+	 echo "Please open coverage.html manually"
 
 bench: ## Run performance benchmarks
 	@echo "Running benchmarks..."
-	go test -bench=. -benchmem ./tools ./detector ./executor
+	$(GOTEST) -bench=. -benchmem ./tools ./detector ./executor
 
 bench-save: ## Run benchmarks and save results to bench.txt
 	@echo "Running benchmarks and saving to bench.txt..."
-	go test -bench=. -benchmem ./tools ./detector ./executor | tee bench.txt
+	$(GOTEST) -bench=. -benchmem ./tools ./detector ./executor | tee bench.txt
 	@echo "✅ Benchmark results saved to bench.txt"
 
 bench-compare: ## Compare current benchmarks with saved baseline (requires bench.txt)
@@ -53,7 +81,7 @@ bench-compare: ## Compare current benchmarks with saved baseline (requires bench
 		exit 1; \
 	fi
 	@echo "Comparing with baseline (bench.txt)..."
-	@go test -bench=. -benchmem ./tools ./detector ./executor > bench-new.txt 2>&1
+	@$(GOTEST) -bench=. -benchmem ./tools ./detector ./executor > bench-new.txt 2>&1
 	@echo ""
 	@echo "=== Benchmark Comparison ==="
 	@echo "Baseline: bench.txt"
@@ -70,18 +98,29 @@ lint: ## Run linters
 
 fmt: ## Format code
 	@echo "Formatting code..."
-	go fmt ./...
+	$(GOFMT) ./...
 	@command -v gofumpt >/dev/null 2>&1 && gofumpt -w . || echo "gofumpt not installed, using go fmt only"
+
+vet: ## Run go vet
+	@echo "Running go vet..."
+	$(GOVET) ./...
 
 quality: fmt lint test ## Run all quality checks (format, lint, test)
 	@echo "✅ All quality checks passed"
 
-vet: ## Run go vet
-	@echo "Running go vet..."
-	go vet ./...
-
 clean: ## Clean build artifacts
 	@echo "Cleaning..."
-	rm -rf build/ coverage.out coverage.html
+	@rm -rf $(BUILD_DIR)/ coverage.out coverage.html bench.txt bench-new.txt
+	@echo "Cleaned"
+
+deps: ## Download and tidy dependencies
+	@echo "Downloading dependencies..."
+	$(GOMOD) download
+	$(GOMOD) tidy
+	@echo "✅ Dependencies updated"
+
+run: ## Run the application
+	@echo "Running $(BINARY_NAME)..."
+	$(GOCMD) run $(MAIN_PATH)
 
 .DEFAULT_GOAL := help
