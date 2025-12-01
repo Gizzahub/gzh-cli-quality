@@ -16,6 +16,42 @@
 
 ## GitHub Actions
 
+### 상태 배지 추가
+
+워크플로우 실행 상태를 README에 표시:
+
+```markdown
+[![Quality Check](https://github.com/username/repo/actions/workflows/quality.yml/badge.svg)](https://github.com/username/repo/actions/workflows/quality.yml)
+```
+
+**배지 종류**:
+
+```markdown
+<!-- 기본 상태 배지 -->
+![Quality Check](https://github.com/username/repo/actions/workflows/quality.yml/badge.svg)
+
+<!-- 특정 브랜치 -->
+![Quality Check](https://github.com/username/repo/actions/workflows/quality.yml/badge.svg?branch=main)
+
+<!-- 커스텀 배지 (shields.io) -->
+![Code Quality](https://img.shields.io/github/actions/workflow/status/username/repo/quality.yml?label=code%20quality&logo=github)
+
+<!-- 품질 점수 배지 -->
+![Quality Score](https://img.shields.io/badge/quality-A+-brightgreen.svg)
+![Issues](https://img.shields.io/badge/issues-0-success.svg)
+```
+
+**실제 예시**:
+```markdown
+# My Project
+
+[![Quality Check](https://github.com/myorg/myrepo/actions/workflows/quality.yml/badge.svg)](https://github.com/myorg/myrepo/actions)
+[![Code Quality](https://img.shields.io/badge/quality-passing-brightgreen.svg)](https://github.com/myorg/myrepo/actions)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen.svg)](./coverage.html)
+```
+
+---
+
 ### 기본 워크플로우
 
 `.github/workflows/quality.yml`:
@@ -116,6 +152,29 @@ steps:
 ---
 
 ## GitLab CI
+
+### 상태 배지 추가
+
+GitLab 파이프라인 상태를 README에 표시:
+
+```markdown
+[![Pipeline](https://gitlab.com/username/project/badges/main/pipeline.svg)](https://gitlab.com/username/project/-/pipelines)
+[![Coverage](https://gitlab.com/username/project/badges/main/coverage.svg)](https://gitlab.com/username/project/-/graphs/main/charts)
+```
+
+**커스텀 배지**:
+```markdown
+<!-- shields.io를 통한 GitLab 배지 -->
+![GitLab Pipeline](https://img.shields.io/gitlab/pipeline/username/project?branch=main&label=quality)
+![GitLab Coverage](https://img.shields.io/gitlab/pipeline-coverage/username/project?branch=main)
+
+<!-- 품질 배지 -->
+![Quality](https://img.shields.io/badge/quality-passing-success.svg)
+```
+
+---
+
+### 기본 설정
 
 `.gitlab-ci.yml`:
 
