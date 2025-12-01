@@ -474,6 +474,6 @@ gz-quality run --fix
 ---
 
 **관련 문서**:
-- [CI 통합 가이드](./CI_INTEGRATION.md)
-- [도구 추가하기](./ADDING_TOOLS.md)
-- [API 레퍼런스](./API.md)
+- [CI 통합 가이드](../integration/CI_INTEGRATION.md)
+- [도구 추가하기](../developer/ADDING_TOOLS.md)
+- [API 레퍼런스](../developer/API.md)

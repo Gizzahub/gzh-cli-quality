@@ -588,7 +588,7 @@ for result := range resultChan {
 2. `BaseTool` 임베딩으로 공통 기능 재사용
 3. `registerAllTools()`에서 레지스트리 등록
 
-상세 가이드: [docs/ADDING_TOOLS.md](docs/ADDING_TOOLS.md)
+상세 가이드: [ADDING_TOOLS.md](./ADDING_TOOLS.md)
 
 ### 7.2 새 리포트 형식 추가
 

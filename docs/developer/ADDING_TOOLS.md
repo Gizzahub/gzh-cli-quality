@@ -456,4 +456,4 @@ func TestBiomeTool_Execute_Integration(t *testing.T) {
 ---
 
 *최종 수정: 2025-11-27*
-*참조: [ARCHITECTURE.md](../ARCHITECTURE.md), [API.md](./API.md)*
+*참조: [ARCHITECTURE.md](./ARCHITECTURE.md), [API.md](./API.md)*
