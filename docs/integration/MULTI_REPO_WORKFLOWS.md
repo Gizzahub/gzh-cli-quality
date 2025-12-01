@@ -993,6 +993,7 @@ tools:
   golangci-lint:
     args:
       - "--disable=errcheck"  # FIXME: Re-enable after addressing errors
+      # (Note: This FIXME is an intentional example of documenting temporary workarounds)
 
 # Document why override is needed
 # Issue: https://github.com/org/backend-api/issues/123

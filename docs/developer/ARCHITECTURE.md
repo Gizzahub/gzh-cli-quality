@@ -592,7 +592,8 @@ for result := range resultChan {
 
 ### 7.2 새 리포트 형식 추가
 
-1. `ReportGenerator`에 `WriteXXX()` 메서드 추가
+1. `ReportGenerator`에 `WriteXXX()` 메서드 추가 (예: `WriteJSON()`, `WriteHTML()`)
+   - Note: `XXX`는 플레이스홀더이며 실제 형식명으로 대체 (JSON, HTML, XML 등)
 2. CLI에 `--report xxx` 옵션 추가
 3. 템플릿 기반 생성 권장
 
