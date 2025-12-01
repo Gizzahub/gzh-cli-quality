@@ -208,13 +208,15 @@ gz-quality tool ruff --fix
 
 #### 시작하기
 - **[5분 빠른 시작](./docs/user/00-quick-start.md)** ⭐ - 설치부터 첫 실행까지
-- **[문제 해결 FAQ](./docs/user/05-troubleshooting.md)** 🔧 - 흔한 문제와 해결 방법
+- **[설치 가이드](./docs/user/01-installation.md)** 📦 - 상세 설치 방법 (모든 플랫폼)
+- **[설정 가이드](./docs/user/03-configuration.md)** ⚙️ - `.gzquality.yml` 완벽 가이드
+- **[문제 해결](./docs/user/05-troubleshooting.md)** 🔧 - FAQ 및 트러블슈팅
 
-#### 상세 가이드
-- [사용 예제](./docs/user/02-examples.md) - 실전 사용 예제 및 워크플로우 패턴
-- [CI/CD 통합](./docs/integration/CI_INTEGRATION.md) - GitHub Actions, GitLab CI, CircleCI 등
-- [Pre-commit Hooks](./docs/integration/PRE_COMMIT_HOOKS.md) - 커밋 전 자동 품질 검사
-- [멀티 리포지토리](./docs/integration/MULTI_REPO_WORKFLOWS.md) - 대규모 프로젝트 관리
+#### 실전 가이드
+- [사용 예제](./docs/user/02-examples.md) - 실전 워크플로우 패턴
+- [CI/CD 통합](./docs/integration/CI_INTEGRATION.md) - GitHub Actions, GitLab CI, CircleCI
+- [Pre-commit Hooks](./docs/integration/PRE_COMMIT_HOOKS.md) - 커밋 전 자동 검사
+- [멀티 리포지토리](./docs/integration/MULTI_REPO_WORKFLOWS.md) - 대규모 프로젝트
 
 ### 🤖 LLM/AI 도구용 문서 (English)
 
