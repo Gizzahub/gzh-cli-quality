@@ -58,7 +58,7 @@ make install
 
 ```bash
 # 최신 안정 버전
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.1
+go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.2.0
 
 # 또는 최신 개발 버전
 go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
