@@ -200,24 +200,42 @@ gz-quality tool ruff --fix
 ✨ 완료: 2.9s, 15 files, 2 issues
 ```
 
-## 문서
+## 📚 문서
 
-### 사용자 가이드
+> **처음 사용하시나요?** → [5분 빠른 시작 가이드](./docs/user/00-quick-start.md)로 시작하세요!
 
-- [docs/EXAMPLES.md](./docs/EXAMPLES.md) - 사용 예제 및 워크플로우
-- [docs/CI_INTEGRATION.md](./docs/CI_INTEGRATION.md) - CI/CD 통합 가이드 (GitHub Actions, GitLab CI, CircleCI 등)
-- [docs/PRE_COMMIT_HOOKS.md](./docs/PRE_COMMIT_HOOKS.md) - Pre-commit Hooks 완벽 가이드
-- [docs/MULTI_REPO_WORKFLOWS.md](./docs/MULTI_REPO_WORKFLOWS.md) - 멀티 리포지토리 워크플로우 패턴
+### 👤 사용자 가이드 (한국어)
 
-### 개발자 문서
+#### 시작하기
+- **[5분 빠른 시작](./docs/user/00-quick-start.md)** ⭐ - 설치부터 첫 실행까지
+- **[문제 해결 FAQ](./docs/user/05-troubleshooting.md)** 🔧 - 흔한 문제와 해결 방법
 
-- [PRD.md](./PRD.md) - 제품 요구사항
-- [REQUIREMENTS.md](./REQUIREMENTS.md) - 상세 요구사항
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - 시스템 아키텍처
-- [docs/API.md](./docs/API.md) - API 레퍼런스
-- [docs/ADDING_TOOLS.md](./docs/ADDING_TOOLS.md) - 도구 추가 가이드
-- [docs/TESTING.md](./docs/TESTING.md) - 테스트 가이드 (76.2% 커버리지)
-- [docs/BENCHMARKS.md](./docs/BENCHMARKS.md) - 성능 벤치마크 (27개 벤치마크, 기준 성능 메트릭)
+#### 상세 가이드
+- [사용 예제](./docs/EXAMPLES.md) - 실전 사용 예제 및 워크플로우 패턴
+- [CI/CD 통합](./docs/CI_INTEGRATION.md) - GitHub Actions, GitLab CI, CircleCI 등
+- [Pre-commit Hooks](./docs/PRE_COMMIT_HOOKS.md) - 커밋 전 자동 품질 검사
+- [멀티 리포지토리](./docs/MULTI_REPO_WORKFLOWS.md) - 대규모 프로젝트 관리
+
+### 🤖 LLM/AI 도구용 문서 (English)
+
+- **[Context](./docs/llm/CONTEXT.md)** - Project overview, architecture, and integration
+- **[Capabilities](./docs/llm/CAPABILITIES.md)** - Complete feature reference with 23+ execution modes
+
+### 🔧 개발자 문서
+
+#### 설계 및 아키텍처
+- [제품 요구사항 (PRD)](./PRD.md) - 제품 비전 및 요구사항
+- [상세 요구사항](./REQUIREMENTS.md) - 기능/비기능 요구사항 명세
+- [시스템 아키텍처](./ARCHITECTURE.md) - 컴포넌트 설계 및 데이터 플로우
+
+#### API 및 확장
+- [API 레퍼런스](./docs/API.md) - CLI 명령어 및 Go 패키지 API
+- [도구 추가 가이드](./docs/ADDING_TOOLS.md) - 새로운 품질 도구 통합 방법
+
+#### 품질 및 성능
+- [테스트 가이드](./docs/TESTING.md) - 테스트 전략 및 커버리지 (76.2%)
+- [성능 벤치마크](./docs/BENCHMARKS.md) - 27개 벤치마크 및 성능 메트릭
+- [커버리지 리포트](./docs/COVERAGE.md) - 패키지별 테스트 커버리지 상세
 
 ## 개발
 
