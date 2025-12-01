@@ -133,6 +133,8 @@ gz-quality init
 
 ### `.gzquality.yml` 예시
 
+> 📄 **전체 설정 예시**: [`.gzquality.yml.example`](./.gzquality.yml.example) 파일 참조 (372줄, 5가지 시나리오 포함)
+
 ```yaml
 default_workers: 4
 timeout: "10m"
