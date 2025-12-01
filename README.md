@@ -210,7 +210,8 @@ gz-quality tool ruff --fix
 - **[5분 빠른 시작](./docs/user/00-quick-start.md)** ⭐ - 설치부터 첫 실행까지
 - **[설치 가이드](./docs/user/01-installation.md)** 📦 - 상세 설치 방법 (모든 플랫폼)
 - **[설정 가이드](./docs/user/03-configuration.md)** ⚙️ - `.gzquality.yml` 완벽 가이드
-- **[문제 해결](./docs/user/05-troubleshooting.md)** 🔧 - FAQ 및 트러블슈팅
+- **[FAQ](./docs/user/06-faq.md)** ❓ - 자주 묻는 질문 (30개)
+- **[문제 해결](./docs/user/05-troubleshooting.md)** 🔧 - 상세 트러블슈팅
 
 #### 실전 가이드
 - [사용 예제](./docs/user/02-examples.md) - 실전 워크플로우 패턴
