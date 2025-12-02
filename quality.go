@@ -4,6 +4,7 @@
 package quality
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -167,6 +168,30 @@ func NewQualityCmd() *cobra.Command {
 	return cmd
 }
 
+// addCommonExecutionFlags adds common execution flags to a command.
+func addCommonExecutionFlags(cmd *cobra.Command) {
+	cmd.Flags().StringSliceP("files", "f", nil, "특정 파일들만 처리")
+	cmd.Flags().IntP("workers", "w", runtime.NumCPU(), "병렬 실행 워커 수")
+	cmd.Flags().StringSlice("extra-args", nil, "도구에 전달할 추가 인수")
+	cmd.Flags().Bool("dry-run", false, "실제 실행하지 않고 계획만 표시")
+	cmd.Flags().BoolP("verbose", "v", false, "상세 출력")
+	cmd.Flags().String("report", "", "리포트 생성 (json, html, markdown)")
+	cmd.Flags().String("output", "", "리포트 출력 파일 경로")
+}
+
+// addGitFilterFlags adds Git-based filtering flags to a command.
+func addGitFilterFlags(cmd *cobra.Command) {
+	cmd.Flags().String("since", "", "특정 커밋 이후 변경된 파일만 처리 (예: HEAD~1, main)")
+	cmd.Flags().Bool("staged", false, "Git staged 파일만 처리")
+	cmd.Flags().Bool("changed", false, "변경된 파일만 처리 (staged + modified + untracked)")
+}
+
+// addCacheFlags adds cache control flags to a command.
+func addCacheFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool("cache", true, "결과 캐싱 활성화 (기본: 활성)")
+	cmd.Flags().Bool("no-cache", false, "결과 캐싱 비활성화")
+}
+
 // newRunCmd creates the run subcommand.
 func (m *QualityManager) newRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -179,82 +204,90 @@ func (m *QualityManager) newRunCmd() *cobra.Command {
 		},
 	}
 
-	// Add flags
-	cmd.Flags().StringSliceP("files", "f", nil, "특정 파일들만 처리")
+	// Common flags
+	addCommonExecutionFlags(cmd)
+	addGitFilterFlags(cmd)
+	addCacheFlags(cmd)
+
+	// Run-specific flags
 	cmd.Flags().BoolP("fix", "x", false, "자동 수정 적용 (지원하는 도구만)")
 	cmd.Flags().Bool("format-only", false, "포매팅만 실행")
 	cmd.Flags().Bool("lint-only", false, "린팅만 실행")
-	cmd.Flags().IntP("workers", "w", runtime.NumCPU(), "병렬 실행 워커 수")
-	cmd.Flags().StringSlice("extra-args", nil, "도구에 전달할 추가 인수")
-	cmd.Flags().Bool("dry-run", false, "실제 실행하지 않고 계획만 표시")
-	cmd.Flags().BoolP("verbose", "v", false, "상세 출력")
-	cmd.Flags().String("report", "", "리포트 생성 (json, html, markdown)")
-	cmd.Flags().String("output", "", "리포트 출력 파일 경로")
-
-	// Git-based incremental processing flags
-	cmd.Flags().String("since", "", "특정 커밋 이후 변경된 파일만 처리 (예: HEAD~1, main)")
-	cmd.Flags().Bool("staged", false, "Git staged 파일만 처리")
-	cmd.Flags().Bool("changed", false, "변경된 파일만 처리 (staged + modified + untracked)")
-
-	// Cache control flags
-	cmd.Flags().Bool("cache", true, "결과 캐싱 활성화 (기본: 활성)")
-	cmd.Flags().Bool("no-cache", false, "결과 캐싱 비활성화")
 
 	return cmd
 }
 
-// runQuality executes the main quality command logic.
-func (m *QualityManager) runQuality(cmd *cobra.Command, _ []string) error {
-	ctx := cmd.Context()
+// executionOptions holds common options for run/check commands.
+type executionOptions struct {
+	files        []string
+	fix          bool
+	formatOnly   bool
+	lintOnly     bool
+	workers      int
+	extraArgs    []string
+	dryRun       bool
+	verbose      bool
+	reportFormat string
+	outputPath   string
+	since        string
+	staged       bool
+	changed      bool
+	cacheEnabled bool
+	// Display customization
+	emptyMessage  string
+	executePrefix string
+}
 
-	// Get flags
-	files, _ := cmd.Flags().GetStringSlice("files")
-	fix, _ := cmd.Flags().GetBool("fix")
-	formatOnly, _ := cmd.Flags().GetBool("format-only")
-	lintOnly, _ := cmd.Flags().GetBool("lint-only")
-	workers, _ := cmd.Flags().GetInt("workers")
-	extraArgs, _ := cmd.Flags().GetStringSlice("extra-args")
-	dryRun, _ := cmd.Flags().GetBool("dry-run")
-	verbose, _ := cmd.Flags().GetBool("verbose")
-	reportFormat, _ := cmd.Flags().GetString("report")
-	outputPath, _ := cmd.Flags().GetString("output")
+// parseExecutionOptions parses common flags from a cobra command.
+func parseExecutionOptions(cmd *cobra.Command) (*executionOptions, error) {
+	opts := &executionOptions{}
+
+	opts.files, _ = cmd.Flags().GetStringSlice("files")
+	opts.fix, _ = cmd.Flags().GetBool("fix")
+	opts.formatOnly, _ = cmd.Flags().GetBool("format-only")
+	opts.lintOnly, _ = cmd.Flags().GetBool("lint-only")
+	opts.workers, _ = cmd.Flags().GetInt("workers")
+	opts.extraArgs, _ = cmd.Flags().GetStringSlice("extra-args")
+	opts.dryRun, _ = cmd.Flags().GetBool("dry-run")
+	opts.verbose, _ = cmd.Flags().GetBool("verbose")
+	opts.reportFormat, _ = cmd.Flags().GetString("report")
+	opts.outputPath, _ = cmd.Flags().GetString("output")
 
 	// Git-based flags
-	since, _ := cmd.Flags().GetString("since")
-	staged, _ := cmd.Flags().GetBool("staged")
-	changed, _ := cmd.Flags().GetBool("changed")
+	opts.since, _ = cmd.Flags().GetString("since")
+	opts.staged, _ = cmd.Flags().GetBool("staged")
+	opts.changed, _ = cmd.Flags().GetBool("changed")
 
 	// Cache control flags
 	cacheEnabled, _ := cmd.Flags().GetBool("cache")
 	noCache, _ := cmd.Flags().GetBool("no-cache")
+	opts.cacheEnabled = cacheEnabled && !noCache
 
-	// Handle cache enable/disable
-	if noCache {
-		cacheEnabled = false
-	}
-	m.updateCacheState(cacheEnabled)
+	return opts, nil
+}
 
-	// Get project root
+// executeQuality is the common execution logic for run/check commands.
+func (m *QualityManager) executeQuality(ctx context.Context, opts *executionOptions) error {
+	m.updateCacheState(opts.cacheEnabled)
+
 	projectRoot, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get current directory: %w", err)
 	}
 
-	// Validate Git flags
-	if err := m.validateGitFlags(since, staged, changed); err != nil {
+	if err := m.validateGitFlags(opts.since, opts.staged, opts.changed); err != nil {
 		return err
 	}
 
-	// Create execution plan
 	planOptions := executor.PlanOptions{
-		Files:      files,
-		Fix:        fix,
-		FormatOnly: formatOnly,
-		LintOnly:   lintOnly,
-		ExtraArgs:  extraArgs,
-		Since:      since,
-		Staged:     staged,
-		Changed:    changed,
+		Files:      opts.files,
+		Fix:        opts.fix,
+		FormatOnly: opts.formatOnly,
+		LintOnly:   opts.lintOnly,
+		ExtraArgs:  opts.extraArgs,
+		Since:      opts.since,
+		Staged:     opts.staged,
+		Changed:    opts.changed,
 	}
 
 	plan, err := m.planner.CreatePlan(projectRoot, m.registry, planOptions)
@@ -263,27 +296,26 @@ func (m *QualityManager) runQuality(cmd *cobra.Command, _ []string) error {
 	}
 
 	if len(plan.Tasks) == 0 {
-		fmt.Println("🎯 처리할 작업이 없습니다.")
+		fmt.Println(opts.emptyMessage)
 		return nil
 	}
 
-	// Display plan
-	m.displayPlan(plan, verbose)
+	m.displayPlan(plan, opts.verbose)
 
-	if dryRun {
+	if opts.dryRun {
 		fmt.Println("✨ 드라이런 모드: 실제 실행하지 않습니다.")
 		return nil
 	}
 
-	// Execute plan
 	cacheStatus := ""
 	if m.executor.CacheEnabled() {
 		cacheStatus = " (캐시 활성)"
 	}
-	fmt.Printf("🚀 %d개 작업을 %d개 워커로 실행합니다...%s\n", len(plan.Tasks), workers, cacheStatus)
+	fmt.Printf("%s %d개 작업을 %d개 워커로 실행합니다...%s\n",
+		opts.executePrefix, len(plan.Tasks), opts.workers, cacheStatus)
 
 	startTime := time.Now()
-	results, err := m.executor.ExecuteParallel(ctx, plan, workers)
+	results, err := m.executor.ExecuteParallel(ctx, plan, opts.workers)
 	duration := time.Since(startTime)
 
 	if err != nil {
@@ -291,17 +323,28 @@ func (m *QualityManager) runQuality(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// Display results
-	m.displayResults(results, duration, verbose)
+	m.displayResults(results, duration, opts.verbose)
 
-	// Generate report if requested
-	if reportFormat != "" {
-		if err := m.generateReport(results, duration, plan.TotalFiles, projectRoot, reportFormat, outputPath); err != nil {
+	if opts.reportFormat != "" {
+		if err := m.generateReport(results, duration, plan.TotalFiles, projectRoot, opts.reportFormat, opts.outputPath); err != nil {
 			fmt.Printf("⚠️ 리포트 생성 실패: %v\n", err)
 		}
 	}
 
 	return nil
+}
+
+// runQuality executes the main quality command logic.
+func (m *QualityManager) runQuality(cmd *cobra.Command, _ []string) error {
+	opts, err := parseExecutionOptions(cmd)
+	if err != nil {
+		return err
+	}
+
+	opts.emptyMessage = "🎯 처리할 작업이 없습니다."
+	opts.executePrefix = "🚀"
+
+	return m.executeQuality(cmd.Context(), opts)
 }
 
 // displayPlan shows the execution plan.
@@ -440,6 +483,43 @@ func (m *QualityManager) newAnalyzeCmd() *cobra.Command {
 	}
 }
 
+// forEachTool executes an action on specified tools or all tools if none specified.
+func (m *QualityManager) forEachTool(args []string, action func(tools.QualityTool) error, successMsg, failMsg string) {
+	if len(args) == 0 {
+		for _, tool := range m.registry.GetTools() {
+			if err := action(tool); err != nil {
+				fmt.Printf("❌ %s %s: %v\n", tool.Name(), failMsg, err)
+			} else {
+				fmt.Printf("✅ %s %s\n", tool.Name(), successMsg)
+			}
+		}
+		return
+	}
+
+	for _, toolName := range args {
+		tool := m.registry.FindTool(toolName)
+		if tool == nil {
+			fmt.Printf("❌ 도구를 찾을 수 없습니다: %s\n", toolName)
+			continue
+		}
+		if err := action(tool); err != nil {
+			fmt.Printf("❌ %s %s: %v\n", toolName, failMsg, err)
+		} else {
+			fmt.Printf("✅ %s %s\n", toolName, successMsg)
+		}
+	}
+}
+
+// groupToolsByLanguage groups tools by their language.
+func groupToolsByLanguage(toolList []tools.QualityTool) map[string][]tools.QualityTool {
+	langTools := make(map[string][]tools.QualityTool)
+	for _, tool := range toolList {
+		lang := tool.Language()
+		langTools[lang] = append(langTools[lang], tool)
+	}
+	return langTools
+}
+
 // newInstallCmd creates the install subcommand.
 func (m *QualityManager) newInstallCmd() *cobra.Command {
 	return &cobra.Command{
@@ -448,33 +528,9 @@ func (m *QualityManager) newInstallCmd() *cobra.Command {
 		Long:  "지정된 도구를 설치합니다. 도구명을 지정하지 않으면 모든 도구를 설치합니다.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				// Install all tools
 				fmt.Println("🔧 모든 품질 도구를 설치합니다...")
-				allTools := m.registry.GetTools()
-				for _, tool := range allTools {
-					if err := m.installTool(tool); err != nil {
-						fmt.Printf("❌ %s 설치 실패: %v\n", tool.Name(), err)
-					} else {
-						fmt.Printf("✅ %s 설치 완료\n", tool.Name())
-					}
-				}
-			} else {
-				// Install specific tools
-				for _, toolName := range args {
-					tool := m.registry.FindTool(toolName)
-					if tool == nil {
-						fmt.Printf("❌ 도구를 찾을 수 없습니다: %s\n", toolName)
-						continue
-					}
-
-					if err := m.installTool(tool); err != nil {
-						fmt.Printf("❌ %s 설치 실패: %v\n", toolName, err)
-					} else {
-						fmt.Printf("✅ %s 설치 완료\n", toolName)
-					}
-				}
 			}
-
+			m.forEachTool(args, m.installTool, "설치 완료", "설치 실패")
 			return nil
 		},
 	}
@@ -488,33 +544,9 @@ func (m *QualityManager) newUpgradeCmd() *cobra.Command {
 		Long:  "지정된 도구를 최신 버전으로 업그레이드합니다. 도구명을 지정하지 않으면 모든 도구를 업그레이드합니다.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				// Upgrade all tools
 				fmt.Println("🔄 모든 품질 도구를 업그레이드합니다...")
-				allTools := m.registry.GetTools()
-				for _, tool := range allTools {
-					if err := m.upgradeTool(tool); err != nil {
-						fmt.Printf("❌ %s 업그레이드 실패: %v\n", tool.Name(), err)
-					} else {
-						fmt.Printf("✅ %s 업그레이드 완료\n", tool.Name())
-					}
-				}
-			} else {
-				// Upgrade specific tools
-				for _, toolName := range args {
-					tool := m.registry.FindTool(toolName)
-					if tool == nil {
-						fmt.Printf("❌ 도구를 찾을 수 없습니다: %s\n", toolName)
-						continue
-					}
-
-					if err := m.upgradeTool(tool); err != nil {
-						fmt.Printf("❌ %s 업그레이드 실패: %v\n", toolName, err)
-					} else {
-						fmt.Printf("✅ %s 업그레이드 완료\n", toolName)
-					}
-				}
 			}
-
+			m.forEachTool(args, m.upgradeTool, "업그레이드 완료", "업그레이드 실패")
 			return nil
 		},
 	}
@@ -528,25 +560,14 @@ func (m *QualityManager) newVersionCmd() *cobra.Command {
 		Long:  "설치된 품질 도구들의 버전을 표시합니다. 도구명을 지정하지 않으면 모든 도구의 버전을 표시합니다.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				// Show all tool versions
 				fmt.Println("📋 설치된 품질 도구 버전:")
-				allTools := m.registry.GetTools()
-
-				// Group by language
-				langTools := make(map[string][]tools.QualityTool)
-				for _, tool := range allTools {
-					lang := tool.Language()
-					langTools[lang] = append(langTools[lang], tool)
-				}
-
-				for lang, toolList := range langTools {
+				for lang, toolList := range groupToolsByLanguage(m.registry.GetTools()) {
 					fmt.Printf("\n%s:\n", lang)
 					for _, tool := range toolList {
 						m.showToolVersion(tool)
 					}
 				}
 			} else {
-				// Show specific tool versions
 				for _, toolName := range args {
 					tool := m.registry.FindTool(toolName)
 					if tool == nil {
@@ -556,7 +577,6 @@ func (m *QualityManager) newVersionCmd() *cobra.Command {
 					m.showToolVersion(tool)
 				}
 			}
-
 			return nil
 		},
 	}
@@ -568,29 +588,17 @@ func (m *QualityManager) newListCmd() *cobra.Command {
 		Use:   "list",
 		Short: "사용 가능한 품질 도구 목록 표시",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			allTools := m.registry.GetTools()
-
-			// Group by language
-			langTools := make(map[string][]tools.QualityTool)
-			for _, tool := range allTools {
-				lang := tool.Language()
-				langTools[lang] = append(langTools[lang], tool)
-			}
-
 			fmt.Println("📋 사용 가능한 품질 도구:")
-
-			for lang, tools := range langTools {
+			for lang, toolList := range groupToolsByLanguage(m.registry.GetTools()) {
 				fmt.Printf("\n%s:\n", lang)
-				for _, tool := range tools {
+				for _, tool := range toolList {
 					status := "❌"
 					if tool.IsAvailable() {
 						status = "✅"
 					}
-
 					fmt.Printf("  %s %s (%s)\n", status, tool.Name(), tool.Type().String())
 				}
 			}
-
 			return nil
 		},
 	}
@@ -685,123 +693,29 @@ func (m *QualityManager) newCheckCmd() *cobra.Command {
 		},
 	}
 
-	// Add flags (check 전용)
-	cmd.Flags().StringSliceP("files", "f", nil, "특정 파일들만 처리")
-	cmd.Flags().IntP("workers", "w", runtime.NumCPU(), "병렬 실행 워커 수")
-	cmd.Flags().StringSlice("extra-args", nil, "도구에 전달할 추가 인수")
-	cmd.Flags().Bool("dry-run", false, "실제 실행하지 않고 계획만 표시")
-	cmd.Flags().BoolP("verbose", "v", false, "상세 출력")
-	cmd.Flags().String("report", "", "리포트 생성 (json, html, markdown)")
-	cmd.Flags().String("output", "", "리포트 출력 파일 경로")
-
-	// Git-based incremental processing flags
-	cmd.Flags().String("since", "", "특정 커밋 이후 변경된 파일만 처리 (예: HEAD~1, main)")
-	cmd.Flags().Bool("staged", false, "Git staged 파일만 처리")
-	cmd.Flags().Bool("changed", false, "변경된 파일만 처리 (staged + modified + untracked)")
-
-	// Cache control flags
-	cmd.Flags().Bool("cache", true, "결과 캐싱 활성화 (기본: 활성)")
-	cmd.Flags().Bool("no-cache", false, "결과 캐싱 비활성화")
+	// Common flags
+	addCommonExecutionFlags(cmd)
+	addGitFilterFlags(cmd)
+	addCacheFlags(cmd)
 
 	return cmd
 }
 
 // runCheck executes the check command (lint-only).
 func (m *QualityManager) runCheck(cmd *cobra.Command, _ []string) error {
-	ctx := cmd.Context()
-
-	// Get flags
-	files, _ := cmd.Flags().GetStringSlice("files")
-	workers, _ := cmd.Flags().GetInt("workers")
-	extraArgs, _ := cmd.Flags().GetStringSlice("extra-args")
-	dryRun, _ := cmd.Flags().GetBool("dry-run")
-	verbose, _ := cmd.Flags().GetBool("verbose")
-	reportFormat, _ := cmd.Flags().GetString("report")
-	outputPath, _ := cmd.Flags().GetString("output")
-
-	// Git-based flags
-	since, _ := cmd.Flags().GetString("since")
-	staged, _ := cmd.Flags().GetBool("staged")
-	changed, _ := cmd.Flags().GetBool("changed")
-
-	// Cache control flags
-	cacheEnabled, _ := cmd.Flags().GetBool("cache")
-	noCache, _ := cmd.Flags().GetBool("no-cache")
-
-	// Handle cache enable/disable
-	if noCache {
-		cacheEnabled = false
-	}
-	m.updateCacheState(cacheEnabled)
-
-	// Get project root
-	projectRoot, err := os.Getwd()
+	opts, err := parseExecutionOptions(cmd)
 	if err != nil {
-		return fmt.Errorf("failed to get current directory: %w", err)
-	}
-
-	// Validate Git flags
-	if err := m.validateGitFlags(since, staged, changed); err != nil {
 		return err
 	}
 
-	// Create execution plan (lint-only)
-	planOptions := executor.PlanOptions{
-		Files:      files,
-		Fix:        false, // Never fix in check mode
-		FormatOnly: false,
-		LintOnly:   true, // Only run linters
-		ExtraArgs:  extraArgs,
-		Since:      since,
-		Staged:     staged,
-		Changed:    changed,
-	}
+	// Override for check mode
+	opts.fix = false       // Never fix in check mode
+	opts.formatOnly = false
+	opts.lintOnly = true   // Only run linters
+	opts.emptyMessage = "🎯 검사할 작업이 없습니다."
+	opts.executePrefix = "🔍"
 
-	plan, err := m.planner.CreatePlan(projectRoot, m.registry, planOptions)
-	if err != nil {
-		return fmt.Errorf("failed to create execution plan: %w", err)
-	}
-
-	if len(plan.Tasks) == 0 {
-		fmt.Println("🎯 검사할 작업이 없습니다.")
-		return nil
-	}
-
-	// Display plan
-	m.displayPlan(plan, verbose)
-
-	if dryRun {
-		fmt.Println("✨ 드라이런 모드: 실제 실행하지 않습니다.")
-		return nil
-	}
-
-	// Execute plan
-	cacheStatus := ""
-	if m.executor.CacheEnabled() {
-		cacheStatus = " (캐시 활성)"
-	}
-	fmt.Printf("🔍 %d개 린팅 작업을 %d개 워커로 실행합니다...%s\n", len(plan.Tasks), workers, cacheStatus)
-
-	startTime := time.Now()
-	results, err := m.executor.ExecuteParallel(ctx, plan, workers)
-	duration := time.Since(startTime)
-
-	if err != nil {
-		fmt.Printf("❌ 실행 중 오류 발생: %v\n", err)
-		return err
-	}
-
-	// Display results
-	m.displayResults(results, duration, verbose)
-
-	// Generate report if requested
-	if reportFormat != "" {
-		if err := m.generateReport(results, duration, plan.TotalFiles, projectRoot, reportFormat, outputPath); err != nil {
-			fmt.Printf("⚠️ 리포트 생성 실패: %v\n", err)
-		}
-	}
-
-	return nil
+	return m.executeQuality(cmd.Context(), opts)
 }
 
 // newInitCmd creates the init subcommand.
@@ -1081,10 +995,7 @@ func (m *QualityManager) addDirectToolFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("dry-run", false, "실제 실행하지 않고 계획만 표시")
 	cmd.Flags().BoolP("verbose", "v", false, "상세 출력")
 
-	// Git-based incremental processing flags
-	cmd.Flags().String("since", "", "특정 커밋 이후 변경된 파일만 처리 (예: HEAD~1, main)")
-	cmd.Flags().Bool("staged", false, "Git staged 파일만 처리")
-	cmd.Flags().Bool("changed", false, "변경된 파일만 처리 (staged + modified + untracked)")
+	addGitFilterFlags(cmd)
 }
 
 // runDirectTool executes a specific tool directly.
