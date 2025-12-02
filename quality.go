@@ -13,6 +13,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Gizzahub/gzh-cli-quality/cache"
+	"github.com/Gizzahub/gzh-cli-quality/config"
 	"github.com/Gizzahub/gzh-cli-quality/detector"
 	"github.com/Gizzahub/gzh-cli-quality/executor"
 	"github.com/Gizzahub/gzh-cli-quality/report"
@@ -26,10 +28,12 @@ const (
 
 // QualityManager manages the quality command functionality.
 type QualityManager struct {
-	registry tools.ToolRegistry
-	analyzer *detector.ProjectAnalyzer
-	executor *executor.ParallelExecutor
-	planner  *executor.ExecutionPlanner
+	registry     tools.ToolRegistry
+	analyzer     *detector.ProjectAnalyzer
+	executor     *executor.ParallelExecutor
+	planner      *executor.ExecutionPlanner
+	config       *config.Config
+	cacheManager *cache.CacheManager
 }
 
 // NewQualityManager creates a new quality manager.
@@ -39,17 +43,68 @@ func NewQualityManager() *QualityManager {
 	// Register all available tools
 	registerAllTools(registry)
 
+	// Load configuration
+	cfg, err := config.LoadConfig("")
+	if err != nil {
+		// Use default config if loading fails
+		cfg = config.DefaultConfig()
+	}
+
 	analyzer := detector.NewProjectAnalyzer()
-	parallelExecutor := executor.NewParallelExecutor(runtime.NumCPU(), 10*time.Minute)
 	adapter := &ProjectAnalyzerAdapter{analyzer}
 	planner := executor.NewExecutionPlanner(adapter)
 
-	return &QualityManager{
-		registry: registry,
-		analyzer: analyzer,
-		executor: parallelExecutor,
-		planner:  planner,
+	// Initialize cache manager based on config
+	var cacheManager *cache.CacheManager
+	if cfg.Cache.Enabled {
+		maxAge := parseDuration(cfg.Cache.MaxAge, 7*24*time.Hour)
+		cacheManager, err = cache.NewCacheManager(cfg.GetCacheDirectory(), cfg.Cache.MaxSize, maxAge)
+		if err != nil {
+			// If cache initialization fails, continue without cache
+			fmt.Printf("⚠️ 캐시 초기화 실패: %v (캐시 없이 계속 진행)\n", err)
+			cacheManager = nil
+		}
 	}
+
+	// Create executor with or without cache
+	var parallelExecutor *executor.ParallelExecutor
+	if cacheManager != nil {
+		parallelExecutor = executor.NewParallelExecutorWithCache(runtime.NumCPU(), 10*time.Minute, cacheManager)
+	} else {
+		parallelExecutor = executor.NewParallelExecutor(runtime.NumCPU(), 10*time.Minute)
+	}
+
+	return &QualityManager{
+		registry:     registry,
+		analyzer:     analyzer,
+		executor:     parallelExecutor,
+		planner:      planner,
+		config:       cfg,
+		cacheManager: cacheManager,
+	}
+}
+
+// parseDuration parses a duration string like "7d", "24h", "30m"
+func parseDuration(s string, defaultVal time.Duration) time.Duration {
+	if s == "" {
+		return defaultVal
+	}
+
+	// Handle day suffix "d"
+	if len(s) > 0 && s[len(s)-1] == 'd' {
+		days := 0
+		_, err := fmt.Sscanf(s, "%dd", &days)
+		if err == nil && days > 0 {
+			return time.Duration(days) * 24 * time.Hour
+		}
+	}
+
+	// Try standard duration parsing
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		return defaultVal
+	}
+	return d
 }
 
 // NewQualityCmd creates the quality command.
@@ -103,6 +158,10 @@ func NewQualityCmd() *cobra.Command {
 	cmd.AddCommand(manager.newListCmd())
 	cmd.AddCommand(manager.newToolCmd())
 
+	// Cache management commands
+	cmd.AddCommand(manager.newCacheClearCmd())
+	cmd.AddCommand(manager.newCacheStatsCmd())
+
 	// Language-specific subcommands removed - use direct tool commands instead
 
 	return cmd
@@ -137,6 +196,10 @@ func (m *QualityManager) newRunCmd() *cobra.Command {
 	cmd.Flags().Bool("staged", false, "Git staged 파일만 처리")
 	cmd.Flags().Bool("changed", false, "변경된 파일만 처리 (staged + modified + untracked)")
 
+	// Cache control flags
+	cmd.Flags().Bool("cache", true, "결과 캐싱 활성화 (기본: 활성)")
+	cmd.Flags().Bool("no-cache", false, "결과 캐싱 비활성화")
+
 	return cmd
 }
 
@@ -160,6 +223,16 @@ func (m *QualityManager) runQuality(cmd *cobra.Command, _ []string) error {
 	since, _ := cmd.Flags().GetString("since")
 	staged, _ := cmd.Flags().GetBool("staged")
 	changed, _ := cmd.Flags().GetBool("changed")
+
+	// Cache control flags
+	cacheEnabled, _ := cmd.Flags().GetBool("cache")
+	noCache, _ := cmd.Flags().GetBool("no-cache")
+
+	// Handle cache enable/disable
+	if noCache {
+		cacheEnabled = false
+	}
+	m.updateCacheState(cacheEnabled)
 
 	// Get project root
 	projectRoot, err := os.Getwd()
@@ -203,7 +276,11 @@ func (m *QualityManager) runQuality(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Execute plan
-	fmt.Printf("🚀 %d개 작업을 %d개 워커로 실행합니다...\n", len(plan.Tasks), workers)
+	cacheStatus := ""
+	if m.executor.CacheEnabled() {
+		cacheStatus = " (캐시 활성)"
+	}
+	fmt.Printf("🚀 %d개 작업을 %d개 워커로 실행합니다...%s\n", len(plan.Tasks), workers, cacheStatus)
 
 	startTime := time.Now()
 	results, err := m.executor.ExecuteParallel(ctx, plan, workers)
@@ -256,10 +333,14 @@ func (m *QualityManager) displayResults(results []*tools.Result, duration time.D
 
 	successful := 0
 	totalIssues := 0
+	cachedCount := 0
 
 	for _, result := range results {
 		if result.Success {
 			successful++
+		}
+		if result.Cached {
+			cachedCount++
 		}
 		totalIssues += len(result.Issues)
 
@@ -269,8 +350,13 @@ func (m *QualityManager) displayResults(results []*tools.Result, duration time.D
 				status = statusFailure
 			}
 
-			fmt.Printf("%s %s (%s): %d개 파일, %v\n",
-				status, result.Tool, result.Language, result.FilesProcessed, result.Duration)
+			cachedLabel := ""
+			if result.Cached {
+				cachedLabel = " (캐시됨)"
+			}
+
+			fmt.Printf("%s %s (%s): %d개 파일, %v%s\n",
+				status, result.Tool, result.Language, result.FilesProcessed, result.Duration, cachedLabel)
 
 			if result.Error != "" {
 				fmt.Printf("   오류: %s\n", result.Error)
@@ -288,8 +374,13 @@ func (m *QualityManager) displayResults(results []*tools.Result, duration time.D
 		}
 	}
 
-	fmt.Printf("\n📊 요약: %d/%d 도구 성공, %d개 이슈 발견\n",
-		successful, len(results), totalIssues)
+	// Summary with cache info
+	cacheInfo := ""
+	if cachedCount > 0 {
+		cacheInfo = fmt.Sprintf(", %d개 캐시 히트", cachedCount)
+	}
+	fmt.Printf("\n📊 요약: %d/%d 도구 성공, %d개 이슈 발견%s\n",
+		successful, len(results), totalIssues, cacheInfo)
 }
 
 // newAnalyzeCmd creates the analyze subcommand.
@@ -608,6 +699,10 @@ func (m *QualityManager) newCheckCmd() *cobra.Command {
 	cmd.Flags().Bool("staged", false, "Git staged 파일만 처리")
 	cmd.Flags().Bool("changed", false, "변경된 파일만 처리 (staged + modified + untracked)")
 
+	// Cache control flags
+	cmd.Flags().Bool("cache", true, "결과 캐싱 활성화 (기본: 활성)")
+	cmd.Flags().Bool("no-cache", false, "결과 캐싱 비활성화")
+
 	return cmd
 }
 
@@ -628,6 +723,16 @@ func (m *QualityManager) runCheck(cmd *cobra.Command, _ []string) error {
 	since, _ := cmd.Flags().GetString("since")
 	staged, _ := cmd.Flags().GetBool("staged")
 	changed, _ := cmd.Flags().GetBool("changed")
+
+	// Cache control flags
+	cacheEnabled, _ := cmd.Flags().GetBool("cache")
+	noCache, _ := cmd.Flags().GetBool("no-cache")
+
+	// Handle cache enable/disable
+	if noCache {
+		cacheEnabled = false
+	}
+	m.updateCacheState(cacheEnabled)
 
 	// Get project root
 	projectRoot, err := os.Getwd()
@@ -671,7 +776,11 @@ func (m *QualityManager) runCheck(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Execute plan
-	fmt.Printf("🔍 %d개 린팅 작업을 %d개 워커로 실행합니다...\n", len(plan.Tasks), workers)
+	cacheStatus := ""
+	if m.executor.CacheEnabled() {
+		cacheStatus = " (캐시 활성)"
+	}
+	fmt.Printf("🔍 %d개 린팅 작업을 %d개 워커로 실행합니다...%s\n", len(plan.Tasks), workers, cacheStatus)
 
 	startTime := time.Now()
 	results, err := m.executor.ExecuteParallel(ctx, plan, workers)
@@ -1074,4 +1183,88 @@ func (m *QualityManager) validateGitFlags(since string, staged, changed bool) er
 	}
 
 	return nil
+}
+
+// updateCacheState enables or disables caching based on the flag.
+func (m *QualityManager) updateCacheState(enabled bool) {
+	if m.cacheManager != nil {
+		m.cacheManager.SetEnabled(enabled)
+	}
+}
+
+// newCacheClearCmd creates the cache-clear subcommand.
+func (m *QualityManager) newCacheClearCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "cache-clear",
+		Short: "캐시 삭제",
+		Long:  "모든 캐시 항목을 삭제합니다.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if m.cacheManager == nil {
+				fmt.Println("⚠️ 캐시가 비활성화되어 있습니다.")
+				return nil
+			}
+
+			if err := m.cacheManager.InvalidateAll(); err != nil {
+				return fmt.Errorf("캐시 삭제 실패: %w", err)
+			}
+
+			fmt.Println("✅ 캐시가 삭제되었습니다.")
+			return nil
+		},
+	}
+}
+
+// newCacheStatsCmd creates the cache-stats subcommand.
+func (m *QualityManager) newCacheStatsCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "cache-stats",
+		Short: "캐시 통계 표시",
+		Long:  "캐시 사용 현황 및 통계를 표시합니다.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if m.cacheManager == nil {
+				fmt.Println("⚠️ 캐시가 비활성화되어 있습니다.")
+				return nil
+			}
+
+			stats := m.cacheManager.Stats()
+
+			fmt.Println("📊 캐시 통계:")
+			fmt.Printf("  캐시 디렉토리: %s\n", m.config.GetCacheDirectory())
+			fmt.Printf("  캐시 항목: %d개\n", stats.Entries)
+			fmt.Printf("  캐시 크기: %s\n", formatBytes(stats.SizeBytes))
+			fmt.Printf("  최대 크기: %s\n", formatBytes(m.config.Cache.MaxSize))
+			fmt.Printf("  캐시 히트: %d회\n", stats.HitCount)
+			fmt.Printf("  캐시 미스: %d회\n", stats.MissCount)
+			fmt.Printf("  히트율: %.1f%%\n", stats.HitRate*100)
+
+			if !stats.OldestEntry.IsZero() {
+				fmt.Printf("  가장 오래된 항목: %s\n", stats.OldestEntry.Format("2006-01-02 15:04:05"))
+			}
+			if !stats.NewestEntry.IsZero() {
+				fmt.Printf("  가장 최근 항목: %s\n", stats.NewestEntry.Format("2006-01-02 15:04:05"))
+			}
+
+			return nil
+		},
+	}
+}
+
+// formatBytes formats byte size to human readable format.
+func formatBytes(bytes int64) string {
+	const (
+		KB = 1024
+		MB = KB * 1024
+		GB = MB * 1024
+	)
+
+	switch {
+	case bytes >= GB:
+		return fmt.Sprintf("%.2f GB", float64(bytes)/float64(GB))
+	case bytes >= MB:
+		return fmt.Sprintf("%.2f MB", float64(bytes)/float64(MB))
+	case bytes >= KB:
+		return fmt.Sprintf("%.2f KB", float64(bytes)/float64(KB))
+	default:
+		return fmt.Sprintf("%d B", bytes)
+	}
 }

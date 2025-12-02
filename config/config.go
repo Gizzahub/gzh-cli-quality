@@ -19,6 +19,9 @@ type Config struct {
 	// Timeout sets the default timeout for tool execution
 	Timeout string `yaml:"timeout"`
 
+	// Cache contains cache-related configurations
+	Cache CacheConfig `yaml:"cache"`
+
 	// Tools contains tool-specific configurations
 	Tools map[string]ToolConfig `yaml:"tools"`
 
@@ -30,6 +33,21 @@ type Config struct {
 
 	// Include contains patterns to include in processing
 	Include []string `yaml:"include"`
+}
+
+// CacheConfig represents cache configuration.
+type CacheConfig struct {
+	// Enabled controls whether caching is enabled
+	Enabled bool `yaml:"enabled"`
+
+	// Directory specifies the cache directory path
+	Directory string `yaml:"directory"`
+
+	// MaxSize specifies the maximum cache size in bytes
+	MaxSize int64 `yaml:"max_size"`
+
+	// MaxAge specifies the maximum age of cache entries (e.g., "7d", "24h")
+	MaxAge string `yaml:"max_age"`
 }
 
 // ToolConfig represents configuration for a specific tool.
@@ -67,6 +85,12 @@ func DefaultConfig() *Config {
 	return &Config{
 		DefaultWorkers: 4,
 		Timeout:        "10m",
+		Cache: CacheConfig{
+			Enabled:   true,
+			Directory: "", // Empty means use default: ~/.cache/gz-quality
+			MaxSize:   100 * 1024 * 1024, // 100MB
+			MaxAge:    "7d",
+		},
 		Tools: map[string]ToolConfig{
 			"gofumpt": {
 				Enabled:  true,
@@ -315,4 +339,21 @@ func (c *Config) ShouldInclude(filePath string) bool {
 	}
 
 	return false
+}
+
+// GetCacheDirectory returns the cache directory path.
+// If not configured, returns the default path: ~/.cache/gz-quality
+func (c *Config) GetCacheDirectory() string {
+	if c.Cache.Directory != "" {
+		return c.Cache.Directory
+	}
+
+	// Default: ~/.cache/gz-quality
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		// Fallback to current directory
+		return ".gz-quality-cache"
+	}
+
+	return filepath.Join(homeDir, ".cache", "gz-quality")
 }
