@@ -5,9 +5,12 @@ package executor
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/Gizzahub/gzh-cli-quality/cache"
 	"github.com/Gizzahub/gzh-cli-quality/tools"
 )
 
@@ -186,5 +189,274 @@ func BenchmarkToolTypeFilter_LintOnly(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = matchesToolType(formatTool, options)
 		_ = matchesToolType(lintTool, options)
+	}
+}
+
+// ============================================================================
+// Cache Performance Benchmarks
+// ============================================================================
+
+// setupBenchCache creates a cache manager for benchmarking
+func setupBenchCache(b *testing.B) (*cache.CacheManager, string, func()) {
+	b.Helper()
+	tmpDir, err := os.MkdirTemp("", "bench-cache-*")
+	if err != nil {
+		b.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	cacheDir := filepath.Join(tmpDir, "cache")
+	cacheManager, err := cache.NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
+	if err != nil {
+		os.RemoveAll(tmpDir)
+		b.Fatalf("Failed to create cache manager: %v", err)
+	}
+
+	cleanup := func() {
+		cacheManager.Close()
+		os.RemoveAll(tmpDir)
+	}
+
+	return cacheManager, tmpDir, cleanup
+}
+
+// setupBenchFile creates a test file for benchmarking
+func setupBenchFile(b *testing.B, dir, content string) string {
+	b.Helper()
+	filePath := filepath.Join(dir, "test.go")
+	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		b.Fatalf("Failed to write test file: %v", err)
+	}
+	return filePath
+}
+
+// BenchmarkCache_Miss benchmarks cache miss scenario (cold cache)
+func BenchmarkCache_Miss(b *testing.B) {
+	cacheManager, tmpDir, cleanup := setupBenchCache(b)
+	defer cleanup()
+
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
+
+	executor := NewParallelExecutorWithCache(4, 5*time.Minute, cacheManager)
+	ctx := context.Background()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		// Create unique file for each iteration to ensure cache miss
+		testFile := filepath.Join(filesDir, "test_"+string(rune('a'+i%26))+".go")
+		os.WriteFile(testFile, []byte("package main\n// iteration "+string(rune('0'+i%10))), 0644)
+
+		plan := &tools.ExecutionPlan{
+			Tasks: []tools.Task{
+				{
+					Tool:    &mockToolForBench{name: "gofumpt", language: "Go"},
+					Files:   []string{testFile},
+					Options: tools.ExecuteOptions{ProjectRoot: filesDir},
+				},
+			},
+			TotalFiles:        1,
+			EstimatedDuration: "1ms",
+		}
+		b.StartTimer()
+
+		_, _ = executor.ExecuteParallel(ctx, plan, 1)
+	}
+}
+
+// BenchmarkCache_Hit benchmarks cache hit scenario (warm cache)
+func BenchmarkCache_Hit(b *testing.B) {
+	cacheManager, tmpDir, cleanup := setupBenchCache(b)
+	defer cleanup()
+
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
+	testFile := setupBenchFile(b, filesDir, "package main\n")
+
+	executor := NewParallelExecutorWithCache(4, 5*time.Minute, cacheManager)
+	ctx := context.Background()
+
+	plan := &tools.ExecutionPlan{
+		Tasks: []tools.Task{
+			{
+				Tool:    &mockToolForBench{name: "gofumpt", language: "Go"},
+				Files:   []string{testFile},
+				Options: tools.ExecuteOptions{ProjectRoot: filesDir},
+			},
+		},
+		TotalFiles:        1,
+		EstimatedDuration: "1ms",
+	}
+
+	// Warm up cache with first execution
+	_, _ = executor.ExecuteParallel(ctx, plan, 1)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = executor.ExecuteParallel(ctx, plan, 1)
+	}
+}
+
+// BenchmarkCache_MultiFile_AllHit benchmarks multi-file cache hit scenario
+func BenchmarkCache_MultiFile_AllHit(b *testing.B) {
+	cacheManager, tmpDir, cleanup := setupBenchCache(b)
+	defer cleanup()
+
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
+
+	// Create multiple test files
+	var testFiles []string
+	for i := 0; i < 10; i++ {
+		filePath := filepath.Join(filesDir, "test_"+string(rune('a'+i))+".go")
+		os.WriteFile(filePath, []byte("package main\n// file "+string(rune('a'+i))), 0644)
+		testFiles = append(testFiles, filePath)
+	}
+
+	executor := NewParallelExecutorWithCache(4, 5*time.Minute, cacheManager)
+	ctx := context.Background()
+
+	plan := &tools.ExecutionPlan{
+		Tasks: []tools.Task{
+			{
+				Tool:    &mockToolForBench{name: "gofumpt", language: "Go"},
+				Files:   testFiles,
+				Options: tools.ExecuteOptions{ProjectRoot: filesDir},
+			},
+		},
+		TotalFiles:        len(testFiles),
+		EstimatedDuration: "10ms",
+	}
+
+	// Warm up cache
+	_, _ = executor.ExecuteParallel(ctx, plan, 1)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = executor.ExecuteParallel(ctx, plan, 1)
+	}
+}
+
+// BenchmarkCache_MultiFile_PartialHit benchmarks partial cache hit scenario
+func BenchmarkCache_MultiFile_PartialHit(b *testing.B) {
+	cacheManager, tmpDir, cleanup := setupBenchCache(b)
+	defer cleanup()
+
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
+
+	// Create test files (half will be cached, half won't)
+	var testFiles []string
+	for i := 0; i < 10; i++ {
+		filePath := filepath.Join(filesDir, "test_"+string(rune('a'+i))+".go")
+		os.WriteFile(filePath, []byte("package main\n// file "+string(rune('a'+i))), 0644)
+		testFiles = append(testFiles, filePath)
+	}
+
+	executor := NewParallelExecutorWithCache(4, 5*time.Minute, cacheManager)
+	ctx := context.Background()
+
+	// Cache only first 5 files
+	warmupPlan := &tools.ExecutionPlan{
+		Tasks: []tools.Task{
+			{
+				Tool:    &mockToolForBench{name: "gofumpt", language: "Go"},
+				Files:   testFiles[:5],
+				Options: tools.ExecuteOptions{ProjectRoot: filesDir},
+			},
+		},
+		TotalFiles:        5,
+		EstimatedDuration: "5ms",
+	}
+	_, _ = executor.ExecuteParallel(ctx, warmupPlan, 1)
+
+	// Full plan with all 10 files
+	fullPlan := &tools.ExecutionPlan{
+		Tasks: []tools.Task{
+			{
+				Tool:    &mockToolForBench{name: "gofumpt", language: "Go"},
+				Files:   testFiles,
+				Options: tools.ExecuteOptions{ProjectRoot: filesDir},
+			},
+		},
+		TotalFiles:        10,
+		EstimatedDuration: "10ms",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = executor.ExecuteParallel(ctx, fullPlan, 1)
+	}
+}
+
+// BenchmarkCache_NoCache benchmarks execution without cache (baseline)
+func BenchmarkCache_NoCache(b *testing.B) {
+	tmpDir, err := os.MkdirTemp("", "bench-nocache-*")
+	if err != nil {
+		b.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	filesDir := filepath.Join(tmpDir, "files")
+	os.MkdirAll(filesDir, 0755)
+	testFile := filepath.Join(filesDir, "test.go")
+	os.WriteFile(testFile, []byte("package main\n"), 0644)
+
+	executor := NewParallelExecutor(4, 5*time.Minute)
+	ctx := context.Background()
+
+	plan := &tools.ExecutionPlan{
+		Tasks: []tools.Task{
+			{
+				Tool:    &mockToolForBench{name: "gofumpt", language: "Go"},
+				Files:   []string{testFile},
+				Options: tools.ExecuteOptions{ProjectRoot: filesDir},
+			},
+		},
+		TotalFiles:        1,
+		EstimatedDuration: "1ms",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = executor.ExecuteParallel(ctx, plan, 1)
+	}
+}
+
+// BenchmarkFilterIssuesByFile benchmarks issue filtering performance
+func BenchmarkFilterIssuesByFile(b *testing.B) {
+	// Create issues from multiple files
+	issues := make([]tools.Issue, 100)
+	files := []string{"file1.go", "file2.go", "file3.go", "file4.go", "file5.go"}
+	for i := 0; i < 100; i++ {
+		issues[i] = tools.Issue{
+			File:    files[i%len(files)],
+			Line:    i + 1,
+			Message: "test issue",
+		}
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = filterIssuesByFile(issues, "file1.go")
+	}
+}
+
+// BenchmarkFilterIssuesByFile_Large benchmarks filtering with many issues
+func BenchmarkFilterIssuesByFile_Large(b *testing.B) {
+	// Create 1000 issues
+	issues := make([]tools.Issue, 1000)
+	files := []string{"a.go", "b.go", "c.go", "d.go", "e.go", "f.go", "g.go", "h.go", "i.go", "j.go"}
+	for i := 0; i < 1000; i++ {
+		issues[i] = tools.Issue{
+			File:    files[i%len(files)],
+			Line:    i + 1,
+			Message: "test issue " + string(rune('0'+i%10)),
+		}
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = filterIssuesByFile(issues, "a.go")
 	}
 }
