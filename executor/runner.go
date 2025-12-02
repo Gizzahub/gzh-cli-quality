@@ -278,11 +278,21 @@ func (e *ParallelExecutor) executeMultiFileWithCache(ctx context.Context, task t
 	}
 
 	// Store successful result in cache for each uncached file
+	// Split the result by file to store file-specific issues only
 	if result.Success {
 		for _, filePath := range uncachedFiles {
 			cacheKey, keyErr := cache.GenerateKey(filePath, task.Tool, task.Options)
 			if keyErr == nil {
-				_ = e.cache.Set(cacheKey, result) // Fire and forget
+				// Create file-specific result with only issues for this file
+				fileResult := &tools.Result{
+					Tool:           result.Tool,
+					Language:       result.Language,
+					Success:        result.Success,
+					FilesProcessed: 1,
+					Duration:       result.Duration / time.Duration(len(uncachedFiles)), // Approximate per-file duration
+					Issues:         filterIssuesByFile(result.Issues, filePath),
+				}
+				_ = e.cache.Set(cacheKey, fileResult) // Fire and forget
 			}
 		}
 	}
@@ -290,6 +300,17 @@ func (e *ParallelExecutor) executeMultiFileWithCache(ctx context.Context, task t
 	// Merge cached and uncached results
 	allResults := append(cachedResults, result)
 	return mergeResults(allResults, task.Tool), nil
+}
+
+// filterIssuesByFile returns only issues that belong to the specified file.
+func filterIssuesByFile(issues []tools.Issue, filePath string) []tools.Issue {
+	var filtered []tools.Issue
+	for _, issue := range issues {
+		if issue.File == filePath {
+			filtered = append(filtered, issue)
+		}
+	}
+	return filtered
 }
 
 // mergeResults merges multiple results into a single result.

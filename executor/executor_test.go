@@ -810,3 +810,57 @@ func TestIntersectFiles(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterIssuesByFile(t *testing.T) {
+	tests := []struct {
+		name     string
+		issues   []tools.Issue
+		filePath string
+		expected int
+	}{
+		{
+			name:     "Empty issues",
+			issues:   []tools.Issue{},
+			filePath: "test.go",
+			expected: 0,
+		},
+		{
+			name: "Single file match",
+			issues: []tools.Issue{
+				{File: "test.go", Line: 1, Message: "issue1"},
+				{File: "other.go", Line: 2, Message: "issue2"},
+			},
+			filePath: "test.go",
+			expected: 1,
+		},
+		{
+			name: "Multiple matches",
+			issues: []tools.Issue{
+				{File: "test.go", Line: 1, Message: "issue1"},
+				{File: "test.go", Line: 5, Message: "issue2"},
+				{File: "other.go", Line: 2, Message: "issue3"},
+			},
+			filePath: "test.go",
+			expected: 2,
+		},
+		{
+			name: "No matches",
+			issues: []tools.Issue{
+				{File: "a.go", Line: 1, Message: "issue1"},
+				{File: "b.go", Line: 2, Message: "issue2"},
+			},
+			filePath: "test.go",
+			expected: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := filterIssuesByFile(tt.issues, tt.filePath)
+			assert.Len(t, result, tt.expected)
+			for _, issue := range result {
+				assert.Equal(t, tt.filePath, issue.File)
+			}
+		})
+	}
+}
