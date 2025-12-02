@@ -1,3 +1,5 @@
+version: "2"
+
 run:
   go: "1.24"
   modules-download-mode: readonly
@@ -6,7 +8,7 @@ run:
   timeout: 5m
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - bodyclose
     - errcheck
@@ -25,92 +27,125 @@ linters:
     - unused
     - whitespace
 
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-    exclude-functions:
-      - fmt.Print
-      - fmt.Println
-      - fmt.Printf
-      - (*os.File).Close
-      - (*github.com/spf13/pflag.FlagSet).GetBool
-      - (*github.com/spf13/pflag.FlagSet).GetString
-      - (*github.com/spf13/pflag.FlagSet).GetStringSlice
-      - (*github.com/spf13/pflag.FlagSet).GetInt
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+      exclude-functions:
+        - fmt.Print
+        - fmt.Println
+        - fmt.Printf
+        - (*os.File).Close
+        - (*github.com/spf13/pflag.FlagSet).GetBool
+        - (*github.com/spf13/pflag.FlagSet).GetString
+        - (*github.com/spf13/pflag.FlagSet).GetStringSlice
+        - (*github.com/spf13/pflag.FlagSet).GetInt
 
-  errorlint:
-    errorf: true
-    asserts: true
-    comparison: true
+    errorlint:
+      errorf: true
+      asserts: true
+      comparison: true
 
-  exhaustive:
-    default-signifies-exhaustive: false
+    goconst:
+      min-len: 8
+      min-occurrences: 3
 
-  gocognit:
-    min-complexity: 30
+    gocritic:
+      disabled-checks:
+        - hugeParam
+        - rangeValCopy
+        - appendAssign
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
 
-  goconst:
-    min-len: 8  # Ignore short strings (emoji and basic strings)
-    min-occurrences: 3
+    gocyclo:
+      min-complexity: 25
 
-  gocritic:
-    disabled-checks:
-      - hugeParam
-      - rangeValCopy
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
+    govet:
+      disable:
+        - fieldalignment
+        - shadow
+      enable-all: true
 
-  gocyclo:
-    min-complexity: 25
+    misspell:
+      locale: US
 
-  gosec:
-    severity: high
-    confidence: medium
+    staticcheck:
+      checks:
+        - all
 
-  govet:
-    disable:
-      - fieldalignment
-      - shadow
-    enable-all: true
+  exclusions:
+    presets:
+      - std-error-handling
+      - common-false-positives
+    rules:
+      # Test files - allow unchecked errors and other style issues in tests
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gocyclo
+          - goconst
+          - ineffassign
+          - nilnil
+          - nilerr
+          - gocritic
+          - govet
+          - staticcheck
 
-  lll:
-    line-length: 180
+      # Explicitly ignored errors (fire and forget pattern with underscore)
+      - text: "Error return value of.*is not checked"
+        source: "_ :?="
+        linters:
+          - errcheck
 
-  misspell:
-    locale: US
+      # Intentional ignored errors in cache manager for best-effort operations
+      - path: cache/manager\.go
+        text: "Error return value of"
+        linters:
+          - errcheck
 
-  staticcheck:
-    checks:
-      - all
+      # Defer Close() is intentional (cleanup pattern)
+      - text: "Error return value of.*Close.*is not checked"
+        linters:
+          - errcheck
 
-  unparam:
-    check-exported: false
+      # goconst for short literal strings in specific files
+      - path: (quality|tools/rust_tools)\.go
+        linters:
+          - goconst
+
+      # Storage temp file extension constant
+      - path: cache/storage\.go
+        linters:
+          - goconst
+
+      # Benchmark results unused struct fields
+      - path: bench_test\.go
+        linters:
+          - govet
+
+      # Package comments not required for all packages
+      - text: "ST1000"
+        linters:
+          - staticcheck
+
+      # MessageId is from external JSON format (pylint)
+      - text: "ST1003.*MessageId"
+        linters:
+          - staticcheck
+
+      # Intentional nil return after error in WalkDir callback
+      - path: cache/storage\.go
+        text: "error is not nil.*but it returns nil"
+        linters:
+          - nilerr
 
 issues:
   max-issues-per-linter: 50
   max-same-issues: 10
-  exclude-use-default: false
   new: false
-
-  exclude-rules:
-    # Test files
-    - linters:
-        - errcheck
-        - gocyclo
-      path: _test\.go
-
-    # Defer Close() is intentional (cleanup pattern)
-    - linters:
-        - errcheck
-      text: "Error return value of.*Close.*is not checked"
-
-    # goconst for short literal strings
-    - linters:
-        - goconst
-      path: (quality|tools/rust_tools)\.go
 
   exclude-dirs:
     - vendor

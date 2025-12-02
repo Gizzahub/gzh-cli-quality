@@ -19,7 +19,7 @@ type FilesystemStorage struct {
 // NewFilesystemStorage creates a new filesystem storage backend.
 func NewFilesystemStorage(basePath string) (*FilesystemStorage, error) {
 	// Create base directory if it doesn't exist
-	if err := os.MkdirAll(basePath, 0755); err != nil {
+	if err := os.MkdirAll(basePath, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
@@ -55,7 +55,7 @@ func (fs *FilesystemStorage) Write(key string, data []byte) error {
 
 	// Create directory if needed
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -63,7 +63,7 @@ func (fs *FilesystemStorage) Write(key string, data []byte) error {
 	tempPath := path + ".tmp"
 
 	// Write to temp file
-	if err := os.WriteFile(tempPath, data, 0644); err != nil {
+	if err := os.WriteFile(tempPath, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write temp file: %w", err)
 	}
 

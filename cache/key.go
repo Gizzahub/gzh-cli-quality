@@ -142,7 +142,7 @@ func hashOptions(options tools.ExecuteOptions) string {
 		sort.Strings(keys)
 
 		for _, k := range keys {
-			hasher.Write([]byte(fmt.Sprintf("env:%s=%s", k, options.Env[k])))
+			fmt.Fprintf(hasher, "env:%s=%s", k, options.Env[k])
 		}
 	}
 

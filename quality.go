@@ -92,7 +92,7 @@ func parseDuration(s string, defaultVal time.Duration) time.Duration {
 	}
 
 	// Handle day suffix "d"
-	if len(s) > 0 && s[len(s)-1] == 'd' {
+	if s != "" && s[len(s)-1] == 'd' {
 		days := 0
 		_, err := fmt.Sscanf(s, "%dd", &days)
 		if err == nil && days > 0 {
@@ -754,10 +754,10 @@ func (m *QualityManager) runInit(_ *cobra.Command, _ []string) error {
 	}
 
 	// Generate configuration based on analysis
-	config := m.generateConfig(analysis)
+	cfg := m.generateConfig(analysis)
 
 	// Write config file
-	configYAML, err := config.ToYAML()
+	configYAML, err := cfg.ToYAML()
 	if err != nil {
 		return fmt.Errorf("failed to generate YAML: %w", err)
 	}
