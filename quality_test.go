@@ -191,16 +191,16 @@ func TestDisplayResults(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 1,
-			Duration:       "100ms",
+			Duration:       100 * time.Millisecond,
 			Issues:         []tools.Issue{},
-			Error:          nil,
+			Error:          "",
 		},
 		{
 			Tool:           "test-tool-2",
 			Language:       "Python",
 			Success:        false,
 			FilesProcessed: 1,
-			Duration:       "200ms",
+			Duration:       200 * time.Millisecond,
 			Issues: []tools.Issue{
 				{
 					File:    "test.py",
@@ -210,7 +210,7 @@ func TestDisplayResults(t *testing.T) {
 					Rule:    "test-rule",
 				},
 			},
-			Error: assert.AnError,
+			Error: assert.AnError.Error(),
 		},
 	}
 
@@ -359,7 +359,7 @@ func (m *mockTool) Execute(ctx context.Context, files []string, options tools.Ex
 		Language:       m.language,
 		Success:        true,
 		FilesProcessed: 1,
-		Duration:       "1ms",
+		Duration:       time.Millisecond,
 		Issues:         []tools.Issue{},
 	}, nil
 }
@@ -504,7 +504,7 @@ func TestGenerateReport_JSON(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 5,
-			Duration:       "100ms",
+			Duration:       100 * time.Millisecond,
 			Issues:         []tools.Issue{},
 		},
 	}
@@ -528,7 +528,7 @@ func TestGenerateReport_HTML(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 3,
-			Duration:       "50ms",
+			Duration:       50 * time.Millisecond,
 			Issues:         []tools.Issue{},
 		},
 	}
@@ -552,7 +552,7 @@ func TestGenerateReport_Markdown(t *testing.T) {
 			Language:       "Python",
 			Success:        false,
 			FilesProcessed: 2,
-			Duration:       "200ms",
+			Duration:       200 * time.Millisecond,
 			Issues: []tools.Issue{
 				{
 					File:    "test.py",

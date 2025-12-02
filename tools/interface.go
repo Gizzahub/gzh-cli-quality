@@ -4,7 +4,10 @@
 // Package tools provides quality tool implementations for multiple programming languages.
 package tools
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // ToolType defines the type of quality tool.
 type ToolType int
@@ -85,28 +88,31 @@ type ExecuteOptions struct {
 // Result contains the results of tool execution.
 type Result struct {
 	// Tool is the name of the tool that was executed
-	Tool string
+	Tool string `json:"tool"`
 
 	// Language is the programming language
-	Language string
+	Language string `json:"language"`
 
 	// Success indicates whether the tool executed successfully
-	Success bool
+	Success bool `json:"success"`
 
 	// Error contains any execution error
-	Error error
+	Error string `json:"error,omitempty"`
 
 	// FilesProcessed is the number of files processed
-	FilesProcessed int
+	FilesProcessed int `json:"files_processed"`
 
 	// Duration is how long the tool took to run
-	Duration string
+	Duration time.Duration `json:"duration"`
 
 	// Issues contains any issues found by the tool
-	Issues []Issue
+	Issues []Issue `json:"issues,omitempty"`
 
 	// Output contains the raw output from the tool
-	Output string
+	Output string `json:"output,omitempty"`
+
+	// Cached indicates whether this result came from cache
+	Cached bool `json:"cached,omitempty"`
 }
 
 // Issue represents a code quality issue found by a tool.

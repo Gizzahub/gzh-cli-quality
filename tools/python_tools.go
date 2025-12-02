@@ -134,7 +134,7 @@ func (t *RuffTool) Execute(ctx context.Context, files []string, options ExecuteO
 			Tool:     t.name,
 			Language: t.language,
 			Success:  false,
-			Error:    fmt.Errorf("tool %s is not available", t.name),
+			Error:    fmt.Sprintf("tool %s is not available", t.name),
 		}, nil
 	}
 
@@ -162,15 +162,15 @@ func (t *RuffTool) Execute(ctx context.Context, files []string, options ExecuteO
 			Language:       t.language,
 			Success:        formatResult.Success && lintResult.Success,
 			FilesProcessed: formatResult.FilesProcessed,
-			Duration:       formatResult.Duration + " + " + lintResult.Duration,
+			Duration:       formatResult.Duration + lintResult.Duration,
 			Issues:         lintResult.Issues,
 			Output:         formatResult.Output + "\n" + lintResult.Output,
 		}
 
 		if !combinedResult.Success {
-			if formatResult.Error != nil {
+			if formatResult.Error != "" {
 				combinedResult.Error = formatResult.Error
-			} else if lintResult.Error != nil {
+			} else if lintResult.Error != "" {
 				combinedResult.Error = lintResult.Error
 			}
 		}

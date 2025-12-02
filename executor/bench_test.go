@@ -30,7 +30,7 @@ func (m *mockToolForBench) Execute(ctx context.Context, files []string, options 
 		Language:       m.language,
 		Success:        true,
 		FilesProcessed: len(files),
-		Duration:       "1ms",
+		Duration:       time.Millisecond,
 		Issues:         []tools.Issue{},
 	}, nil
 }

@@ -272,8 +272,8 @@ func (m *QualityManager) displayResults(results []*tools.Result, duration time.D
 			fmt.Printf("%s %s (%s): %d개 파일, %v\n",
 				status, result.Tool, result.Language, result.FilesProcessed, result.Duration)
 
-			if result.Error != nil {
-				fmt.Printf("   오류: %v\n", result.Error)
+			if result.Error != "" {
+				fmt.Printf("   오류: %s\n", result.Error)
 			}
 
 			if len(result.Issues) > 0 {

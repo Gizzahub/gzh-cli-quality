@@ -44,7 +44,7 @@ func TestCacheManager_GetSet(t *testing.T) {
 		Tool:     "gofumpt",
 		Language: "Go",
 		Success:  true,
-		Duration: "1s",
+		Duration: time.Second,
 	}
 
 	if err := manager.Set(key, result); err != nil {

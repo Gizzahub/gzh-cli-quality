@@ -139,12 +139,12 @@ func (t *BaseTool) ExecuteCommand(ctx context.Context, cmd *exec.Cmd, files []st
 
 	output, err := cmd.CombinedOutput()
 	duration := time.Since(startTime)
-	result.Duration = duration.String()
+	result.Duration = duration
 	result.Output = string(output)
 	result.FilesProcessed = len(files)
 
 	if err != nil {
-		result.Error = err
+		result.Error = err.Error()
 		return result, nil //nolint:nilerr // 오류를 결과에 캡처하여 반환하므로 에러는 무시
 	}
 
@@ -193,7 +193,7 @@ func (t *BaseTool) Execute(ctx context.Context, files []string, options ExecuteO
 			Tool:     t.name,
 			Language: t.language,
 			Success:  false,
-			Error:    fmt.Errorf("tool %s is not available", t.name),
+			Error:    fmt.Sprintf("tool %s is not available", t.name),
 		}, nil
 	}
 

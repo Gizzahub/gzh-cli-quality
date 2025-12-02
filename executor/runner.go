@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Gizzahub/gzh-cli-quality/cache"
 	"github.com/Gizzahub/gzh-cli-quality/tools"
 )
 
@@ -22,6 +23,7 @@ import (
 type ParallelExecutor struct {
 	maxWorkers int
 	timeout    time.Duration
+	cache      cache.Manager
 }
 
 // NewParallelExecutor creates a new parallel executor.
@@ -36,7 +38,25 @@ func NewParallelExecutor(maxWorkers int, timeout time.Duration) *ParallelExecuto
 	return &ParallelExecutor{
 		maxWorkers: maxWorkers,
 		timeout:    timeout,
+		cache:      nil, // Cache disabled by default
 	}
+}
+
+// NewParallelExecutorWithCache creates a new parallel executor with caching enabled.
+func NewParallelExecutorWithCache(maxWorkers int, timeout time.Duration, cacheManager cache.Manager) *ParallelExecutor {
+	executor := NewParallelExecutor(maxWorkers, timeout)
+	executor.cache = cacheManager
+	return executor
+}
+
+// SetCache sets the cache manager for the executor.
+func (e *ParallelExecutor) SetCache(cacheManager cache.Manager) {
+	e.cache = cacheManager
+}
+
+// CacheEnabled returns whether caching is enabled and active.
+func (e *ParallelExecutor) CacheEnabled() bool {
+	return e.cache != nil && e.cache.Enabled()
 }
 
 // Execute runs the execution plan sequentially.
@@ -138,8 +158,16 @@ func (e *ParallelExecutor) worker(ctx context.Context, wg *sync.WaitGroup, taskC
 				return
 			}
 
-			// Execute the task
-			result, err := task.Tool.Execute(ctx, task.Files, task.Options)
+			var result *tools.Result
+			var err error
+
+			// Try cache lookup for each file if caching is enabled
+			if e.CacheEnabled() && len(task.Files) > 0 {
+				result, err = e.executeWithCache(ctx, task)
+			} else {
+				// Execute without cache
+				result, err = task.Tool.Execute(ctx, task.Files, task.Options)
+			}
 
 			// Send result
 			select {
@@ -159,6 +187,170 @@ func (e *ParallelExecutor) worker(ctx context.Context, wg *sync.WaitGroup, taskC
 			return
 		}
 	}
+}
+
+// executeWithCache executes a task with cache support.
+// For single-file tasks, it attempts cache lookup first.
+// For multi-file tasks, it processes each file individually for better cache granularity.
+func (e *ParallelExecutor) executeWithCache(ctx context.Context, task tools.Task) (*tools.Result, error) {
+	if len(task.Files) == 0 {
+		return task.Tool.Execute(ctx, task.Files, task.Options)
+	}
+
+	// For single file, try direct cache lookup
+	if len(task.Files) == 1 {
+		return e.executeSingleFileWithCache(ctx, task.Tool, task.Files[0], task.Options)
+	}
+
+	// For multiple files, process each file individually for better cache granularity
+	return e.executeMultiFileWithCache(ctx, task)
+}
+
+// executeSingleFileWithCache executes a tool on a single file with cache support.
+func (e *ParallelExecutor) executeSingleFileWithCache(ctx context.Context, tool tools.QualityTool, filePath string, options tools.ExecuteOptions) (*tools.Result, error) {
+	// Generate cache key
+	cacheKey, keyErr := cache.GenerateKey(filePath, tool, options)
+	if keyErr == nil {
+		// Try cache lookup
+		if cached, getErr := e.cache.Get(cacheKey); getErr == nil {
+			// Cache hit! Return cached result
+			cachedResult := cached.Result
+			cachedResult.Cached = true
+			return cachedResult, nil
+		}
+	}
+
+	// Cache miss: execute the tool
+	result, err := tool.Execute(ctx, []string{filePath}, options)
+	if err != nil {
+		return result, err
+	}
+
+	// Store successful result in cache
+	if result.Success && keyErr == nil {
+		_ = e.cache.Set(cacheKey, result) // Fire and forget
+	}
+
+	return result, nil
+}
+
+// executeMultiFileWithCache processes multiple files with cache support.
+// It checks cache for each file and only executes the tool for cache misses.
+func (e *ParallelExecutor) executeMultiFileWithCache(ctx context.Context, task tools.Task) (*tools.Result, error) {
+	var cachedResults []*tools.Result
+	var uncachedFiles []string
+
+	// Check cache for each file
+	for _, filePath := range task.Files {
+		cacheKey, keyErr := cache.GenerateKey(filePath, task.Tool, task.Options)
+		if keyErr != nil {
+			// Can't generate key, add to uncached
+			uncachedFiles = append(uncachedFiles, filePath)
+			continue
+		}
+
+		if cached, getErr := e.cache.Get(cacheKey); getErr == nil {
+			// Cache hit
+			cachedResult := cached.Result
+			cachedResult.Cached = true
+			cachedResults = append(cachedResults, cachedResult)
+		} else {
+			// Cache miss
+			uncachedFiles = append(uncachedFiles, filePath)
+		}
+	}
+
+	// If all files were cached, merge and return
+	if len(uncachedFiles) == 0 {
+		return mergeResults(cachedResults, task.Tool), nil
+	}
+
+	// Execute tool for uncached files
+	result, err := task.Tool.Execute(ctx, uncachedFiles, task.Options)
+	if err != nil {
+		// Still return partial cached results if available
+		if len(cachedResults) > 0 {
+			merged := mergeResults(cachedResults, task.Tool)
+			merged.Error = result.Error
+			return merged, err
+		}
+		return result, err
+	}
+
+	// Store successful result in cache for each uncached file
+	if result.Success {
+		for _, filePath := range uncachedFiles {
+			cacheKey, keyErr := cache.GenerateKey(filePath, task.Tool, task.Options)
+			if keyErr == nil {
+				_ = e.cache.Set(cacheKey, result) // Fire and forget
+			}
+		}
+	}
+
+	// Merge cached and uncached results
+	allResults := append(cachedResults, result)
+	return mergeResults(allResults, task.Tool), nil
+}
+
+// mergeResults merges multiple results into a single result.
+func mergeResults(results []*tools.Result, tool tools.QualityTool) *tools.Result {
+	if len(results) == 0 {
+		return &tools.Result{
+			Tool:     tool.Name(),
+			Language: tool.Language(),
+			Success:  true,
+		}
+	}
+
+	if len(results) == 1 {
+		return results[0]
+	}
+
+	merged := &tools.Result{
+		Tool:           tool.Name(),
+		Language:       tool.Language(),
+		Success:        true,
+		FilesProcessed: 0,
+		Issues:         []tools.Issue{},
+		Cached:         false,
+	}
+
+	var totalDuration time.Duration
+	cachedCount := 0
+
+	for _, r := range results {
+		if r == nil {
+			continue
+		}
+
+		if !r.Success {
+			merged.Success = false
+			if merged.Error == "" {
+				merged.Error = r.Error
+			}
+		}
+
+		merged.FilesProcessed += r.FilesProcessed
+		merged.Issues = append(merged.Issues, r.Issues...)
+		totalDuration += r.Duration
+
+		if r.Cached {
+			cachedCount++
+		}
+
+		if r.Output != "" {
+			if merged.Output != "" {
+				merged.Output += "\n"
+			}
+			merged.Output += r.Output
+		}
+	}
+
+	merged.Duration = totalDuration
+	// Mark as cached only if all results were cached
+	merged.Cached = cachedCount == len(results) && cachedCount > 0
+
+	return merged
 }
 
 // ExecutionPlanner creates execution plans.

@@ -83,11 +83,9 @@ func (cm *CacheManager) Get(key CacheKey) (*CachedResult, error) {
 	cached.Metadata.LastAccessed = time.Now()
 	cached.Metadata.AccessCount++
 
-	// Write updated metadata back (fire and forget)
-	go func() {
-		updatedData, _ := json.MarshalIndent(cached, "", "  ")
-		_ = cm.storage.Write(key.String(), updatedData)
-	}()
+	// Write updated metadata back (synchronously to avoid race conditions in tests)
+	updatedData, _ := json.MarshalIndent(cached, "", "  ")
+	_ = cm.storage.Write(key.String(), updatedData)
 
 	cm.hitCount.Add(1)
 	return &cached, nil

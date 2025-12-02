@@ -5,7 +5,6 @@ package report
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -49,7 +48,7 @@ func TestGenerateReport_SingleToolSuccess(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 5,
-			Duration:       "2s",
+			Duration:       2*time.Second,
 			Issues:         []tools.Issue{},
 		},
 	}
@@ -81,7 +80,7 @@ func TestGenerateReport_WithIssues(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 3,
-			Duration:       "1.5s",
+			Duration:       1500*time.Millisecond,
 			Issues: []tools.Issue{
 				{
 					File:       "main.go",
@@ -157,8 +156,8 @@ func TestGenerateReport_ToolWithError(t *testing.T) {
 			Language:       "JavaScript",
 			Success:        false,
 			FilesProcessed: 0,
-			Duration:       "0s",
-			Error:          errors.New("tool not found"),
+			Duration:       0,
+			Error:          "tool not found",
 			Issues:         []tools.Issue{},
 		},
 	}
@@ -185,7 +184,7 @@ func TestGenerateReport_MultipleTools(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 5,
-			Duration:       "1s",
+			Duration:       time.Second,
 			Issues:         []tools.Issue{},
 		},
 		{
@@ -193,7 +192,7 @@ func TestGenerateReport_MultipleTools(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 5,
-			Duration:       "2s",
+			Duration:       2*time.Second,
 			Issues: []tools.Issue{
 				{
 					File:     "main.go",
@@ -209,8 +208,8 @@ func TestGenerateReport_MultipleTools(t *testing.T) {
 			Language:       "Go",
 			Success:        false,
 			FilesProcessed: 0,
-			Duration:       "0s",
-			Error:          errors.New("command failed"),
+			Duration:       0,
+			Error:          "command failed",
 			Issues:         []tools.Issue{},
 		},
 	}
@@ -237,7 +236,7 @@ func TestGenerateReport_InvalidDuration(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 1,
-			Duration:       "invalid-duration",
+			Duration:       0,
 			Issues:         []tools.Issue{},
 		},
 	}
