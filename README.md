@@ -26,6 +26,7 @@
 - **무설정 시작**: 언어/도구 자동 감지로 즉시 사용
 - **멀티 리포트**: JSON, HTML, Markdown 출력 지원
 - **고성능**: 나노초 수준 최적화 (Registry 조회 14ns, 필터링 8ns)
+- **결과 캐싱**: 파일 기반 캐시로 반복 실행 최적화 (캐시 히트 시 ~60x 빠름)
 
 ## 지원 도구
 
@@ -97,6 +98,8 @@ gz-quality tool golangci-lint --since main
 | `gz-quality upgrade` | 품질 도구 업그레이드 |
 | `gz-quality version` | 도구 버전 확인 |
 | `gz-quality list` | 사용 가능한 도구 목록 |
+| `gz-quality cache status` | 캐시 상태 확인 |
+| `gz-quality cache clear` | 캐시 삭제 |
 
 ### 주요 옵션
 
@@ -114,6 +117,7 @@ gz-quality tool golangci-lint --since main
 
 # 성능
 --workers, -w <n>     # 병렬 워커 수 (기본: CPU 코어 수)
+--no-cache            # 캐시 비활성화
 
 # 리포트
 --report <format>     # 리포트 형식 (json, html, markdown)
@@ -165,6 +169,12 @@ exclude:
   - vendor/**
   - .git/**
   - dist/**
+
+cache:
+  enabled: true           # 캐시 활성화 (기본: true)
+  directory: ".gzquality-cache"
+  max_size: "1GB"
+  ttl: "168h"             # 7일
 ```
 
 ## 사용 예시
@@ -254,6 +264,7 @@ gz-quality tool ruff --fix
 - [테스트 가이드](./docs/developer/TESTING.md) - 테스트 전략 및 커버리지 (76.2%)
 - [성능 벤치마크](./docs/developer/BENCHMARKS.md) - 27개 벤치마크 및 성능 메트릭
 - [커버리지 리포트](./docs/developer/COVERAGE.md) - 패키지별 테스트 커버리지 상세
+- [캐싱 시스템](./docs/developer/CACHING.md) - 캐시 아키텍처 및 구현 상세
 
 ## 개발
 
