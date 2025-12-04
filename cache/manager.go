@@ -6,6 +6,7 @@ package cache
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -301,14 +302,10 @@ func (cm *CacheManager) Cleanup() error {
 			})
 		}
 
-		// Sort by last accessed (oldest first)
-		for i := 0; i < len(entries)-1; i++ {
-			for j := i + 1; j < len(entries); j++ {
-				if entries[i].lastAccessed.After(entries[j].lastAccessed) {
-					entries[i], entries[j] = entries[j], entries[i]
-				}
-			}
-		}
+		// Sort by last accessed (oldest first) - O(n log n)
+		sort.Slice(entries, func(i, j int) bool {
+			return entries[i].lastAccessed.Before(entries[j].lastAccessed)
+		})
 
 		// Delete oldest entries until under limit
 		for _, e := range entries {
