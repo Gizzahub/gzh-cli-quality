@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -178,9 +179,9 @@ func (fs *FilesystemStorage) keyToPath(key string) string {
 	// Extract tool name from key (format: tool-version-...)
 	// Split by dash and take first part
 	tool := "unknown"
-	if idx := filepath.ToSlash(key); idx != "" {
-		parts := splitByDash(key)
-		if len(parts) > 0 {
+	if key != "" {
+		parts := strings.Split(key, "-")
+		if len(parts) > 0 && parts[0] != "" {
 			tool = parts[0]
 		}
 	}
@@ -192,29 +193,6 @@ func (fs *FilesystemStorage) keyToPath(key string) string {
 	}
 
 	return filepath.Join(fs.basePath, "results", tool, shard, key+".json")
-}
-
-// splitByDash splits a string by dash character.
-func splitByDash(s string) []string {
-	var parts []string
-	var current string
-
-	for _, ch := range s {
-		if ch == '-' {
-			if current != "" {
-				parts = append(parts, current)
-				current = ""
-			}
-		} else {
-			current += string(ch)
-		}
-	}
-
-	if current != "" {
-		parts = append(parts, current)
-	}
-
-	return parts
 }
 
 // CleanupCorrupted removes corrupted cache entries.
