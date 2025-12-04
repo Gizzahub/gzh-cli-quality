@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Gizzahub/gzh-cli-quality/git"
 	"github.com/Gizzahub/gzh-cli-quality/tools"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -525,14 +526,14 @@ func TestExecutionPlanner_CreatePlan_WithLintOnly(t *testing.T) {
 func TestGitUtils_IsGitRepository(t *testing.T) {
 	t.Run("Valid git repository", func(t *testing.T) {
 		repoDir := setupTestGitRepo(t)
-		gitUtils := &GitUtils{projectRoot: repoDir}
+		gitUtils := git.NewGitUtils(repoDir)
 
 		assert.True(t, gitUtils.IsGitRepository())
 	})
 
 	t.Run("Not a git repository", func(t *testing.T) {
 		tmpDir := t.TempDir()
-		gitUtils := &GitUtils{projectRoot: tmpDir}
+		gitUtils := git.NewGitUtils(tmpDir)
 
 		assert.False(t, gitUtils.IsGitRepository())
 	})
@@ -542,7 +543,7 @@ func TestGitUtils_ValidateCommitish(t *testing.T) {
 	repoDir := setupTestGitRepo(t)
 	createAndCommitFile(t, repoDir, "file1.txt", "content1")
 
-	gitUtils := &GitUtils{projectRoot: repoDir}
+	gitUtils := git.NewGitUtils(repoDir)
 
 	t.Run("Valid commit reference", func(t *testing.T) {
 		err := gitUtils.ValidateCommitish("HEAD")
@@ -558,7 +559,7 @@ func TestGitUtils_ValidateCommitish(t *testing.T) {
 
 func TestGitUtils_GetStagedFiles(t *testing.T) {
 	repoDir := setupTestGitRepo(t)
-	gitUtils := &GitUtils{projectRoot: repoDir}
+	gitUtils := git.NewGitUtils(repoDir)
 
 	t.Run("No staged files", func(t *testing.T) {
 		files, err := gitUtils.GetStagedFiles()
@@ -587,7 +588,7 @@ func TestGitUtils_GetAllChangedFiles(t *testing.T) {
 	repoDir := setupTestGitRepo(t)
 	createAndCommitFile(t, repoDir, "committed.txt", "initial")
 
-	gitUtils := &GitUtils{projectRoot: repoDir}
+	gitUtils := git.NewGitUtils(repoDir)
 
 	// Create staged file
 	stagedFile := filepath.Join(repoDir, "staged.txt")
@@ -620,7 +621,7 @@ func TestGitUtils_GetChangedFiles(t *testing.T) {
 	createAndCommitFile(t, repoDir, "file1.txt", "content1")
 	createAndCommitFile(t, repoDir, "file2.txt", "content2")
 
-	gitUtils := &GitUtils{projectRoot: repoDir}
+	gitUtils := git.NewGitUtils(repoDir)
 
 	t.Run("Changes since HEAD", func(t *testing.T) {
 		// Modify file2.txt

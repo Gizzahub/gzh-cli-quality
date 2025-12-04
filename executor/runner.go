@@ -7,15 +7,12 @@ package executor
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/Gizzahub/gzh-cli-quality/cache"
+	"github.com/Gizzahub/gzh-cli-quality/git"
 	"github.com/Gizzahub/gzh-cli-quality/tools"
 )
 
@@ -565,8 +562,7 @@ func (p *ExecutionPlanner) applyFileFilters(projectRoot string, files []string, 
 
 // getGitFilteredFiles returns files based on Git filtering options.
 func (p *ExecutionPlanner) getGitFilteredFiles(projectRoot string, options PlanOptions) ([]string, error) {
-	// Lazy import to avoid dependency issues
-	gitUtils := &GitUtils{projectRoot: projectRoot}
+	gitUtils := git.NewGitUtils(projectRoot)
 
 	if !gitUtils.IsGitRepository() {
 		return nil, fmt.Errorf("git filtering requested but not in a git repository")
@@ -593,111 +589,6 @@ func (p *ExecutionPlanner) getGitFilteredFiles(projectRoot string, options PlanO
 	}
 
 	return gitFiles, nil
-}
-
-// GitUtils provides Git-related utilities (embedded for simplicity).
-type GitUtils struct {
-	projectRoot string
-}
-
-func (g *GitUtils) IsGitRepository() bool {
-	cmd := exec.Command("git", "rev-parse", "--git-dir")
-	cmd.Dir = g.projectRoot
-	return cmd.Run() == nil
-}
-
-func (g *GitUtils) ValidateCommitish(commitish string) error {
-	cmd := exec.Command("git", "rev-parse", "--verify", commitish+"^{commit}")
-	cmd.Dir = g.projectRoot
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("invalid commit reference '%s': %w", commitish, err)
-	}
-	return nil
-}
-
-func (g *GitUtils) GetChangedFiles(since string) ([]string, error) {
-	cmd := exec.Command("git", "diff", "--name-only", since)
-	cmd.Dir = g.projectRoot
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get git diff: %w", err)
-	}
-	return g.parseFileList(string(output)), nil
-}
-
-func (g *GitUtils) GetStagedFiles() ([]string, error) {
-	cmd := exec.Command("git", "diff", "--cached", "--name-only")
-	cmd.Dir = g.projectRoot
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get staged files: %w", err)
-	}
-	return g.parseFileList(string(output)), nil
-}
-
-func (g *GitUtils) GetAllChangedFiles() ([]string, error) {
-	var allFiles []string
-
-	// Get staged files
-	staged, err := g.GetStagedFiles()
-	if err != nil {
-		return nil, err
-	}
-	allFiles = append(allFiles, staged...)
-
-	// Get modified files
-	cmd := exec.Command("git", "diff", "--name-only")
-	cmd.Dir = g.projectRoot
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get modified files: %w", err)
-	}
-	modified := g.parseFileList(string(output))
-	allFiles = append(allFiles, modified...)
-
-	// Get untracked files
-	cmd = exec.Command("git", "ls-files", "--others", "--exclude-standard")
-	cmd.Dir = g.projectRoot
-	output, err = cmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get untracked files: %w", err)
-	}
-	untracked := g.parseFileList(string(output))
-	allFiles = append(allFiles, untracked...)
-
-	return g.deduplicateAndMakeAbsolute(allFiles), nil
-}
-
-func (g *GitUtils) parseFileList(output string) []string {
-	var files []string
-	lines := strings.Split(strings.TrimSpace(output), "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line != "" {
-			files = append(files, line)
-		}
-	}
-	return files
-}
-
-func (g *GitUtils) deduplicateAndMakeAbsolute(files []string) []string {
-	seen := make(map[string]bool)
-	var result []string
-
-	for _, file := range files {
-		if seen[file] {
-			continue
-		}
-		seen[file] = true
-
-		// Convert to absolute path
-		absPath := filepath.Join(g.projectRoot, file)
-		if _, err := os.Stat(absPath); err == nil {
-			result = append(result, absPath)
-		}
-	}
-
-	return result
 }
 
 // intersectFiles returns the intersection of two file slices.
