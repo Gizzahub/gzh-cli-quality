@@ -8,8 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -248,41 +246,7 @@ func (t *RuffTool) ParseOutput(output string) []Issue {
 
 // parseTextOutput parses plain text output as fallback.
 func (t *RuffTool) parseTextOutput(output string) []Issue {
-	var issues []Issue
-
-	// Pattern: file:line:col: code message
-	re := regexp.MustCompile(`^(.+):(\d+):(\d+):\s*([A-Z]\d+)\s*(.+)$`)
-
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-
-		matches := re.FindStringSubmatch(line)
-		if len(matches) == 6 {
-			lineNum, err := strconv.Atoi(matches[2])
-			if err != nil {
-				lineNum = 0
-			}
-			colNum, err := strconv.Atoi(matches[3])
-			if err != nil {
-				colNum = 0
-			}
-
-			issues = append(issues, Issue{
-				File:     matches[1],
-				Line:     lineNum,
-				Column:   colNum,
-				Severity: "error",
-				Rule:     matches[4],
-				Message:  matches[5],
-			})
-		}
-	}
-
-	return issues
+	return ParseTextLines(output, RuffParseConfig)
 }
 
 // PylintTool implements Python linting using pylint.

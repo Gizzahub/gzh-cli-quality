@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"os/exec"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -210,41 +208,7 @@ func (t *GolangciLintTool) ParseOutput(output string) []Issue {
 
 // parseTextOutput parses plain text output as fallback.
 func (t *GolangciLintTool) parseTextOutput(output string) []Issue {
-	var issues []Issue
-
-	// Pattern: file:line:col: message (rule)
-	re := regexp.MustCompile(`^(.+):(\d+):(\d+):\s*(.+)\s*\((.+)\)$`)
-
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-
-		matches := re.FindStringSubmatch(line)
-		if len(matches) == 6 {
-			lineNum, err := strconv.Atoi(matches[2])
-			if err != nil {
-				lineNum = 0
-			}
-			colNum, err := strconv.Atoi(matches[3])
-			if err != nil {
-				colNum = 0
-			}
-
-			issues = append(issues, Issue{
-				File:     matches[1],
-				Line:     lineNum,
-				Column:   colNum,
-				Severity: "error", // Default severity
-				Rule:     matches[5],
-				Message:  matches[4],
-			})
-		}
-	}
-
-	return issues
+	return ParseTextLines(output, GolangciLintParseConfig)
 }
 
 // getGoModuleName extracts module name from go.mod file.

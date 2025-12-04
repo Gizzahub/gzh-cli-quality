@@ -6,8 +6,6 @@ package tools
 import (
 	"encoding/json"
 	"os/exec"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -191,46 +189,7 @@ func (t *ESLintTool) ParseOutput(output string) []Issue {
 
 // parseTextOutput parses plain text output as fallback.
 func (t *ESLintTool) parseTextOutput(output string) []Issue {
-	var issues []Issue
-
-	// Pattern: file:line:col: message (rule)
-	re := regexp.MustCompile(`^(.+):(\d+):(\d+):\s*(error|warning|info)\s*(.+?)\s*(?:\((.+)\))?$`)
-
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-
-		matches := re.FindStringSubmatch(line)
-		if len(matches) >= 6 {
-			lineNum, err := strconv.Atoi(matches[2])
-			if err != nil {
-				lineNum = 0
-			}
-			colNum, err := strconv.Atoi(matches[3])
-			if err != nil {
-				colNum = 0
-			}
-
-			rule := ""
-			if len(matches) > 6 && matches[6] != "" {
-				rule = matches[6]
-			}
-
-			issues = append(issues, Issue{
-				File:     matches[1],
-				Line:     lineNum,
-				Column:   colNum,
-				Severity: matches[4],
-				Rule:     rule,
-				Message:  matches[5],
-			})
-		}
-	}
-
-	return issues
+	return ParseTextLines(output, ESLintParseConfig)
 }
 
 // TSCTool implements TypeScript type checking using tsc.
@@ -287,41 +246,7 @@ func (t *TSCTool) ParseOutput(output string) []Issue {
 		return []Issue{}
 	}
 
-	var issues []Issue
-
-	// Pattern: file(line,col): error TS####: message
-	re := regexp.MustCompile(`^(.+?)\((\d+),(\d+)\):\s*(error|warning)\s*TS(\d+):\s*(.+)$`)
-
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-
-		matches := re.FindStringSubmatch(line)
-		if len(matches) == 7 {
-			lineNum, err := strconv.Atoi(matches[2])
-			if err != nil {
-				lineNum = 0
-			}
-			colNum, err := strconv.Atoi(matches[3])
-			if err != nil {
-				colNum = 0
-			}
-
-			issues = append(issues, Issue{
-				File:     matches[1],
-				Line:     lineNum,
-				Column:   colNum,
-				Severity: matches[4],
-				Rule:     "TS" + matches[5],
-				Message:  matches[6],
-			})
-		}
-	}
-
-	return issues
+	return ParseTextLines(output, TSCParseConfig)
 }
 
 // Ensure JavaScript tools implement QualityTool interface.
