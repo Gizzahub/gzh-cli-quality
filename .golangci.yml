@@ -6,26 +6,66 @@ run:
   issues-exit-code: 1
   tests: true
   timeout: 5m
+  skip-dirs:
+    - vendor
+    - .git
+    - tmp
+    - build
 
 linters:
-  default: none
+  disable-all: true
   enable:
-    - bodyclose
-    - errcheck
-    - errname
-    - errorlint
-    - goconst
-    - gocritic
-    - gocyclo
-    - govet
-    - ineffassign
-    - misspell
-    - nilerr
-    - nilnil
-    - staticcheck
-    - unconvert
-    - unused
-    - whitespace
+    # Error detection
+    - errcheck        # Unchecked errors
+    - errorlint       # Error wrapping
+    - errname         # Error naming conventions
+    - nilerr          # Returning nil with non-nil error
+    - nilnil          # Returning nil,nil
+
+    # Code quality
+    - govet           # Go vet checks
+    - staticcheck     # Static analysis
+    - unused          # Unused code
+    - ineffassign     # Ineffective assignments
+    - unconvert       # Unnecessary type conversions
+    - wastedassign    # Wasted assignments
+
+    # Code style
+    - gofmt           # Code formatting
+    - gofumpt         # Stricter gofmt
+    - goimports       # Import formatting
+    - whitespace      # Whitespace issues
+    - revive          # Extensible linter
+
+    # Complexity
+    - gocyclo         # Cyclomatic complexity
+    - gocognit        # Cognitive complexity
+    - cyclop          # Package/function complexity
+    - nestif          # Deeply nested if statements
+    - funlen          # Function length
+
+    # Performance
+    - gocritic        # Go critic checks
+    - prealloc        # Slice preallocation
+    - bodyclose       # HTTP body close
+
+    # Bugs
+    - gosimple        # Simplification suggestions
+    - goconst         # Repeated strings
+    - containedctx    # Context in struct
+    - contextcheck    # Context usage
+    - durationcheck   # Duration multiplication
+    - noctx           # HTTP requests without context
+    - rowserrcheck    # SQL rows.Err check
+    - sqlclosecheck   # SQL close check
+    - exportloopref   # Loop variable capture
+
+    # Security
+    - gosec           # Security issues
+
+    # Documentation
+    - godot           # Comment punctuation
+    - misspell        # Spelling mistakes
 
   settings:
     errcheck:
@@ -49,6 +89,7 @@ linters:
     goconst:
       min-len: 8
       min-occurrences: 3
+      ignore-tests: true
 
     gocritic:
       disabled-checks:
@@ -59,9 +100,26 @@ linters:
         - diagnostic
         - style
         - performance
+        - experimental
+        - opinionated
 
     gocyclo:
+      min-complexity: 20
+
+    gocognit:
       min-complexity: 25
+
+    cyclop:
+      max-complexity: 15
+      package-average: 10.0
+
+    nestif:
+      min-complexity: 5
+
+    funlen:
+      lines: 100
+      statements: 60
+      ignore-comments: true
 
     govet:
       disable:
@@ -76,79 +134,154 @@ linters:
       checks:
         - all
 
-  exclusions:
-    presets:
-      - std-error-handling
-      - common-false-positives
-    rules:
-      # Test files - allow unchecked errors and other style issues in tests
-      - path: _test\.go
-        linters:
-          - errcheck
-          - gocyclo
-          - goconst
-          - ineffassign
-          - nilnil
-          - nilerr
-          - gocritic
-          - govet
-          - staticcheck
+    revive:
+      enable-all-rules: false
+      rules:
+        - name: exported
+          disabled: false
+        - name: var-naming
+          disabled: false
+        - name: package-comments
+          disabled: true
+        - name: indent-error-flow
+          disabled: false
+        - name: error-return
+          disabled: false
+        - name: error-naming
+          disabled: false
+        - name: blank-imports
+          disabled: false
+        - name: context-as-argument
+          disabled: false
+        - name: context-keys-type
+          disabled: false
+        - name: dot-imports
+          disabled: false
+        - name: if-return
+          disabled: false
+        - name: increment-decrement
+          disabled: false
+        - name: receiver-naming
+          disabled: false
+        - name: range
+          disabled: false
+        - name: errorf
+          disabled: false
+        - name: superfluous-else
+          disabled: false
+        - name: unreachable-code
+          disabled: false
+        - name: var-declaration
+          disabled: false
 
-      # Explicitly ignored errors (fire and forget pattern with underscore)
-      - text: "Error return value of.*is not checked"
-        source: "_ :?="
-        linters:
-          - errcheck
+    gosec:
+      excludes:
+        - G204  # Subprocess launched with variable (needed for tool execution)
+        - G304  # File path provided as taint input (needed for file operations)
 
-      # Intentional ignored errors in cache manager for best-effort operations
-      - path: cache/manager\.go
-        text: "Error return value of"
-        linters:
-          - errcheck
-
-      # Defer Close() is intentional (cleanup pattern)
-      - text: "Error return value of.*Close.*is not checked"
-        linters:
-          - errcheck
-
-      # goconst for short literal strings in specific files
-      - path: (quality|tools/rust_tools)\.go
-        linters:
-          - goconst
-
-      # Storage temp file extension constant
-      - path: cache/storage\.go
-        linters:
-          - goconst
-
-      # Benchmark results unused struct fields
-      - path: bench_test\.go
-        linters:
-          - govet
-
-      # Package comments not required for all packages
-      - text: "ST1000"
-        linters:
-          - staticcheck
-
-      # MessageId is from external JSON format (pylint)
-      - text: "ST1003.*MessageId"
-        linters:
-          - staticcheck
-
-      # Intentional nil return after error in WalkDir callback
-      - path: cache/storage\.go
-        text: "error is not nil.*but it returns nil"
-        linters:
-          - nilerr
+    godot:
+      scope: declarations
+      exclude:
+        - "^TODO:"
+        - "^FIXME:"
+        - "^BUG:"
+      capital: true
 
 issues:
   max-issues-per-linter: 50
   max-same-issues: 10
   new: false
 
+  exclude-rules:
+    # Test files - allow unchecked errors and other style issues
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gocyclo
+        - gocognit
+        - cyclop
+        - funlen
+        - goconst
+        - ineffassign
+        - nilnil
+        - nilerr
+        - gocritic
+        - govet
+        - staticcheck
+        - gosec
+        - revive
+        - nestif
+
+    # Explicitly ignored errors (fire and forget pattern with underscore)
+    - text: "Error return value of.*is not checked"
+      source: "_ :?="
+      linters:
+        - errcheck
+
+    # Intentional ignored errors in cache manager for best-effort operations
+    - path: cache/manager\.go
+      text: "Error return value of"
+      linters:
+        - errcheck
+
+    # Defer Close() is intentional (cleanup pattern)
+    - text: "Error return value of.*Close.*is not checked"
+      linters:
+        - errcheck
+
+    # goconst for short literal strings in specific files
+    - path: (quality|tools/rust_tools)\.go
+      linters:
+        - goconst
+
+    # Storage temp file extension constant
+    - path: cache/storage\.go
+      linters:
+        - goconst
+
+    # Benchmark results unused struct fields
+    - path: bench_test\.go
+      linters:
+        - govet
+
+    # Package comments not required for all packages
+    - text: "ST1000"
+      linters:
+        - staticcheck
+
+    # MessageId is from external JSON format (pylint)
+    - text: "ST1003.*MessageId"
+      linters:
+        - staticcheck
+
+    # Intentional nil return after error in WalkDir callback
+    - path: cache/storage\.go
+      text: "error is not nil.*but it returns nil"
+      linters:
+        - nilerr
+
+    # Main function complexity is acceptable
+    - path: cmd/quality/main\.go
+      linters:
+        - gocyclo
+        - gocognit
+        - cyclop
+        - funlen
+
+    # Tool detection logic can be complex
+    - path: tools/.*\.go
+      linters:
+        - gocyclo
+        - gocognit
+
+    # Subprocess execution is necessary for tool runners
+    - path: executor/.*\.go
+      linters:
+        - gosec
+
   exclude-dirs:
     - vendor
     - .git
     - tmp
     - build
+    - dist
