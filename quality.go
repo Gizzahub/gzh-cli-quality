@@ -861,11 +861,17 @@ func registerAllTools(registry tools.ToolRegistry) {
 	registry.Register(tools.NewGofumptTool())
 	registry.Register(tools.NewGoimportsTool())
 	registry.Register(tools.NewGolangciLintTool())
+	registry.Register(tools.NewGosecTool())
+	registry.Register(tools.NewGovulncheckTool())
+	registry.Register(tools.NewGciTool())
+	registry.Register(tools.NewGolinesTool())
 
 	// Python tools
 	registry.Register(tools.NewBlackTool())
 	registry.Register(tools.NewRuffTool())
 	registry.Register(tools.NewPylintTool())
+	registry.Register(tools.NewMypyTool())
+	registry.Register(tools.NewBanditTool())
 
 	// JavaScript/TypeScript tools
 	registry.Register(tools.NewPrettierTool())

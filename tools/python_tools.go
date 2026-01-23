@@ -22,7 +22,7 @@ func NewBlackTool() *BlackTool {
 		BaseTool: NewBaseTool("black", "Python", "black", FORMAT),
 	}
 
-	tool.SetInstallCommand([]string{"pip", "install", "black"})
+	tool.SetInstallCommand([]string{"uv", "tool", "install", "black"})
 	tool.SetConfigPatterns([]string{"pyproject.toml", ".black", "black.toml"})
 
 	return tool
@@ -72,7 +72,7 @@ func NewRuffTool() *RuffTool {
 		BaseTool: NewBaseTool("ruff", "Python", "ruff", BOTH),
 	}
 
-	tool.SetInstallCommand([]string{"pip", "install", "ruff"})
+	tool.SetInstallCommand([]string{"uv", "tool", "install", "ruff"})
 	tool.SetConfigPatterns([]string{"ruff.toml", ".ruff.toml", "pyproject.toml"})
 
 	return tool
@@ -260,7 +260,7 @@ func NewPylintTool() *PylintTool {
 		BaseTool: NewBaseTool("pylint", "Python", "pylint", LINT),
 	}
 
-	tool.SetInstallCommand([]string{"pip", "install", "pylint"})
+	tool.SetInstallCommand([]string{"uv", "tool", "install", "pylint"})
 	tool.SetConfigPatterns([]string{".pylintrc", "pylint.cfg", "pyproject.toml"})
 
 	return tool
@@ -344,9 +344,183 @@ func (t *PylintTool) ParseOutput(output string) []Issue {
 	return issues
 }
 
+// MypyTool implements Python type checking using mypy.
+type MypyTool struct {
+	*BaseTool
+}
+
+// NewMypyTool creates a new mypy tool.
+func NewMypyTool() *MypyTool {
+	tool := &MypyTool{
+		BaseTool: NewBaseTool("mypy", "Python", "mypy", LINT),
+	}
+
+	tool.SetInstallCommand([]string{"uv", "tool", "install", "mypy"})
+	tool.SetConfigPatterns([]string{"mypy.ini", ".mypy.ini", "pyproject.toml", "setup.cfg"})
+
+	return tool
+}
+
+// BuildCommand builds the mypy command.
+func (t *MypyTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
+	args := []string{}
+
+	// Add config file if specified
+	if options.ConfigFile != "" {
+		args = append(args, "--config-file", options.ConfigFile)
+	}
+
+	// Output format for parsing
+	args = append(args, "--output", "json")
+
+	// Add extra flags if provided
+	args = append(args, options.ExtraArgs...)
+
+	// Filter only Python files
+	pyFiles := FilterFilesByExtensions(files, []string{".py", ".pyi"})
+	if len(pyFiles) == 0 {
+		args = append(args, ".")
+	} else {
+		args = append(args, pyFiles...)
+	}
+
+	cmd := exec.Command(t.executable, args...)
+
+	if options.ProjectRoot != "" {
+		cmd.Dir = options.ProjectRoot
+	}
+
+	return cmd
+}
+
+// ParseOutput parses mypy JSON output.
+func (t *MypyTool) ParseOutput(output string) []Issue {
+	if strings.TrimSpace(output) == "" {
+		return []Issue{}
+	}
+
+	var issues []Issue
+
+	// mypy JSON output is one JSON object per line
+	for _, line := range strings.Split(output, "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+
+		var item struct {
+			File     string `json:"file"`
+			Line     int    `json:"line"`
+			Column   int    `json:"column"`
+			Severity string `json:"severity"`
+			Message  string `json:"message"`
+			Code     string `json:"code"`
+		}
+
+		if err := json.Unmarshal([]byte(line), &item); err != nil {
+			continue
+		}
+
+		issues = append(issues, Issue{
+			File:     item.File,
+			Line:     item.Line,
+			Column:   item.Column,
+			Severity: item.Severity,
+			Rule:     item.Code,
+			Message:  item.Message,
+		})
+	}
+
+	return issues
+}
+
+// BanditTool implements Python security scanning using bandit.
+type BanditTool struct {
+	*BaseTool
+}
+
+// NewBanditTool creates a new bandit tool.
+func NewBanditTool() *BanditTool {
+	tool := &BanditTool{
+		BaseTool: NewBaseTool("bandit", "Python", "bandit", LINT),
+	}
+
+	tool.SetInstallCommand([]string{"uv", "tool", "install", "bandit"})
+	tool.SetConfigPatterns([]string{".bandit", "bandit.yaml", "pyproject.toml"})
+
+	return tool
+}
+
+// BuildCommand builds the bandit command.
+func (t *BanditTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
+	args := []string{"-f", "json", "-r"} // JSON format, recursive
+
+	// Add config file if specified
+	if options.ConfigFile != "" {
+		args = append(args, "-c", options.ConfigFile)
+	}
+
+	// Add extra flags if provided
+	args = append(args, options.ExtraArgs...)
+
+	// Filter only Python files or use current directory
+	pyFiles := FilterFilesByExtensions(files, []string{".py"})
+	if len(pyFiles) == 0 {
+		args = append(args, ".")
+	} else {
+		args = append(args, pyFiles...)
+	}
+
+	cmd := exec.Command(t.executable, args...)
+
+	if options.ProjectRoot != "" {
+		cmd.Dir = options.ProjectRoot
+	}
+
+	return cmd
+}
+
+// ParseOutput parses bandit JSON output.
+func (t *BanditTool) ParseOutput(output string) []Issue {
+	if strings.TrimSpace(output) == "" {
+		return []Issue{}
+	}
+
+	var banditResults struct {
+		Results []struct {
+			Filename   string `json:"filename"`
+			LineNumber int    `json:"line_number"`
+			LineRange  []int  `json:"line_range"`
+			TestID     string `json:"test_id"`
+			TestName   string `json:"test_name"`
+			Severity   string `json:"issue_severity"`
+			Confidence string `json:"issue_confidence"`
+			Text       string `json:"issue_text"`
+		} `json:"results"`
+	}
+
+	if err := json.Unmarshal([]byte(output), &banditResults); err != nil {
+		return []Issue{}
+	}
+
+	issues := make([]Issue, 0, len(banditResults.Results))
+	for _, item := range banditResults.Results {
+		issues = append(issues, Issue{
+			File:     item.Filename,
+			Line:     item.LineNumber,
+			Severity: strings.ToLower(item.Severity),
+			Rule:     item.TestID,
+			Message:  fmt.Sprintf("[%s] %s (confidence: %s)", item.TestName, item.Text, item.Confidence),
+		})
+	}
+
+	return issues
+}
+
 // Ensure Python tools implement QualityTool interface.
 var (
 	_ QualityTool = (*BlackTool)(nil)
 	_ QualityTool = (*RuffTool)(nil)
 	_ QualityTool = (*PylintTool)(nil)
+	_ QualityTool = (*MypyTool)(nil)
+	_ QualityTool = (*BanditTool)(nil)
 )
