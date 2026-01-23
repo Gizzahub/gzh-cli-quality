@@ -882,6 +882,44 @@ func registerAllTools(registry tools.ToolRegistry) {
 	registry.Register(tools.NewRustfmtTool())
 	registry.Register(tools.NewClippyTool())
 	registry.Register(tools.NewCargoFmtTool())
+
+	// Markdown tools
+	registry.Register(tools.NewMarkdownlintTool())
+
+	// Java tools
+	registry.Register(tools.NewGoogleJavaFormatTool())
+	registry.Register(tools.NewCheckstyleTool())
+	registry.Register(tools.NewSpotbugsTool())
+
+	// Kotlin tools
+	registry.Register(tools.NewKtlintTool())
+	registry.Register(tools.NewDetektTool())
+
+	// Shell tools
+	registry.Register(tools.NewShellcheckTool())
+	registry.Register(tools.NewShfmtTool())
+
+	// C/C++ tools
+	registry.Register(tools.NewClangFormatTool())
+	registry.Register(tools.NewClangTidyTool())
+
+	// YAML tools
+	registry.Register(tools.NewYamllintTool())
+
+	// SQL tools
+	registry.Register(tools.NewSqlfluffTool())
+
+	// Dockerfile tools
+	registry.Register(tools.NewHadolintTool())
+
+	// TOML tools
+	registry.Register(tools.NewTaploTool())
+
+	// Protobuf tools
+	registry.Register(tools.NewBufTool())
+
+	// CSS tools
+	registry.Register(tools.NewStylelintTool())
 }
 
 // ProjectAnalyzerAdapter adapts detector.ProjectAnalyzer to executor.ProjectAnalyzer interface.
