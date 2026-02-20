@@ -25,7 +25,7 @@ dist/
 bin/
 
 # Go workspace file
-go.work
+# (tracked) keep repo-local go.work to avoid inheriting parent workspaces
 
 # IDE
 .idea/
