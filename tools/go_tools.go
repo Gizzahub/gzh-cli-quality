@@ -358,7 +358,7 @@ func (t *GovulncheckTool) ParseOutput(output string) []Issue {
 
 	// govulncheck outputs JSON lines, parse each line
 	var issues []Issue
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}

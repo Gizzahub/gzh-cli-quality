@@ -68,7 +68,7 @@ func WriteFile(t *testing.T, dir, filename, content string) string {
 }
 
 // AssertEqual asserts that two values are equal.
-func AssertEqual(t *testing.T, got, want interface{}) {
+func AssertEqual(t *testing.T, got, want any) {
 	t.Helper()
 
 	if got != want {
@@ -77,7 +77,7 @@ func AssertEqual(t *testing.T, got, want interface{}) {
 }
 
 // AssertNotEqual asserts that two values are not equal.
-func AssertNotEqual(t *testing.T, got, want interface{}) {
+func AssertNotEqual(t *testing.T, got, want any) {
 	t.Helper()
 
 	if got == want {
@@ -86,7 +86,7 @@ func AssertNotEqual(t *testing.T, got, want interface{}) {
 }
 
 // AssertNil asserts that value is nil.
-func AssertNil(t *testing.T, value interface{}) {
+func AssertNil(t *testing.T, value any) {
 	t.Helper()
 
 	if value != nil {
@@ -95,7 +95,7 @@ func AssertNil(t *testing.T, value interface{}) {
 }
 
 // AssertNotNil asserts that value is not nil.
-func AssertNotNil(t *testing.T, value interface{}) {
+func AssertNotNil(t *testing.T, value any) {
 	t.Helper()
 
 	if value == nil {

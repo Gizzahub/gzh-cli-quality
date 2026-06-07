@@ -38,13 +38,13 @@ func newMockCacheableTool(name, language string) *mockCacheableTool {
 	}
 }
 
-func (m *mockCacheableTool) Name() string            { return m.name }
-func (m *mockCacheableTool) Language() string        { return m.language }
-func (m *mockCacheableTool) Type() tools.ToolType    { return tools.FORMAT }
-func (m *mockCacheableTool) IsAvailable() bool       { return m.available }
-func (m *mockCacheableTool) Install() error          { return nil }
-func (m *mockCacheableTool) Upgrade() error          { return nil }
-func (m *mockCacheableTool) GetVersion() (string, error) { return m.version, nil }
+func (m *mockCacheableTool) Name() string                                { return m.name }
+func (m *mockCacheableTool) Language() string                            { return m.language }
+func (m *mockCacheableTool) Type() tools.ToolType                        { return tools.FORMAT }
+func (m *mockCacheableTool) IsAvailable() bool                           { return m.available }
+func (m *mockCacheableTool) Install() error                              { return nil }
+func (m *mockCacheableTool) Upgrade() error                              { return nil }
+func (m *mockCacheableTool) GetVersion() (string, error)                 { return m.version, nil }
 func (m *mockCacheableTool) FindConfigFiles(projectRoot string) []string { return m.configFiles }
 
 func (m *mockCacheableTool) Execute(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {

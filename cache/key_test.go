@@ -19,14 +19,14 @@ type mockTool struct {
 	configs []string
 }
 
-func (m *mockTool) Name() string                              { return m.name }
-func (m *mockTool) Language() string                          { return "Go" }
-func (m *mockTool) Type() tools.ToolType                      { return tools.FORMAT }
-func (m *mockTool) IsAvailable() bool                         { return true }
-func (m *mockTool) Install() error                            { return nil }
-func (m *mockTool) GetVersion() (string, error)               { return m.version, nil }
-func (m *mockTool) Upgrade() error                            { return nil }
-func (m *mockTool) FindConfigFiles(root string) []string      { return m.configs }
+func (m *mockTool) Name() string                         { return m.name }
+func (m *mockTool) Language() string                     { return "Go" }
+func (m *mockTool) Type() tools.ToolType                 { return tools.FORMAT }
+func (m *mockTool) IsAvailable() bool                    { return true }
+func (m *mockTool) Install() error                       { return nil }
+func (m *mockTool) GetVersion() (string, error)          { return m.version, nil }
+func (m *mockTool) Upgrade() error                       { return nil }
+func (m *mockTool) FindConfigFiles(root string) []string { return m.configs }
 func (m *mockTool) Execute(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {
 	return nil, nil
 }

@@ -207,7 +207,7 @@ func TestCacheManager_Cleanup_Size(t *testing.T) {
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 
 	// Add multiple entries
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		options := tools.ExecuteOptions{ExtraArgs: []string{string(rune('a' + i))}}
 		key, _ := GenerateKey(testFile, tool, options)
 		result := &tools.Result{Success: true}
@@ -248,7 +248,7 @@ func TestCacheManager_InvalidateAll(t *testing.T) {
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 
 	// Add multiple entries
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		options := tools.ExecuteOptions{ExtraArgs: []string{string(rune('a' + i))}}
 		key, _ := GenerateKey(testFile, tool, options)
 		result := &tools.Result{Success: true}
@@ -357,7 +357,7 @@ func TestCacheManager_AccessCount(t *testing.T) {
 	manager.Set(key, result)
 
 	// Access multiple times
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		manager.Get(key)
 		time.Sleep(10 * time.Millisecond) // Allow async metadata update
 	}

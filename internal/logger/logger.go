@@ -70,7 +70,7 @@ func (l *Logger) SetOutput(w io.Writer) {
 }
 
 // log writes a log message if the level is enabled.
-func (l *Logger) log(level Level, format string, args ...interface{}) {
+func (l *Logger) log(level Level, format string, args ...any) {
 	if level < l.level {
 		return
 	}
@@ -88,22 +88,22 @@ func (l *Logger) log(level Level, format string, args ...interface{}) {
 }
 
 // Debug logs a debug message.
-func (l *Logger) Debug(format string, args ...interface{}) {
+func (l *Logger) Debug(format string, args ...any) {
 	l.log(LevelDebug, format, args...)
 }
 
 // Info logs an info message.
-func (l *Logger) Info(format string, args ...interface{}) {
+func (l *Logger) Info(format string, args ...any) {
 	l.log(LevelInfo, format, args...)
 }
 
 // Warn logs a warning message.
-func (l *Logger) Warn(format string, args ...interface{}) {
+func (l *Logger) Warn(format string, args ...any) {
 	l.log(LevelWarn, format, args...)
 }
 
 // Error logs an error message.
-func (l *Logger) Error(format string, args ...interface{}) {
+func (l *Logger) Error(format string, args ...any) {
 	l.log(LevelError, format, args...)
 }
 
@@ -135,21 +135,21 @@ func SetDefaultOutput(w io.Writer) {
 }
 
 // Debug logs a debug message using the default logger.
-func Debug(format string, args ...interface{}) {
+func Debug(format string, args ...any) {
 	defaultLogger.Debug(format, args...)
 }
 
 // Info logs an info message using the default logger.
-func Info(format string, args ...interface{}) {
+func Info(format string, args ...any) {
 	defaultLogger.Info(format, args...)
 }
 
 // Warn logs a warning message using the default logger.
-func Warn(format string, args ...interface{}) {
+func Warn(format string, args ...any) {
 	defaultLogger.Warn(format, args...)
 }
 
 // Error logs an error message using the default logger.
-func Error(format string, args ...interface{}) {
+func Error(format string, args ...any) {
 	defaultLogger.Error(format, args...)
 }

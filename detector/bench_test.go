@@ -18,16 +18,16 @@ func BenchmarkFileTypeDetector_DetectLanguages(b *testing.B) {
 
 	// Create test files
 	files := map[string]string{
-		"main.go":       "package main\n",
-		"utils.go":      "package utils\n",
-		"test.py":       "def main(): pass\n",
-		"app.js":        "console.log('hello');\n",
-		"index.ts":      "const x: string = 'test';\n",
-		"main.rs":       "fn main() {}\n",
-		"README.md":     "# Test\n",
-		"config.yaml":   "key: value\n",
-		"Dockerfile":    "FROM alpine\n",
-		"package.json":  "{}\n",
+		"main.go":      "package main\n",
+		"utils.go":     "package utils\n",
+		"test.py":      "def main(): pass\n",
+		"app.js":       "console.log('hello');\n",
+		"index.ts":     "const x: string = 'test';\n",
+		"main.rs":      "fn main() {}\n",
+		"README.md":    "# Test\n",
+		"config.yaml":  "key: value\n",
+		"Dockerfile":   "FROM alpine\n",
+		"package.json": "{}\n",
 	}
 
 	for name, content := range files {
@@ -46,7 +46,7 @@ func BenchmarkFileTypeDetector_DetectLanguages_LargeProject(b *testing.B) {
 	tmpDir := b.TempDir()
 
 	// Create 100 files of different types
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		fileName := filepath.Join(tmpDir, "file_"+string(rune(i)))
 		switch i % 4 {
 		case 0:
@@ -73,10 +73,10 @@ func BenchmarkFileTypeDetector_GetFilesByLanguage(b *testing.B) {
 
 	// Create test files
 	files := map[string]string{
-		"main.go":    "package main\n",
-		"utils.go":   "package utils\n",
-		"test.py":    "def main(): pass\n",
-		"app.js":     "console.log('hello');\n",
+		"main.go":  "package main\n",
+		"utils.go": "package utils\n",
+		"test.py":  "def main(): pass\n",
+		"app.js":   "console.log('hello');\n",
 	}
 
 	for name, content := range files {

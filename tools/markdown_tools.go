@@ -72,7 +72,7 @@ func (t *MarkdownlintTool) ParseOutput(output string) []Issue {
 	// Example: README.md:10 MD013/line-length Line length
 	re := regexp.MustCompile(`^(.+):(\d+)\s+(\S+)\s+(.+)$`)
 
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue

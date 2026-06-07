@@ -28,7 +28,7 @@ func BenchmarkFilterFilesByExtensions(b *testing.B) {
 func BenchmarkFilterFilesByExtensions_LargeSet(b *testing.B) {
 	// Simulate a large project with 1000 files
 	files := make([]string, 1000)
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		switch i % 5 {
 		case 0:
 			files[i] = "file" + string(rune(i)) + ".go"

@@ -833,7 +833,7 @@ func TestRunDirectTool_WithVerbose(t *testing.T) {
 	cmd.Flags().Bool("fix", true, "")
 	cmd.Flags().Int("workers", 2, "")
 	cmd.Flags().StringSlice("extra-args", []string{}, "")
-	cmd.Flags().Bool("dry-run", true, "")  // Dry-run mode
+	cmd.Flags().Bool("dry-run", true, "") // Dry-run mode
 	cmd.Flags().Bool("verbose", true, "")
 	cmd.Flags().String("since", "", "")
 	cmd.Flags().Bool("staged", false, "")

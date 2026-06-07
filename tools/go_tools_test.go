@@ -34,9 +34,9 @@ func TestGofumptTool_BuildCommand(t *testing.T) {
 	tool := NewGofumptTool()
 
 	tests := []struct {
-		name        string
-		files       []string
-		options     ExecuteOptions
+		name         string
+		files        []string
+		options      ExecuteOptions
 		expectedArgs []string
 	}{
 		{
@@ -56,9 +56,9 @@ func TestGofumptTool_BuildCommand(t *testing.T) {
 			expectedArgs: []string{"-w", "-l", "-s", "main.go"},
 		},
 		{
-			name:  "filters non-Go files",
-			files: []string{"main.go", "test.py", "README.md"},
-			options: ExecuteOptions{},
+			name:         "filters non-Go files",
+			files:        []string{"main.go", "test.py", "README.md"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"-w", "main.go"},
 		},
 	}
@@ -90,22 +90,22 @@ func TestGoimportsTool_BuildCommand(t *testing.T) {
 	tool := NewGoimportsTool()
 
 	tests := []struct {
-		name        string
-		files       []string
-		options     ExecuteOptions
+		name         string
+		files        []string
+		options      ExecuteOptions
 		expectedArgs []string
 		checkLocal   bool
 	}{
 		{
-			name:  "basic Go files",
-			files: []string{"main.go"},
-			options: ExecuteOptions{},
+			name:         "basic Go files",
+			files:        []string{"main.go"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"-w", "main.go"},
 		},
 		{
-			name:  "filters non-Go files",
-			files: []string{"main.go", "test.js", "config.yml"},
-			options: ExecuteOptions{},
+			name:         "filters non-Go files",
+			files:        []string{"main.go", "test.js", "config.yml"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"-w", "main.go"},
 		},
 		{
@@ -154,10 +154,10 @@ func TestGolangciLintTool_BuildCommand(t *testing.T) {
 	tool := NewGolangciLintTool()
 
 	tests := []struct {
-		name     string
-		files    []string
-		options  ExecuteOptions
-		checkFix bool
+		name        string
+		files       []string
+		options     ExecuteOptions
+		checkFix    bool
 		checkConfig bool
 	}{
 		{
@@ -184,13 +184,13 @@ func TestGolangciLintTool_BuildCommand(t *testing.T) {
 			checkConfig: true,
 		},
 		{
-			name:  "multiple Go files",
-			files: []string{"main.go", "utils.go", "config.go"},
+			name:    "multiple Go files",
+			files:   []string{"main.go", "utils.go", "config.go"},
 			options: ExecuteOptions{},
 		},
 		{
-			name:  "no files (all packages)",
-			files: []string{},
+			name:    "no files (all packages)",
+			files:   []string{},
 			options: ExecuteOptions{},
 		},
 	}
@@ -230,14 +230,14 @@ func TestGolangciLintTool_ParseOutput(t *testing.T) {
 	tool := NewGolangciLintTool()
 
 	tests := []struct {
-		name     string
-		output   string
-		expected int
+		name       string
+		output     string
+		expected   int
 		checkIssue func(*testing.T, Issue)
 	}{
 		{
-			name:   "empty output",
-			output: "",
+			name:     "empty output",
+			output:   "",
 			expected: 0,
 		},
 		{
@@ -343,13 +343,13 @@ func TestGolangciLintTool_ParseTextOutput(t *testing.T) {
 		expected int
 	}{
 		{
-			name:   "empty output",
-			output: "",
+			name:     "empty output",
+			output:   "",
 			expected: 0,
 		},
 		{
-			name:   "single text issue",
-			output: "main.go:42:15: Error return value not checked (errcheck)",
+			name:     "single text issue",
+			output:   "main.go:42:15: Error return value not checked (errcheck)",
 			expected: 1,
 		},
 		{

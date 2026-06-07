@@ -27,8 +27,8 @@ func TestFindConfigs(t *testing.T) {
 
 	// Create some config files
 	configFiles := map[string]string{
-		".golangci.yml": "# golangci-lint config",
-		".eslintrc":     "{}",
+		".golangci.yml":  "# golangci-lint config",
+		".eslintrc":      "{}",
 		"pyproject.toml": "[tool.black]\nline-length = 88",
 	}
 
@@ -135,9 +135,9 @@ func TestAnalyzeProject(t *testing.T) {
 
 	// Create a mock project with Go files
 	files := map[string]string{
-		"main.go":        "package main\n\nfunc main() {}\n",
-		"go.mod":         "module test\n\ngo 1.24\n",
-		".golangci.yml":  "# config",
+		"main.go":       "package main\n\nfunc main() {}\n",
+		"go.mod":        "module test\n\ngo 1.24\n",
+		".golangci.yml": "# config",
 	}
 
 	for name, content := range files {
@@ -171,10 +171,10 @@ func TestAnalyzeProject_MultiLanguage(t *testing.T) {
 
 	// Create a multi-language project
 	files := map[string]string{
-		"main.go":    "package main\n",
-		"main.py":    "def main():\n    pass\n",
-		"index.js":   "console.log('hello');\n",
-		"go.mod":     "module test\n",
+		"main.go":  "package main\n",
+		"main.py":  "def main():\n    pass\n",
+		"index.js": "console.log('hello');\n",
+		"go.mod":   "module test\n",
 	}
 
 	for name, content := range files {

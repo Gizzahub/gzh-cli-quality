@@ -48,7 +48,7 @@ func TestGenerateReport_SingleToolSuccess(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 5,
-			Duration:       2*time.Second,
+			Duration:       2 * time.Second,
 			Issues:         []tools.Issue{},
 		},
 	}
@@ -80,7 +80,7 @@ func TestGenerateReport_WithIssues(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 3,
-			Duration:       1500*time.Millisecond,
+			Duration:       1500 * time.Millisecond,
 			Issues: []tools.Issue{
 				{
 					File:       "main.go",
@@ -192,7 +192,7 @@ func TestGenerateReport_MultipleTools(t *testing.T) {
 			Language:       "Go",
 			Success:        true,
 			FilesProcessed: 5,
-			Duration:       2*time.Second,
+			Duration:       2 * time.Second,
 			Issues: []tools.Issue{
 				{
 					File:     "main.go",

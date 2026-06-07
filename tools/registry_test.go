@@ -18,13 +18,13 @@ type mockTool struct {
 	toolType ToolType
 }
 
-func (m *mockTool) Name() string       { return m.name }
-func (m *mockTool) Language() string   { return m.language }
-func (m *mockTool) Type() ToolType     { return m.toolType }
-func (m *mockTool) IsAvailable() bool  { return true }
-func (m *mockTool) Install() error     { return nil }
-func (m *mockTool) GetVersion() (string, error) { return "1.0.0", nil }
-func (m *mockTool) Upgrade() error     { return nil }
+func (m *mockTool) Name() string                                { return m.name }
+func (m *mockTool) Language() string                            { return m.language }
+func (m *mockTool) Type() ToolType                              { return m.toolType }
+func (m *mockTool) IsAvailable() bool                           { return true }
+func (m *mockTool) Install() error                              { return nil }
+func (m *mockTool) GetVersion() (string, error)                 { return "1.0.0", nil }
+func (m *mockTool) Upgrade() error                              { return nil }
 func (m *mockTool) FindConfigFiles(projectRoot string) []string { return nil }
 func (m *mockTool) Execute(ctx context.Context, files []string, options ExecuteOptions) (*Result, error) {
 	return &Result{Tool: m.name, Success: true}, nil
@@ -217,7 +217,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 	done := make(chan bool, 10)
 
 	// Concurrent writes
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		go func(index int) {
 			tool := &mockTool{
 				name:     string(rune('A' + index)),
@@ -230,7 +230,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 	}
 
 	// Concurrent reads
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		go func() {
 			_ = registry.GetTools()
 			_ = registry.GetToolsByLanguage("Go")
@@ -240,7 +240,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 	}
 
 	// Wait for all goroutines
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		<-done
 	}
 

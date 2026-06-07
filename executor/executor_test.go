@@ -26,13 +26,13 @@ type mockTool struct {
 	validateFunc func() error
 }
 
-func (m *mockTool) Name() string       { return m.name }
-func (m *mockTool) Language() string   { return m.language }
-func (m *mockTool) Type() tools.ToolType { return m.toolType }
-func (m *mockTool) IsAvailable() bool  { return m.validateFunc() == nil }
-func (m *mockTool) Install() error     { return nil }
-func (m *mockTool) GetVersion() (string, error) { return "1.0.0", nil }
-func (m *mockTool) Upgrade() error     { return nil }
+func (m *mockTool) Name() string                                { return m.name }
+func (m *mockTool) Language() string                            { return m.language }
+func (m *mockTool) Type() tools.ToolType                        { return m.toolType }
+func (m *mockTool) IsAvailable() bool                           { return m.validateFunc() == nil }
+func (m *mockTool) Install() error                              { return nil }
+func (m *mockTool) GetVersion() (string, error)                 { return "1.0.0", nil }
+func (m *mockTool) Upgrade() error                              { return nil }
 func (m *mockTool) FindConfigFiles(projectRoot string) []string { return nil }
 func (m *mockTool) Execute(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {
 	return m.executeFunc(ctx, files, options)
@@ -40,7 +40,7 @@ func (m *mockTool) Execute(ctx context.Context, files []string, options tools.Ex
 
 // Mock analyzer for testing
 type mockAnalyzer struct {
-	analyzeFunc  func(projectRoot string, registry tools.ToolRegistry) (*AnalysisResult, error)
+	analyzeFunc   func(projectRoot string, registry tools.ToolRegistry) (*AnalysisResult, error)
 	selectionFunc func(result *AnalysisResult, registry tools.ToolRegistry) map[string][]tools.QualityTool
 }
 
@@ -151,44 +151,44 @@ func createAndCommitFile(t *testing.T, repoDir, filename, content string) {
 
 func TestNewParallelExecutor(t *testing.T) {
 	tests := []struct {
-		name           string
-		maxWorkers     int
-		timeout        time.Duration
+		name            string
+		maxWorkers      int
+		timeout         time.Duration
 		expectedWorkers int
 		expectedTimeout time.Duration
 	}{
 		{
-			name:           "Valid parameters",
-			maxWorkers:     8,
-			timeout:        10 * time.Minute,
+			name:            "Valid parameters",
+			maxWorkers:      8,
+			timeout:         10 * time.Minute,
 			expectedWorkers: 8,
 			expectedTimeout: 10 * time.Minute,
 		},
 		{
-			name:           "Zero workers defaults to 4",
-			maxWorkers:     0,
-			timeout:        5 * time.Minute,
+			name:            "Zero workers defaults to 4",
+			maxWorkers:      0,
+			timeout:         5 * time.Minute,
 			expectedWorkers: 4,
 			expectedTimeout: 5 * time.Minute,
 		},
 		{
-			name:           "Negative workers defaults to 4",
-			maxWorkers:     -1,
-			timeout:        5 * time.Minute,
+			name:            "Negative workers defaults to 4",
+			maxWorkers:      -1,
+			timeout:         5 * time.Minute,
 			expectedWorkers: 4,
 			expectedTimeout: 5 * time.Minute,
 		},
 		{
-			name:           "Zero timeout defaults to 5 minutes",
-			maxWorkers:     8,
-			timeout:        0,
+			name:            "Zero timeout defaults to 5 minutes",
+			maxWorkers:      8,
+			timeout:         0,
 			expectedWorkers: 8,
 			expectedTimeout: 5 * time.Minute,
 		},
 		{
-			name:           "Negative timeout defaults to 5 minutes",
-			maxWorkers:     8,
-			timeout:        -1 * time.Minute,
+			name:            "Negative timeout defaults to 5 minutes",
+			maxWorkers:      8,
+			timeout:         -1 * time.Minute,
 			expectedWorkers: 8,
 			expectedTimeout: 5 * time.Minute,
 		},
@@ -415,9 +415,9 @@ func TestExecutionPlanner_CreatePlan_WithFormatOnly(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	formatTool := &mockTool{
-		name:        "gofmt",
-		language:    "Go",
-		toolType:    tools.FORMAT,
+		name:     "gofmt",
+		language: "Go",
+		toolType: tools.FORMAT,
 		executeFunc: func(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {
 			return &tools.Result{Tool: "gofmt", Success: true}, nil
 		},
@@ -425,9 +425,9 @@ func TestExecutionPlanner_CreatePlan_WithFormatOnly(t *testing.T) {
 	}
 
 	lintTool := &mockTool{
-		name:        "golint",
-		language:    "Go",
-		toolType:    tools.LINT,
+		name:     "golint",
+		language: "Go",
+		toolType: tools.LINT,
 		executeFunc: func(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {
 			return &tools.Result{Tool: "golint", Success: true}, nil
 		},
@@ -470,9 +470,9 @@ func TestExecutionPlanner_CreatePlan_WithLintOnly(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	formatTool := &mockTool{
-		name:        "gofmt",
-		language:    "Go",
-		toolType:    tools.FORMAT,
+		name:     "gofmt",
+		language: "Go",
+		toolType: tools.FORMAT,
 		executeFunc: func(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {
 			return &tools.Result{Tool: "gofmt", Success: true}, nil
 		},
@@ -480,9 +480,9 @@ func TestExecutionPlanner_CreatePlan_WithLintOnly(t *testing.T) {
 	}
 
 	lintTool := &mockTool{
-		name:        "golint",
-		language:    "Go",
-		toolType:    tools.LINT,
+		name:     "golint",
+		language: "Go",
+		toolType: tools.LINT,
 		executeFunc: func(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {
 			return &tools.Result{Tool: "golint", Success: true}, nil
 		},

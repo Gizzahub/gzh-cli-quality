@@ -40,9 +40,9 @@ func TestRustfmtTool_BuildCommand(t *testing.T) {
 		expectedArgs []string
 	}{
 		{
-			name:  "basic Rust files",
-			files: []string{"main.rs", "lib.rs"},
-			options: ExecuteOptions{},
+			name:         "basic Rust files",
+			files:        []string{"main.rs", "lib.rs"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"main.rs", "lib.rs"},
 		},
 		{
@@ -54,9 +54,9 @@ func TestRustfmtTool_BuildCommand(t *testing.T) {
 			expectedArgs: []string{"--config-path", "rustfmt.toml"},
 		},
 		{
-			name:  "filters non-Rust files",
-			files: []string{"main.rs", "test.go", "README.md"},
-			options: ExecuteOptions{},
+			name:         "filters non-Rust files",
+			files:        []string{"main.rs", "test.go", "README.md"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"main.rs"},
 		},
 		{
@@ -111,8 +111,8 @@ func TestClippyTool_BuildCommand(t *testing.T) {
 		checkFix bool
 	}{
 		{
-			name:  "basic lint",
-			files: []string{"main.rs"},
+			name:    "basic lint",
+			files:   []string{"main.rs"},
 			options: ExecuteOptions{},
 		},
 		{
@@ -156,19 +156,19 @@ func TestClippyTool_ParseOutput(t *testing.T) {
 	tool := NewClippyTool()
 
 	tests := []struct {
-		name     string
-		output   string
-		expected int
+		name       string
+		output     string
+		expected   int
 		checkIssue func(*testing.T, Issue)
 	}{
 		{
-			name:   "empty output",
-			output: "",
+			name:     "empty output",
+			output:   "",
 			expected: 0,
 		},
 		{
-			name: "valid JSON output with warning",
-			output: `{"reason":"compiler-message","message":{"message":"unused variable: 'x'","code":{"code":"unused_variables"},"level":"warning","spans":[{"file_name":"src/main.rs","line_start":10,"column_start":9}]},"target":{"name":"test"}}`,
+			name:     "valid JSON output with warning",
+			output:   `{"reason":"compiler-message","message":{"message":"unused variable: 'x'","code":{"code":"unused_variables"},"level":"warning","spans":[{"file_name":"src/main.rs","line_start":10,"column_start":9}]},"target":{"name":"test"}}`,
 			expected: 1,
 			checkIssue: func(t *testing.T, issue Issue) {
 				assert.Equal(t, "src/main.rs", issue.File)
@@ -180,8 +180,8 @@ func TestClippyTool_ParseOutput(t *testing.T) {
 			},
 		},
 		{
-			name: "error severity",
-			output: `{"reason":"compiler-message","message":{"message":"cannot find value 'foo' in this scope","code":{"code":"E0425"},"level":"error","spans":[{"file_name":"src/lib.rs","line_start":5,"column_start":15}]}}`,
+			name:     "error severity",
+			output:   `{"reason":"compiler-message","message":{"message":"cannot find value 'foo' in this scope","code":{"code":"E0425"},"level":"error","spans":[{"file_name":"src/lib.rs","line_start":5,"column_start":15}]}}`,
 			expected: 1,
 			checkIssue: func(t *testing.T, issue Issue) {
 				assert.Equal(t, "error", issue.Severity)
@@ -189,16 +189,16 @@ func TestClippyTool_ParseOutput(t *testing.T) {
 			},
 		},
 		{
-			name: "no code specified",
-			output: `{"reason":"compiler-message","message":{"message":"some lint message","level":"warning","spans":[{"file_name":"src/main.rs","line_start":20,"column_start":5}]}}`,
+			name:     "no code specified",
+			output:   `{"reason":"compiler-message","message":{"message":"some lint message","level":"warning","spans":[{"file_name":"src/main.rs","line_start":20,"column_start":5}]}}`,
 			expected: 1,
 			checkIssue: func(t *testing.T, issue Issue) {
 				assert.Equal(t, "", issue.Rule)
 			},
 		},
 		{
-			name: "no spans - should be skipped",
-			output: `{"reason":"compiler-message","message":{"message":"building project","level":"info","spans":[]}}`,
+			name:     "no spans - should be skipped",
+			output:   `{"reason":"compiler-message","message":{"message":"building project","level":"info","spans":[]}}`,
 			expected: 0,
 		},
 		{
@@ -255,8 +255,8 @@ func TestCargoFmtTool_BuildCommand(t *testing.T) {
 		options ExecuteOptions
 	}{
 		{
-			name:  "basic format",
-			files: []string{}, // cargo fmt doesn't use individual files
+			name:    "basic format",
+			files:   []string{}, // cargo fmt doesn't use individual files
 			options: ExecuteOptions{},
 		},
 		{

@@ -16,13 +16,13 @@ import (
 
 // CacheManager implements the Manager interface.
 type CacheManager struct {
-	storage    Storage
-	enabled    bool
-	maxSize    int64
-	maxAge     time.Duration
-	hitCount   atomic.Int64
-	missCount  atomic.Int64
-	mu         sync.RWMutex
+	storage   Storage
+	enabled   bool
+	maxSize   int64
+	maxAge    time.Duration
+	hitCount  atomic.Int64
+	missCount atomic.Int64
+	mu        sync.RWMutex
 }
 
 // NewCacheManager creates a new cache manager.

@@ -195,12 +195,12 @@ func (t *SpotbugsTool) ParseOutput(output string) []Issue {
 	}
 
 	var spotbugsResult struct {
-		XMLName   xml.Name `xml:"BugCollection"`
+		XMLName      xml.Name `xml:"BugCollection"`
 		BugInstances []struct {
-			Type     string `xml:"type,attr"`
-			Priority int    `xml:"priority,attr"`
-			Category string `xml:"category,attr"`
-			Message  string `xml:"LongMessage"`
+			Type       string `xml:"type,attr"`
+			Priority   int    `xml:"priority,attr"`
+			Category   string `xml:"category,attr"`
+			Message    string `xml:"LongMessage"`
 			SourceLine struct {
 				SourcePath string `xml:"sourcepath,attr"`
 				Start      int    `xml:"start,attr"`

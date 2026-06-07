@@ -40,15 +40,15 @@ func TestPrettierTool_BuildCommand(t *testing.T) {
 		expectedArgs []string
 	}{
 		{
-			name:  "basic JS files",
-			files: []string{"main.js", "utils.js"},
-			options: ExecuteOptions{},
+			name:         "basic JS files",
+			files:        []string{"main.js", "utils.js"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"--write", "main.js", "utils.js"},
 		},
 		{
-			name:  "TypeScript files",
-			files: []string{"main.ts", "types.tsx"},
-			options: ExecuteOptions{},
+			name:         "TypeScript files",
+			files:        []string{"main.ts", "types.tsx"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"--write", "main.ts", "types.tsx"},
 		},
 		{
@@ -60,9 +60,9 @@ func TestPrettierTool_BuildCommand(t *testing.T) {
 			expectedArgs: []string{"--write", "--config", ".prettierrc"},
 		},
 		{
-			name:  "filters unsupported files",
-			files: []string{"main.js", "test.go", "README.txt"},
-			options: ExecuteOptions{},
+			name:         "filters unsupported files",
+			files:        []string{"main.js", "test.go", "README.txt"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"main.js"},
 		},
 	}
@@ -103,15 +103,15 @@ func TestESLintTool_BuildCommand(t *testing.T) {
 	tool := NewESLintTool()
 
 	tests := []struct {
-		name     string
-		files    []string
-		options  ExecuteOptions
-		checkFix bool
+		name        string
+		files       []string
+		options     ExecuteOptions
+		checkFix    bool
 		checkConfig bool
 	}{
 		{
-			name:  "basic lint",
-			files: []string{"main.js"},
+			name:    "basic lint",
+			files:   []string{"main.js"},
 			options: ExecuteOptions{},
 		},
 		{
@@ -131,8 +131,8 @@ func TestESLintTool_BuildCommand(t *testing.T) {
 			checkConfig: true,
 		},
 		{
-			name:  "TypeScript and JSX files",
-			files: []string{"App.tsx", "Button.jsx"},
+			name:    "TypeScript and JSX files",
+			files:   []string{"App.tsx", "Button.jsx"},
 			options: ExecuteOptions{},
 		},
 	}
@@ -163,14 +163,14 @@ func TestESLintTool_ParseOutput(t *testing.T) {
 	tool := NewESLintTool()
 
 	tests := []struct {
-		name     string
-		output   string
-		expected int
+		name       string
+		output     string
+		expected   int
 		checkIssue func(*testing.T, Issue)
 	}{
 		{
-			name:   "empty output",
-			output: "",
+			name:     "empty output",
+			output:   "",
 			expected: 0,
 		},
 		{
@@ -292,8 +292,8 @@ func TestTSCTool_BuildCommand(t *testing.T) {
 		options ExecuteOptions
 	}{
 		{
-			name:  "basic TypeScript files",
-			files: []string{"main.ts", "types.d.ts"},
+			name:    "basic TypeScript files",
+			files:   []string{"main.ts", "types.d.ts"},
 			options: ExecuteOptions{},
 		},
 		{
@@ -304,8 +304,8 @@ func TestTSCTool_BuildCommand(t *testing.T) {
 			},
 		},
 		{
-			name:  "no files - use tsconfig",
-			files: []string{},
+			name:    "no files - use tsconfig",
+			files:   []string{},
 			options: ExecuteOptions{},
 		},
 	}
@@ -338,13 +338,13 @@ func TestTSCTool_ParseOutput(t *testing.T) {
 		expected int
 	}{
 		{
-			name:   "empty output",
-			output: "",
+			name:     "empty output",
+			output:   "",
 			expected: 0,
 		},
 		{
-			name:   "single type error",
-			output: "main.ts(10,5): error TS2304: Cannot find name 'x'.",
+			name:     "single type error",
+			output:   "main.ts(10,5): error TS2304: Cannot find name 'x'.",
 			expected: 1,
 		},
 		{
@@ -355,8 +355,8 @@ types.d.ts(5,1): error TS1005: ';' expected.`,
 			expected: 3,
 		},
 		{
-			name:   "warnings",
-			output: "main.ts(15,3): warning TS6133: 'foo' is declared but never used.",
+			name:     "warnings",
+			output:   "main.ts(15,3): warning TS6133: 'foo' is declared but never used.",
 			expected: 1,
 		},
 	}

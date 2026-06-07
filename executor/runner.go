@@ -7,6 +7,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"sync"
 	"time"
@@ -527,12 +528,7 @@ func matchesToolFilter(tool tools.QualityTool, options PlanOptions) bool {
 	}
 
 	toolName := tool.Name()
-	for _, filterName := range options.ToolFilter {
-		if toolName == filterName {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(options.ToolFilter, toolName)
 }
 
 // applyFileFilters applies various file filtering options.

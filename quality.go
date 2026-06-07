@@ -709,9 +709,9 @@ func (m *QualityManager) runCheck(cmd *cobra.Command, _ []string) error {
 	}
 
 	// Override for check mode
-	opts.fix = false       // Never fix in check mode
+	opts.fix = false // Never fix in check mode
 	opts.formatOnly = false
-	opts.lintOnly = true   // Only run linters
+	opts.lintOnly = true // Only run linters
 	opts.emptyMessage = "🎯 검사할 작업이 없습니다."
 	opts.executePrefix = "🔍"
 

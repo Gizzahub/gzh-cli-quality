@@ -5,6 +5,7 @@
 package detector
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -103,9 +104,7 @@ func (d *FileTypeDetector) detectLanguagesWithInfo(projectRoot string) ([]*Langu
 						Metadata:   make(map[string]string),
 					}
 					// Copy metadata
-					for k, v := range rule.Metadata {
-						detected[rule.Name].Metadata[k] = v
-					}
+					maps.Copy(detected[rule.Name].Metadata, rule.Metadata)
 				}
 
 				detected[rule.Name].Files = append(detected[rule.Name].Files, path)

@@ -47,7 +47,7 @@ func BenchmarkExecutionPlan_Creation(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		tasks := make([]tools.Task, 5)
-		for j := 0; j < 5; j++ {
+		for j := range 5 {
 			tasks[j] = tools.Task{
 				Tool:  &mockToolForBench{name: "tool", language: "Go"},
 				Files: []string{"main.go", "utils.go"},
@@ -66,7 +66,7 @@ func BenchmarkExecutionPlan_LargeTaskSet(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		tasks := make([]tools.Task, 100)
-		for j := 0; j < 100; j++ {
+		for j := range 100 {
 			tasks[j] = tools.Task{
 				Tool:  &mockToolForBench{name: "tool", language: "Go"},
 				Files: []string{"file.go"},
@@ -139,7 +139,7 @@ func BenchmarkExecutor_ExecuteParallel_8Workers(b *testing.B) {
 
 	// Create 16 tasks
 	tasks := make([]tools.Task, 16)
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		tasks[i] = tools.Task{
 			Tool:  &mockToolForBench{name: "tool", language: "Go"},
 			Files: []string{"file.go"},
@@ -307,7 +307,7 @@ func BenchmarkCache_MultiFile_AllHit(b *testing.B) {
 
 	// Create multiple test files
 	var testFiles []string
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		filePath := filepath.Join(filesDir, "test_"+string(rune('a'+i))+".go")
 		os.WriteFile(filePath, []byte("package main\n// file "+string(rune('a'+i))), 0644)
 		testFiles = append(testFiles, filePath)
@@ -347,7 +347,7 @@ func BenchmarkCache_MultiFile_PartialHit(b *testing.B) {
 
 	// Create test files (half will be cached, half won't)
 	var testFiles []string
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		filePath := filepath.Join(filesDir, "test_"+string(rune('a'+i))+".go")
 		os.WriteFile(filePath, []byte("package main\n// file "+string(rune('a'+i))), 0644)
 		testFiles = append(testFiles, filePath)
@@ -428,7 +428,7 @@ func BenchmarkFilterIssuesByFile(b *testing.B) {
 	// Create issues from multiple files
 	issues := make([]tools.Issue, 100)
 	files := []string{"file1.go", "file2.go", "file3.go", "file4.go", "file5.go"}
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		issues[i] = tools.Issue{
 			File:    files[i%len(files)],
 			Line:    i + 1,
@@ -447,7 +447,7 @@ func BenchmarkFilterIssuesByFile_Large(b *testing.B) {
 	// Create 1000 issues
 	issues := make([]tools.Issue, 1000)
 	files := []string{"a.go", "b.go", "c.go", "d.go", "e.go", "f.go", "g.go", "h.go", "i.go", "j.go"}
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		issues[i] = tools.Issue{
 			File:    files[i%len(files)],
 			Line:    i + 1,

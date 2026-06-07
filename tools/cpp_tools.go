@@ -116,7 +116,7 @@ func (t *ClangTidyTool) ParseOutput(output string) []Issue {
 	// Format: file:line:column: severity: message [check-name]
 	re := regexp.MustCompile(`^(.+):(\d+):(\d+):\s+(warning|error|note):\s+(.+)\s+\[(.+)\]$`)
 
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue

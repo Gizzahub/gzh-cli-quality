@@ -402,7 +402,7 @@ func (t *MypyTool) ParseOutput(output string) []Issue {
 	var issues []Issue
 
 	// mypy JSON output is one JSON object per line
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}

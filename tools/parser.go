@@ -36,8 +36,8 @@ type TextParseConfig struct {
 	FileIndex       int
 	LineIndex       int
 	ColumnIndex     int
-	SeverityIndex   int    // 0 means no severity captured
-	RuleIndex       int    // 0 means no rule captured
+	SeverityIndex   int // 0 means no severity captured
+	RuleIndex       int // 0 means no rule captured
 	MessageIndex    int
 	DefaultSeverity string
 	RulePrefix      string // Optional prefix to add to rule (e.g., "TS" for TypeScript)
@@ -47,8 +47,8 @@ type TextParseConfig struct {
 func ParseTextLines(output string, config TextParseConfig) []Issue {
 	var issues []Issue
 
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(output, "\n")
+	for line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue

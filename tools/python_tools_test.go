@@ -40,9 +40,9 @@ func TestBlackTool_BuildCommand(t *testing.T) {
 		expectedArgs []string
 	}{
 		{
-			name:  "basic Python files",
-			files: []string{"main.py", "utils.py"},
-			options: ExecuteOptions{},
+			name:         "basic Python files",
+			files:        []string{"main.py", "utils.py"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"--line-length", "88", "main.py", "utils.py"},
 		},
 		{
@@ -54,15 +54,15 @@ func TestBlackTool_BuildCommand(t *testing.T) {
 			expectedArgs: []string{"--config", "pyproject.toml"},
 		},
 		{
-			name:  "filters non-Python files",
-			files: []string{"main.py", "test.go", "README.md"},
-			options: ExecuteOptions{},
+			name:         "filters non-Python files",
+			files:        []string{"main.py", "test.go", "README.md"},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"main.py"},
 		},
 		{
-			name:  "no files - formats current directory",
-			files: []string{},
-			options: ExecuteOptions{},
+			name:         "no files - formats current directory",
+			files:        []string{},
+			options:      ExecuteOptions{},
 			expectedArgs: []string{"."},
 		},
 	}
@@ -103,15 +103,15 @@ func TestRuffTool_BuildCommand(t *testing.T) {
 	tool := NewRuffTool()
 
 	tests := []struct {
-		name     string
-		files    []string
-		options  ExecuteOptions
-		checkFix bool
+		name        string
+		files       []string
+		options     ExecuteOptions
+		checkFix    bool
 		checkFormat bool
 	}{
 		{
-			name:  "lint mode",
-			files: []string{"main.py"},
+			name:    "lint mode",
+			files:   []string{"main.py"},
 			options: ExecuteOptions{},
 		},
 		{
@@ -167,14 +167,14 @@ func TestRuffTool_ParseOutput(t *testing.T) {
 	tool := NewRuffTool()
 
 	tests := []struct {
-		name     string
-		output   string
-		expected int
+		name       string
+		output     string
+		expected   int
 		checkIssue func(*testing.T, Issue)
 	}{
 		{
-			name:   "empty output",
-			output: "",
+			name:     "empty output",
+			output:   "",
 			expected: 0,
 		},
 		{
@@ -261,8 +261,8 @@ func TestPylintTool_BuildCommand(t *testing.T) {
 		options ExecuteOptions
 	}{
 		{
-			name:  "basic Python files",
-			files: []string{"main.py"},
+			name:    "basic Python files",
+			files:   []string{"main.py"},
 			options: ExecuteOptions{},
 		},
 		{
@@ -300,8 +300,8 @@ func TestPylintTool_ParseOutput(t *testing.T) {
 		expected int
 	}{
 		{
-			name:   "empty output",
-			output: "",
+			name:     "empty output",
+			output:   "",
 			expected: 0,
 		},
 		{

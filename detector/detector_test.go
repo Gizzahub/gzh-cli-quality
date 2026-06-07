@@ -32,11 +32,11 @@ func TestDetectLanguages_Go(t *testing.T) {
 
 	// Create Go files
 	files := map[string]string{
-		"main.go":    "package main\n\nfunc main() {}\n",
-		"utils.go":   "package main\n\nfunc helper() {}\n",
-		"go.mod":     "module test\n\ngo 1.24\n",
-		"go.sum":     "",
-		"README.md":  "# Test Project",
+		"main.go":   "package main\n\nfunc main() {}\n",
+		"utils.go":  "package main\n\nfunc helper() {}\n",
+		"go.mod":    "module test\n\ngo 1.24\n",
+		"go.sum":    "",
+		"README.md": "# Test Project",
 	}
 
 	for name, content := range files {
@@ -101,8 +101,8 @@ func TestDetectLanguages_TypeScript(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	files := map[string]string{
-		"index.ts":     "const x: number = 42;\n",
-		"types.ts":     "export interface User { name: string; }\n",
+		"index.ts":      "const x: number = 42;\n",
+		"types.ts":      "export interface User { name: string; }\n",
 		"tsconfig.json": `{"compilerOptions": {}}`,
 	}
 
@@ -122,10 +122,10 @@ func TestDetectLanguages_Rust(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	files := map[string]string{
-		"main.rs":     "fn main() {}\n",
-		"lib.rs":      "pub fn helper() {}\n",
-		"Cargo.toml":  "[package]\nname = \"test\"\nversion = \"0.1.0\"\n",
-		"Cargo.lock":  "",
+		"main.rs":    "fn main() {}\n",
+		"lib.rs":     "pub fn helper() {}\n",
+		"Cargo.toml": "[package]\nname = \"test\"\nversion = \"0.1.0\"\n",
+		"Cargo.lock": "",
 	}
 
 	for name, content := range files {
@@ -374,10 +374,10 @@ func TestCalculateConfidence(t *testing.T) {
 	detector.rules["TestLang"] = testRule
 
 	tests := []struct {
-		name      string
-		langInfo  *LanguageInfo
-		minConf   float64
-		maxConf   float64
+		name     string
+		langInfo *LanguageInfo
+		minConf  float64
+		maxConf  float64
 	}{
 		{
 			name: "Meets minimum files",
@@ -518,10 +518,10 @@ func TestDetectLanguages_NestedDirectories(t *testing.T) {
 
 	// Files in different directories
 	files := map[string]string{
-		filepath.Join(srcDir, "main.go"):    "package main\n",
-		filepath.Join(srcDir, "utils.go"):   "package main\n",
-		filepath.Join(testDir, "test.go"):   "package main\n",
-		filepath.Join(tmpDir, "go.mod"):     "module test\n",
+		filepath.Join(srcDir, "main.go"):  "package main\n",
+		filepath.Join(srcDir, "utils.go"): "package main\n",
+		filepath.Join(testDir, "test.go"): "package main\n",
+		filepath.Join(tmpDir, "go.mod"):   "module test\n",
 	}
 
 	for path, content := range files {

@@ -74,11 +74,11 @@ func (t *SqlfluffTool) ParseOutput(output string) []Issue {
 	var sqlfluffResults []struct {
 		Filepath   string `json:"filepath"`
 		Violations []struct {
-			StartLineNo   int    `json:"start_line_no"`
-			StartLinePos  int    `json:"start_line_pos"`
-			Code          string `json:"code"`
-			Description   string `json:"description"`
-			Name          string `json:"name"`
+			StartLineNo  int    `json:"start_line_no"`
+			StartLinePos int    `json:"start_line_pos"`
+			Code         string `json:"code"`
+			Description  string `json:"description"`
+			Name         string `json:"name"`
 		} `json:"violations"`
 	}
 

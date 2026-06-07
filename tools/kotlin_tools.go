@@ -163,7 +163,7 @@ func (t *DetektTool) ParseOutput(output string) []Issue {
 	// Detekt outputs to file, so we parse text output for immediate results
 	// Format: file:line:column: RuleName - message
 	var issues []Issue
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" || !strings.Contains(line, ":") {
 			continue

@@ -87,7 +87,7 @@ func DefaultConfig() *Config {
 		Timeout:        "10m",
 		Cache: CacheConfig{
 			Enabled:   true,
-			Directory: "", // Empty means use default: ~/.cache/gz-quality
+			Directory: "",                // Empty means use default: ~/.cache/gz-quality
 			MaxSize:   100 * 1024 * 1024, // 100MB
 			MaxAge:    "7d",
 		},
