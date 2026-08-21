@@ -85,7 +85,7 @@ func NewQualityManager() *QualityManager {
 	}
 }
 
-// parseDuration parses a duration string like "7d", "24h", "30m"
+// parseDuration parses a duration string like "7d", "24h", "30m".
 func parseDuration(s string, defaultVal time.Duration) time.Duration {
 	if s == "" {
 		return defaultVal

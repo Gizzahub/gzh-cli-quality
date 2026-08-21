@@ -135,7 +135,7 @@ func hashOptions(options tools.ExecuteOptions) string {
 
 	// Env variables (sorted by key)
 	if len(options.Env) > 0 {
-		var keys []string
+		keys := make([]string, 0, len(options.Env))
 		for k := range options.Env {
 			keys = append(keys, k)
 		}

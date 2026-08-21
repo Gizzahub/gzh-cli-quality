@@ -33,7 +33,7 @@ type CacheKey struct {
 }
 
 // String returns a string representation of the cache key.
-// Format: {tool}-{version}-{file_hash[:8]}-{config_hash[:8]}-{options_hash[:8]}
+// Format: {tool}-{version}-{file_hash[:8]}-{config_hash[:8]}-{options_hash[:8]}.
 func (ck CacheKey) String() string {
 	fileHashShort := ck.FileHash
 	if len(fileHashShort) > 8 {

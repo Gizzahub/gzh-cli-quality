@@ -77,7 +77,8 @@ func (l *Logger) log(level Level, format string, args ...any) {
 
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
 	msg := fmt.Sprintf(format, args...)
-	logLine := fmt.Sprintf("[%s] %s [%s] %s",
+	logLine := fmt.Sprintf(
+		"[%s] %s [%s] %s",
 		timestamp,
 		level.String(),
 		l.component,
@@ -114,7 +115,7 @@ func (l *Logger) WithField(key, value string) string {
 
 // WithFields returns a message with multiple key-value fields.
 func (l *Logger) WithFields(fields map[string]string) string {
-	var parts []string
+	parts := make([]string, 0, len(fields))
 	for k, v := range fields {
 		parts = append(parts, fmt.Sprintf("%s=%s", k, v))
 	}

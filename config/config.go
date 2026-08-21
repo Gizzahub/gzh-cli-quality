@@ -342,7 +342,7 @@ func (c *Config) ShouldInclude(filePath string) bool {
 }
 
 // GetCacheDirectory returns the cache directory path.
-// If not configured, returns the default path: ~/.cache/gz-quality
+// If not configured, returns the default path: ~/.cache/gz-quality.
 func (c *Config) GetCacheDirectory() string {
 	if c.Cache.Directory != "" {
 		return c.Cache.Directory

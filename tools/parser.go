@@ -26,7 +26,7 @@ var (
 	// pylint: file:line:col: CODE: message
 	pylintPattern = regexp.MustCompile(`^(.+):(\d+):(\d+):\s*([A-Z]\d+):\s*(.+)$`)
 
-	// Generic: file:line:col: message
+	// Generic: file:line:col: message.
 	genericPattern = regexp.MustCompile(`^(.+):(\d+):(\d+):\s*(.+)$`)
 )
 

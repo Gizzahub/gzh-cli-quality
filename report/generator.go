@@ -298,7 +298,7 @@ func (g *ReportGenerator) generateHTML(report *Report) string {
 			issues []Issue
 		}
 
-		var sortedFiles []fileIssues
+		sortedFiles := make([]fileIssues, 0, len(report.IssuesByFile))
 		for file, issues := range report.IssuesByFile {
 			sortedFiles = append(sortedFiles, fileIssues{file, issues})
 		}

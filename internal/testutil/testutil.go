@@ -2,6 +2,7 @@
 package testutil
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -165,11 +166,7 @@ func AssertFileNotExists(t *testing.T, path string) {
 // Helper functions
 
 func isError(err, target error) bool {
-	if err == nil || target == nil {
-		return err == target
-	}
-	// Simple string comparison for now
-	return err.Error() == target.Error()
+	return errors.Is(err, target)
 }
 
 func contains(s, substr string) bool {
