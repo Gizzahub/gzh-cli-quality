@@ -207,12 +207,12 @@ func TestFilesystemStorage_CleanupCorrupted(t *testing.T) {
 
 	// Write corrupted entry (empty file)
 	corruptedPath := filepath.Join(tmpDir, "results", "tool", "00", "corrupted.json")
-	os.MkdirAll(filepath.Dir(corruptedPath), 0755)
-	os.WriteFile(corruptedPath, []byte(""), 0644)
+	os.MkdirAll(filepath.Dir(corruptedPath), 0o755)
+	os.WriteFile(corruptedPath, []byte(""), 0o644)
 
 	// Write invalid JSON
 	invalidPath := filepath.Join(tmpDir, "results", "tool", "00", "invalid.json")
-	os.WriteFile(invalidPath, []byte("not json"), 0644)
+	os.WriteFile(invalidPath, []byte("not json"), 0o644)
 
 	// Cleanup
 	count, err := storage.CleanupCorrupted()

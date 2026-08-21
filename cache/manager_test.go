@@ -16,7 +16,7 @@ func TestCacheManager_GetSet(t *testing.T) {
 	tmpDir := t.TempDir()
 	cacheDir := filepath.Join(tmpDir, "cache")
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
@@ -26,7 +26,7 @@ func TestCacheManager_GetSet(t *testing.T) {
 
 	// Create test file for key generation
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main"), 0644)
+	os.WriteFile(testFile, []byte("package main"), 0o644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 	options := tools.ExecuteOptions{Fix: true}
@@ -66,7 +66,7 @@ func TestCacheManager_Invalidate(t *testing.T) {
 	tmpDir := t.TempDir()
 	cacheDir := filepath.Join(tmpDir, "cache")
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
@@ -75,7 +75,7 @@ func TestCacheManager_Invalidate(t *testing.T) {
 	defer manager.Close()
 
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main"), 0644)
+	os.WriteFile(testFile, []byte("package main"), 0o644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 	key, _ := GenerateKey(testFile, tool, tools.ExecuteOptions{})
@@ -103,7 +103,7 @@ func TestCacheManager_Stats(t *testing.T) {
 	tmpDir := t.TempDir()
 	cacheDir := filepath.Join(tmpDir, "cache")
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
@@ -112,7 +112,7 @@ func TestCacheManager_Stats(t *testing.T) {
 	defer manager.Close()
 
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main"), 0644)
+	os.WriteFile(testFile, []byte("package main"), 0o644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 	key, _ := GenerateKey(testFile, tool, tools.ExecuteOptions{})
@@ -155,7 +155,7 @@ func TestCacheManager_Cleanup_Age(t *testing.T) {
 	tmpDir := t.TempDir()
 	cacheDir := filepath.Join(tmpDir, "cache")
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	// Set maxAge to 1 nanosecond for testing
 	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 1*time.Nanosecond)
@@ -165,7 +165,7 @@ func TestCacheManager_Cleanup_Age(t *testing.T) {
 	defer manager.Close()
 
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main"), 0644)
+	os.WriteFile(testFile, []byte("package main"), 0o644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 	key, _ := GenerateKey(testFile, tool, tools.ExecuteOptions{})
@@ -192,7 +192,7 @@ func TestCacheManager_Cleanup_Size(t *testing.T) {
 	tmpDir := t.TempDir()
 	cacheDir := filepath.Join(tmpDir, "cache")
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	// Set very small maxSize for testing
 	manager, err := NewCacheManager(cacheDir, 100, 24*time.Hour)
@@ -202,7 +202,7 @@ func TestCacheManager_Cleanup_Size(t *testing.T) {
 	defer manager.Close()
 
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main"), 0644)
+	os.WriteFile(testFile, []byte("package main"), 0o644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 
@@ -234,7 +234,7 @@ func TestCacheManager_InvalidateAll(t *testing.T) {
 	tmpDir := t.TempDir()
 	cacheDir := filepath.Join(tmpDir, "cache")
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
@@ -243,7 +243,7 @@ func TestCacheManager_InvalidateAll(t *testing.T) {
 	defer manager.Close()
 
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main"), 0644)
+	os.WriteFile(testFile, []byte("package main"), 0o644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 
@@ -284,7 +284,7 @@ func TestCacheManager_OnlySuccessful(t *testing.T) {
 	tmpDir := t.TempDir()
 	cacheDir := filepath.Join(tmpDir, "cache")
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
@@ -293,7 +293,7 @@ func TestCacheManager_OnlySuccessful(t *testing.T) {
 	defer manager.Close()
 
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main"), 0644)
+	os.WriteFile(testFile, []byte("package main"), 0o644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 	key, _ := GenerateKey(testFile, tool, tools.ExecuteOptions{})
@@ -339,7 +339,7 @@ func TestCacheManager_AccessCount(t *testing.T) {
 	tmpDir := t.TempDir()
 	cacheDir := filepath.Join(tmpDir, "cache")
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	manager, err := NewCacheManager(cacheDir, 100*1024*1024, 24*time.Hour)
 	if err != nil {
@@ -348,7 +348,7 @@ func TestCacheManager_AccessCount(t *testing.T) {
 	defer manager.Close()
 
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main"), 0644)
+	os.WriteFile(testFile, []byte("package main"), 0o644)
 
 	tool := &mockTool{name: "gofumpt", version: "v0.7.0"}
 	key, _ := GenerateKey(testFile, tool, tools.ExecuteOptions{})

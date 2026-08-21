@@ -69,7 +69,7 @@ func TestExecutor_WithCache_SingleFile(t *testing.T) {
 	// Create temp file to process
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.go")
-	err = os.WriteFile(testFile, []byte("package main\n"), 0644)
+	err = os.WriteFile(testFile, []byte("package main\n"), 0o644)
 	require.NoError(t, err)
 
 	// Create executor with cache
@@ -131,7 +131,7 @@ func TestExecutor_WithCache_FileModification(t *testing.T) {
 	// Create temp file
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.go")
-	err = os.WriteFile(testFile, []byte("package main\n"), 0644)
+	err = os.WriteFile(testFile, []byte("package main\n"), 0o644)
 	require.NoError(t, err)
 
 	// Create executor with cache
@@ -166,7 +166,7 @@ func TestExecutor_WithCache_FileModification(t *testing.T) {
 	assert.True(t, results[0].Cached)
 
 	// Modify file content
-	err = os.WriteFile(testFile, []byte("package main\n\nfunc foo() {}\n"), 0644)
+	err = os.WriteFile(testFile, []byte("package main\n\nfunc foo() {}\n"), 0o644)
 	require.NoError(t, err)
 
 	// Third execution: cache miss (file changed)
@@ -188,9 +188,9 @@ func TestExecutor_WithCache_MultipleFiles(t *testing.T) {
 	testFile1 := filepath.Join(tmpDir, "test1.go")
 	testFile2 := filepath.Join(tmpDir, "test2.go")
 	testFile3 := filepath.Join(tmpDir, "test3.go")
-	require.NoError(t, os.WriteFile(testFile1, []byte("package main\n// file 1\n"), 0644))
-	require.NoError(t, os.WriteFile(testFile2, []byte("package main\n// file 2\n"), 0644))
-	require.NoError(t, os.WriteFile(testFile3, []byte("package main\n// file 3\n"), 0644))
+	require.NoError(t, os.WriteFile(testFile1, []byte("package main\n// file 1\n"), 0o644))
+	require.NoError(t, os.WriteFile(testFile2, []byte("package main\n// file 2\n"), 0o644))
+	require.NoError(t, os.WriteFile(testFile3, []byte("package main\n// file 3\n"), 0o644))
 
 	// Create executor with cache
 	executor := NewParallelExecutorWithCache(4, 5*time.Minute, cacheManager)
@@ -226,7 +226,7 @@ func TestExecutor_WithCache_MultipleFiles(t *testing.T) {
 	assert.True(t, results[0].Cached, "Result should be cached")
 
 	// Modify one file
-	require.NoError(t, os.WriteFile(testFile2, []byte("package main\n// file 2 modified\n"), 0644))
+	require.NoError(t, os.WriteFile(testFile2, []byte("package main\n// file 2 modified\n"), 0o644))
 
 	// Third execution: partial cache hit (only file2 misses)
 	tool.execCount = 0
@@ -243,7 +243,7 @@ func TestExecutor_WithoutCache(t *testing.T) {
 	// Create temp file
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.go")
-	require.NoError(t, os.WriteFile(testFile, []byte("package main\n"), 0644))
+	require.NoError(t, os.WriteFile(testFile, []byte("package main\n"), 0o644))
 
 	// Create mock tool
 	tool := newMockCacheableTool("gofumpt", "Go")
@@ -290,7 +290,7 @@ func TestExecutor_CacheDisabled(t *testing.T) {
 	// Create temp file
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.go")
-	require.NoError(t, os.WriteFile(testFile, []byte("package main\n"), 0644))
+	require.NoError(t, os.WriteFile(testFile, []byte("package main\n"), 0o644))
 
 	// Create mock tool
 	tool := newMockCacheableTool("gofumpt", "Go")
@@ -330,7 +330,7 @@ func TestExecutor_FailedResultNotCached(t *testing.T) {
 	// Create temp file
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.go")
-	require.NoError(t, os.WriteFile(testFile, []byte("package main\n"), 0644))
+	require.NoError(t, os.WriteFile(testFile, []byte("package main\n"), 0o644))
 
 	// Create executor with cache
 	executor := NewParallelExecutorWithCache(4, 5*time.Minute, cacheManager)

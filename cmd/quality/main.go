@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Gizzahub/gzh-cli-quality"
+	quality "github.com/Gizzahub/gzh-cli-quality"
 )
 
 var (

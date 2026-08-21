@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Gizzahub/gzh-cli-quality"
+	quality "github.com/Gizzahub/gzh-cli-quality"
 	"github.com/stretchr/testify/assert"
 )
 

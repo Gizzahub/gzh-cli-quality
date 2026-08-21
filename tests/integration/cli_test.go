@@ -108,7 +108,7 @@ func TestCLI_Analyze(t *testing.T) {
 
 	// Create Go file
 	goFile := filepath.Join(tmpDir, "main.go")
-	if err := os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0644); err != nil {
+	if err := os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -131,7 +131,7 @@ func TestCLI_Init(t *testing.T) {
 
 	// Create Go file
 	goFile := filepath.Join(tmpDir, "main.go")
-	if err := os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0644); err != nil {
+	if err := os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -166,7 +166,7 @@ func TestCLI_DryRun(t *testing.T) {
 
 	// Create Go file
 	goFile := filepath.Join(tmpDir, "main.go")
-	if err := os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0644); err != nil {
+	if err := os.WriteFile(goFile, []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 

@@ -37,7 +37,7 @@ func TestGenerateKey(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "test.go")
 	testContent := []byte("package main\n\nfunc main() {}\n")
 
-	if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+	if err := os.WriteFile(testFile, testContent, 0o644); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
@@ -87,11 +87,11 @@ func TestGenerateKey_DifferentContent(t *testing.T) {
 	file1 := filepath.Join(tmpDir, "file1.go")
 	file2 := filepath.Join(tmpDir, "file2.go")
 
-	if err := os.WriteFile(file1, []byte("package main"), 0644); err != nil {
+	if err := os.WriteFile(file1, []byte("package main"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := os.WriteFile(file2, []byte("package test"), 0644); err != nil {
+	if err := os.WriteFile(file2, []byte("package test"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -118,7 +118,7 @@ func TestGenerateKey_DifferentOptions(t *testing.T) {
 	tmpDir := t.TempDir()
 	testFile := filepath.Join(tmpDir, "test.go")
 
-	if err := os.WriteFile(testFile, []byte("package main"), 0644); err != nil {
+	if err := os.WriteFile(testFile, []byte("package main"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -224,7 +224,7 @@ func TestHashFile(t *testing.T) {
 	testFile := filepath.Join(tmpDir, "test.go")
 	content := []byte("package main\n")
 
-	if err := os.WriteFile(testFile, content, 0644); err != nil {
+	if err := os.WriteFile(testFile, content, 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -240,7 +240,7 @@ func TestHashFile(t *testing.T) {
 	}
 
 	// Hash should change when content changes
-	if err := os.WriteFile(testFile, []byte("package test\n"), 0644); err != nil {
+	if err := os.WriteFile(testFile, []byte("package test\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -266,11 +266,11 @@ func TestHashFiles(t *testing.T) {
 	file1 := filepath.Join(tmpDir, "config1.yml")
 	file2 := filepath.Join(tmpDir, "config2.yml")
 
-	if err := os.WriteFile(file1, []byte("key: value1"), 0644); err != nil {
+	if err := os.WriteFile(file1, []byte("key: value1"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := os.WriteFile(file2, []byte("key: value2"), 0644); err != nil {
+	if err := os.WriteFile(file2, []byte("key: value2"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 

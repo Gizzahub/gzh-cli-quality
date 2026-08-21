@@ -132,7 +132,6 @@ func (fs *FilesystemStorage) List() ([]string, error) {
 		keys = append(keys, key)
 		return nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to list cache entries: %w", err)
 	}
@@ -158,7 +157,6 @@ func (fs *FilesystemStorage) Size() (int64, error) {
 
 		return nil
 	})
-
 	if err != nil {
 		return 0, fmt.Errorf("failed to calculate cache size: %w", err)
 	}
@@ -232,7 +230,6 @@ func (fs *FilesystemStorage) CleanupCorrupted() (int, error) {
 
 		return nil
 	})
-
 	if err != nil {
 		return count, fmt.Errorf("cleanup failed: %w", err)
 	}

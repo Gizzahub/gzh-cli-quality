@@ -37,6 +37,7 @@ func (m *mockToolForBench) Execute(ctx context.Context, files []string, options 
 		Issues:         []tools.Issue{},
 	}, nil
 }
+
 func (m *mockToolForBench) FindConfigFiles(projectRoot string) []string {
 	return []string{}
 }
@@ -223,7 +224,7 @@ func setupBenchCache(b *testing.B) (*cache.CacheManager, string, func()) {
 func setupBenchFile(b *testing.B, dir, content string) string {
 	b.Helper()
 	filePath := filepath.Join(dir, "test.go")
-	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte(content), 0o644); err != nil {
 		b.Fatalf("Failed to write test file: %v", err)
 	}
 	return filePath
@@ -235,7 +236,7 @@ func BenchmarkCache_Miss(b *testing.B) {
 	defer cleanup()
 
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	executor := NewParallelExecutorWithCache(4, 5*time.Minute, cacheManager)
 	ctx := context.Background()
@@ -245,7 +246,7 @@ func BenchmarkCache_Miss(b *testing.B) {
 		b.StopTimer()
 		// Create unique file for each iteration to ensure cache miss
 		testFile := filepath.Join(filesDir, "test_"+string(rune('a'+i%26))+".go")
-		os.WriteFile(testFile, []byte("package main\n// iteration "+string(rune('0'+i%10))), 0644)
+		os.WriteFile(testFile, []byte("package main\n// iteration "+string(rune('0'+i%10))), 0o644)
 
 		plan := &tools.ExecutionPlan{
 			Tasks: []tools.Task{
@@ -270,7 +271,7 @@ func BenchmarkCache_Hit(b *testing.B) {
 	defer cleanup()
 
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 	testFile := setupBenchFile(b, filesDir, "package main\n")
 
 	executor := NewParallelExecutorWithCache(4, 5*time.Minute, cacheManager)
@@ -303,13 +304,13 @@ func BenchmarkCache_MultiFile_AllHit(b *testing.B) {
 	defer cleanup()
 
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	// Create multiple test files
 	var testFiles []string
 	for i := range 10 {
 		filePath := filepath.Join(filesDir, "test_"+string(rune('a'+i))+".go")
-		os.WriteFile(filePath, []byte("package main\n// file "+string(rune('a'+i))), 0644)
+		os.WriteFile(filePath, []byte("package main\n// file "+string(rune('a'+i))), 0o644)
 		testFiles = append(testFiles, filePath)
 	}
 
@@ -343,13 +344,13 @@ func BenchmarkCache_MultiFile_PartialHit(b *testing.B) {
 	defer cleanup()
 
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 
 	// Create test files (half will be cached, half won't)
 	var testFiles []string
 	for i := range 10 {
 		filePath := filepath.Join(filesDir, "test_"+string(rune('a'+i))+".go")
-		os.WriteFile(filePath, []byte("package main\n// file "+string(rune('a'+i))), 0644)
+		os.WriteFile(filePath, []byte("package main\n// file "+string(rune('a'+i))), 0o644)
 		testFiles = append(testFiles, filePath)
 	}
 
@@ -398,9 +399,9 @@ func BenchmarkCache_NoCache(b *testing.B) {
 	defer os.RemoveAll(tmpDir)
 
 	filesDir := filepath.Join(tmpDir, "files")
-	os.MkdirAll(filesDir, 0755)
+	os.MkdirAll(filesDir, 0o755)
 	testFile := filepath.Join(filesDir, "test.go")
-	os.WriteFile(testFile, []byte("package main\n"), 0644)
+	os.WriteFile(testFile, []byte("package main\n"), 0o644)
 
 	executor := NewParallelExecutor(4, 5*time.Minute)
 	ctx := context.Background()
