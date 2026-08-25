@@ -1,7 +1,7 @@
 # .make/quality.mk - Code quality targets
 # Included by main Makefile
 
-.PHONY: lint fmt vet quality check
+.PHONY: lint fmt vet quality check require-golangci
 .PHONY: fmt-diff lint-diff fmt-check lint-check
 .PHONY: fmt-md security
 
@@ -9,19 +9,21 @@
 # Standard Quality Checks
 # ==============================================================================
 
-lint: ## Run golangci-lint (refuses to run a version the config cannot target)
-	@echo "Running golangci-lint..."
+require-golangci: ## Assert the pinned golangci-lint is the one on PATH
 	@command -v golangci-lint >/dev/null 2>&1 || { \
 		echo "⚠️  golangci-lint not installed. Run: make install-tools" >&2; \
 		exit 1; \
 	}
-	@golangci-lint version 2>/dev/null | grep -qF "has version $(GOLANGCI_LINT_BARE) " || { \
+	@golangci-lint version 2>&1 | grep -qF "has version $(GOLANGCI_LINT_BARE) " || { \
 		echo "⚠️  golangci-lint version mismatch." >&2; \
 		echo "    pinned:    $(GOLANGCI_LINT_VERSION)" >&2; \
 		echo "    on PATH:   $$(golangci-lint version 2>&1 | head -1)" >&2; \
 		echo "    Run: make install-lint" >&2; \
 		exit 1; \
 	}
+
+lint: require-golangci ## Run golangci-lint (refuses to run a version the config cannot target)
+	@echo "Running golangci-lint..."
 	@golangci-lint run ./...
 
 fmt: ## Format code with gofmt and gofumpt
@@ -55,26 +57,18 @@ fmt-diff: ## Format only changed Go files
 	fi
 	@echo "✅ Changed files formatted"
 
-lint-diff: ## Lint only changed Go files
+lint-diff: require-golangci ## Lint only changed Go files
 	@echo "Linting changed files..."
-	@if command -v golangci-lint >/dev/null 2>&1; then \
-		golangci-lint run --new-from-rev=HEAD~1 ./...; \
-	else \
-		echo "⚠️  golangci-lint not installed"; \
-	fi
+	@golangci-lint run --new-from-rev=HEAD~1 ./...
 
 fmt-check: ## Check if code is formatted (for CI)
 	@echo "Checking code format..."
 	@test -z "$$(gofmt -l .)" || { echo "Code is not formatted. Run: make fmt"; exit 1; }
 	@echo "✅ Code is properly formatted"
 
-lint-check: ## Run lint without fixing (for CI)
+lint-check: require-golangci ## Run lint without fixing (for CI)
 	@echo "Checking lint..."
-	@if command -v golangci-lint >/dev/null 2>&1; then \
-		golangci-lint run ./...; \
-	else \
-		$(GOVET) ./...; \
-	fi
+	@golangci-lint run ./...
 
 # ==============================================================================
 # Additional Quality Tools
