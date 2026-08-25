@@ -28,4 +28,8 @@ TEST_TIMEOUT := 5m
 RACE_FLAG := -race
 
 # Linter settings
-GOLANGCI_LINT_VERSION := v1.62.2
+# .golangci.yml is the v2 schema, so this must be a v2 release — v1 cannot
+# parse it. GOLANGCI_LINT_BARE drops the leading `v` because
+# `golangci-lint version` prints "has version 2.12.2 built with ...".
+GOLANGCI_LINT_VERSION := v2.12.2
+GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
