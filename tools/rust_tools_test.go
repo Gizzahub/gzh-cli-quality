@@ -73,7 +73,7 @@ func TestRustfmtTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "rustfmt", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "rustfmt", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			for _, expected := range tt.expectedArgs {
@@ -136,7 +136,7 @@ func TestClippyTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "cargo", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "cargo", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			assert.Contains(t, cmdArgs, "clippy")
@@ -279,7 +279,7 @@ func TestCargoFmtTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "cargo", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "cargo", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			assert.Contains(t, cmdArgs, "fmt")

@@ -67,7 +67,7 @@ func TestGofumptTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "gofumpt", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "gofumpt", cmd.Path)
 			assert.Equal(t, tt.expectedArgs, cmd.Args[1:]) // Skip cmd.Args[0] which is the executable
 
 			if tt.options.ProjectRoot != "" {
@@ -122,7 +122,7 @@ func TestGoimportsTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "goimports", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "goimports", cmd.Path)
 			// Check that args contain expected elements (order may vary with -local flag)
 			cmdArgs := cmd.Args[1:]
 			for _, expected := range tt.expectedArgs {
@@ -199,7 +199,7 @@ func TestGolangciLintTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "golangci-lint", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "golangci-lint", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			assert.Contains(t, cmdArgs, "run")

@@ -71,7 +71,7 @@ func TestPrettierTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "prettier", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "prettier", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			for _, expected := range tt.expectedArgs {
@@ -141,7 +141,7 @@ func TestESLintTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "eslint", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "eslint", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			assert.Contains(t, cmdArgs, "--format")
@@ -314,7 +314,7 @@ func TestTSCTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "tsc", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "tsc", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			assert.Contains(t, cmdArgs, "--noEmit")

@@ -71,7 +71,7 @@ func TestBlackTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "black", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "black", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			for _, expected := range tt.expectedArgs {
@@ -143,7 +143,7 @@ func TestRuffTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "ruff", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "ruff", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			if tt.checkFormat {
@@ -278,7 +278,7 @@ func TestPylintTool_BuildCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := tool.BuildCommand(tt.files, tt.options)
 
-			assert.Equal(t, "pylint", filepath.Base(cmd.Path))
+			assertCommandExecutable(t, "pylint", cmd.Path)
 			cmdArgs := cmd.Args[1:]
 
 			assert.Contains(t, cmdArgs, "--output-format")

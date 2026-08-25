@@ -6,11 +6,50 @@ package tools
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// commandExecutableName normalizes Windows' automatic .exe resolution in
+// exec.Command so command assertions remain portable.
+func commandExecutableName(commandPath string) string {
+	base := filepath.Base(commandPath)
+	extension := filepath.Ext(base)
+	if strings.EqualFold(extension, ".exe") {
+		return strings.TrimSuffix(base, extension)
+	}
+
+	return base
+}
+
+func assertCommandExecutable(t *testing.T, expected, commandPath string) {
+	t.Helper()
+	assert.Equal(t, expected, commandExecutableName(commandPath))
+}
+
+func TestCommandExecutableName(t *testing.T) {
+	tests := []struct {
+		name        string
+		commandPath string
+		expected    string
+	}{
+		{name: "unresolved executable", commandPath: "gofumpt", expected: "gofumpt"},
+		{name: "lowercase Windows executable", commandPath: filepath.Join("tools", "gofumpt.exe"), expected: "gofumpt"},
+		{name: "uppercase Windows executable", commandPath: filepath.Join("tools", "gofumpt.EXE"), expected: "gofumpt"},
+		{name: "mixed-case Windows executable", commandPath: filepath.Join("tools", "gofumpt.Exe"), expected: "gofumpt"},
+		{name: "non-executable extension", commandPath: filepath.Join("tools", "gofumpt.bat"), expected: "gofumpt.bat"},
+		{name: "embedded executable extension", commandPath: filepath.Join("tools", "gofumpt.exe.backup"), expected: "gofumpt.exe.backup"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, commandExecutableName(tt.commandPath))
+		})
+	}
+}
 
 func TestNewBaseTool(t *testing.T) {
 	tool := NewBaseTool("gofmt", "Go", "gofmt", FORMAT)
