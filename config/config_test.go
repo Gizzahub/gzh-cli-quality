@@ -460,6 +460,87 @@ func TestShouldInclude_BothPatterns(t *testing.T) {
 	}
 }
 
+func TestShouldInclude_SlashPatternsAcrossDirectories(t *testing.T) {
+	config := &Config{
+		Include: []string{"src/*/*.go"},
+	}
+
+	tests := []struct {
+		name     string
+		path     string
+		included bool
+	}{
+		{name: "slash-separated path", path: "src/internal/main.go", included: true},
+		{name: "backslash-separated path", path: `src\internal\main.go`, included: true},
+		{name: "path below configured depth", path: "src/internal/nested/main.go", included: false},
+		{name: "path outside configured directory", path: "pkg/internal/main.go", included: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.included, config.ShouldInclude(tt.path))
+		})
+	}
+}
+
+func TestShouldExclude_SlashPatternsAcrossDirectories(t *testing.T) {
+	config := &Config{
+		Exclude: []string{"vendor/*/*.go"},
+	}
+
+	tests := []struct {
+		name     string
+		path     string
+		excluded bool
+	}{
+		{name: "slash-separated path", path: "vendor/example/main.go", excluded: true},
+		{name: "backslash-separated path", path: `vendor\example\main.go`, excluded: true},
+		{name: "path below configured depth", path: "vendor/example/nested/main.go", excluded: false},
+		{name: "path outside configured directory", path: "third_party/example/main.go", excluded: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.excluded, config.ShouldExclude(tt.path))
+		})
+	}
+}
+
+func TestShouldExclude_BackslashPathMatchesParentDirectory(t *testing.T) {
+	config := &Config{
+		Exclude: []string{"vendor/*"},
+	}
+
+	assert.True(t, config.ShouldExclude(`vendor\example\nested\main.go`))
+}
+
+func TestShouldInclude_PreservesEscapedPatternMetacharacters(t *testing.T) {
+	config := &Config{
+		Include: []string{`generated\*.go`, `generated\[name].go`},
+	}
+
+	assert.True(t, config.ShouldInclude("generated*.go"))
+	assert.True(t, config.ShouldInclude("generated[name].go"))
+	assert.False(t, config.ShouldInclude("generatedx.go"))
+}
+
+func TestShouldInclude_SkipsMalformedPatterns(t *testing.T) {
+	config := &Config{
+		Include: []string{"[", "*.go"},
+	}
+
+	assert.True(t, config.ShouldInclude("main.go"))
+	assert.False(t, config.ShouldInclude("main.js"))
+}
+
+func TestShouldExclude_SkipsMalformedPatterns(t *testing.T) {
+	config := &Config{
+		Exclude: []string{"["},
+	}
+
+	assert.False(t, config.ShouldExclude("main.go"))
+}
+
 func TestToolConfig_Environment(t *testing.T) {
 	config := &ToolConfig{
 		Enabled: true,

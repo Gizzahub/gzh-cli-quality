@@ -6,7 +6,9 @@ package config
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
 	yaml "gopkg.in/yaml.v3"
 )
@@ -291,8 +293,10 @@ func (c *Config) GetPreferredTools(language string) []string {
 
 // ShouldExclude checks if a file path should be excluded.
 func (c *Config) ShouldExclude(filePath string) bool {
+	filePath = normalizePath(filePath)
+
 	for _, pattern := range c.Exclude {
-		matched, err := filepath.Match(pattern, filePath)
+		matched, err := path.Match(pattern, filePath)
 		if err != nil {
 			// Invalid pattern, skip it
 			continue
@@ -302,9 +306,9 @@ func (c *Config) ShouldExclude(filePath string) bool {
 		}
 
 		// Also check if any parent directory matches
-		dir := filepath.Dir(filePath)
+		dir := path.Dir(filePath)
 		for dir != "." && dir != "/" {
-			matched, err := filepath.Match(pattern, dir)
+			matched, err := path.Match(pattern, dir)
 			if err != nil {
 				// Invalid pattern, skip it
 				break
@@ -312,7 +316,7 @@ func (c *Config) ShouldExclude(filePath string) bool {
 			if matched {
 				return true
 			}
-			dir = filepath.Dir(dir)
+			dir = path.Dir(dir)
 		}
 	}
 
@@ -321,6 +325,8 @@ func (c *Config) ShouldExclude(filePath string) bool {
 
 // ShouldInclude checks if a file path should be included.
 func (c *Config) ShouldInclude(filePath string) bool {
+	filePath = normalizePath(filePath)
+
 	// If no include patterns, include everything (subject to exclude)
 	if len(c.Include) == 0 {
 		return !c.ShouldExclude(filePath)
@@ -328,7 +334,7 @@ func (c *Config) ShouldInclude(filePath string) bool {
 
 	// Check include patterns
 	for _, pattern := range c.Include {
-		matched, err := filepath.Match(pattern, filePath)
+		matched, err := path.Match(pattern, filePath)
 		if err != nil {
 			// Invalid pattern, skip it
 			continue
@@ -339,6 +345,12 @@ func (c *Config) ShouldInclude(filePath string) bool {
 	}
 
 	return false
+}
+
+// normalizePath converts platform-specific separators to the slash-based path
+// syntax used by include and exclude patterns.
+func normalizePath(filePath string) string {
+	return strings.ReplaceAll(filePath, "\\", "/")
 }
 
 // GetCacheDirectory returns the cache directory path.
