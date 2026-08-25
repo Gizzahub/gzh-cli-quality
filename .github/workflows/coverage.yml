@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, master, develop ]
 
+permissions:
+  contents: read
+  pull-requests: write  # For PR comments
+
 jobs:
   coverage:
     name: Test Coverage Check
