@@ -151,6 +151,16 @@ func TestAnalyzeProject(t *testing.T) {
 	registry.Register(tools.NewGoimportsTool())
 	registry.Register(tools.NewGolangciLintTool())
 
+	// AvailableTools comes from IsToolAvailable, which looks the name up in
+	// $PATH. Registering a tool does not make it available, so without pinning
+	// the lookup this asserts that the machine running the test happens to have
+	// these three installed — true on a developer box, never true on a fresh
+	// runner. IsToolAvailable consults pathCache before touching $PATH, and this
+	// test is in the same package, so seeding it fixes the answer either way.
+	for _, name := range []string{"gofumpt", "goimports", "golangci-lint"} {
+		analyzer.toolDetector.pathCache[name] = true
+	}
+
 	// Analyze project
 	result, err := analyzer.AnalyzeProject(tmpDir, registry)
 	require.NoError(t, err)
@@ -161,8 +171,9 @@ func TestAnalyzeProject(t *testing.T) {
 	assert.Contains(t, result.Languages, "Go")
 	assert.Greater(t, len(result.Languages["Go"]), 0)
 
-	// Check that Go tools are detected
-	assert.NotEmpty(t, result.AvailableTools)
+	// Check that Go tools are detected. Now that availability is pinned this can
+	// name the expected set rather than only asserting it is non-empty.
+	assert.ElementsMatch(t, []string{"gofumpt", "goimports", "golangci-lint"}, result.AvailableTools)
 }
 
 func TestAnalyzeProject_MultiLanguage(t *testing.T) {
