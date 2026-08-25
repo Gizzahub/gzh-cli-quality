@@ -33,6 +33,11 @@ jobs:
     name: Test
     runs-on: ${{ matrix.os }}
     strategy:
+      # Without this, the first OS leg to fail cancels the other two. Across the
+      # last six runs exactly one leg ever reported and windows-latest has never
+      # once run to completion, so its result is unknown. Losing two thirds of
+      # the signal on every red run is a worse trade than the runner minutes.
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         go: ['1.26.6']

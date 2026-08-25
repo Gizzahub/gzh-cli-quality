@@ -25,6 +25,7 @@ jobs:
           go-version: '1.26.6'
 
       - name: Run tests with coverage
+        id: tests
         run: |
           go test ./... -coverprofile=coverage.out -covermode=atomic
           go tool cover -func=coverage.out -o coverage.txt
@@ -78,7 +79,13 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
+        # `Check coverage threshold` exits 1 below 40%, which is exactly when the
+        # comment is worth posting — without always() the script's own
+        # below-threshold branch is unreachable. Gated on the tests step rather
+        # than bare always() because coverage.txt only exists if that step ran;
+        # otherwise a test failure would make this step fail too, on a missing
+        # file, and report the wrong cause.
+        if: always() && github.event_name == 'pull_request' && steps.tests.outcome == 'success'
         uses: actions/github-script@v9
         with:
           script: |
@@ -120,7 +127,7 @@ jobs:
             body += '```\n\n';
             body += '📥 [Download detailed coverage report](../actions/runs/' + context.runId + ')\n';
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
