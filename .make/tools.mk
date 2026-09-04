@@ -11,12 +11,24 @@ install-tools: install-lint install-fumpt ## Install all development tools
 # the install if one did. That check can never fail on a developer machine, so
 # the pin was never exercised — and the pin was v1, which cannot read this
 # repo's v2 config. Compare the version, not the presence.
+#
+# Installing to the shared $(go env GOPATH)/bin used to mean every Go project
+# on the machine raced for one binary: whichever repo's install-lint ran last
+# won, and any sibling repo pinning a different version broke without being
+# touched (TASK-159). GOLANGCI_LINT_BIN now points at this repo's own
+# bin/tools, so the check and the install both target the exact binary `lint`
+# runs — no other repo can own or overwrite it.
 install-lint: ## Install golangci-lint (pinned, v2)
-	@if golangci-lint version 2>/dev/null | grep -qF "has version $(GOLANGCI_LINT_BARE) "; then \
-		echo "✅ golangci-lint $(GOLANGCI_LINT_VERSION) already on PATH: $$(command -v golangci-lint)"; \
+	@if [ -x "$(GOLANGCI_LINT_BIN)" ] && "$(GOLANGCI_LINT_BIN)" version 2>/dev/null | grep -qF "has version $(GOLANGCI_LINT_BARE) "; then \
+		echo "✅ golangci-lint $(GOLANGCI_LINT_VERSION) already installed: $(GOLANGCI_LINT_BIN)"; \
 	else \
-		echo "Installing golangci-lint $(GOLANGCI_LINT_VERSION) into $$(go env GOPATH)/bin..."; \
-		GOBIN=$$(go env GOPATH)/bin $(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION); \
+		echo "Installing golangci-lint $(GOLANGCI_LINT_VERSION) to $(GOLANGCI_LINT_BIN)..."; \
+		mkdir -p "$(GOLANGCI_LINT_DIR)"; \
+		GOBIN="$(GOLANGCI_LINT_DIR)" $(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION); \
+		"$(GOLANGCI_LINT_BIN)" version 2>/dev/null | grep -qF "has version $(GOLANGCI_LINT_BARE) " || { \
+			echo "⚠️  golangci-lint installation did not produce $(GOLANGCI_LINT_VERSION): $(GOLANGCI_LINT_BIN)" >&2; \
+			exit 1; \
+		}; \
 	fi
 
 # Single source of the version for CI — the workflow reads this rather than

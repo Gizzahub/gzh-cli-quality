@@ -1,7 +1,7 @@
 # .make/quality.mk - Code quality targets
 # Included by main Makefile
 
-.PHONY: lint fmt vet quality check require-golangci
+.PHONY: lint fmt vet quality check
 .PHONY: fmt-diff lint-diff fmt-check lint-check
 .PHONY: fmt-md security
 
@@ -9,22 +9,9 @@
 # Standard Quality Checks
 # ==============================================================================
 
-require-golangci: ## Assert the pinned golangci-lint is the one on PATH
-	@command -v golangci-lint >/dev/null 2>&1 || { \
-		echo "⚠️  golangci-lint not installed. Run: make install-tools" >&2; \
-		exit 1; \
-	}
-	@golangci-lint version 2>&1 | grep -qF "has version $(GOLANGCI_LINT_BARE) " || { \
-		echo "⚠️  golangci-lint version mismatch." >&2; \
-		echo "    pinned:    $(GOLANGCI_LINT_VERSION)" >&2; \
-		echo "    on PATH:   $$(golangci-lint version 2>&1 | head -1)" >&2; \
-		echo "    Run: make install-lint" >&2; \
-		exit 1; \
-	}
-
-lint: require-golangci ## Run golangci-lint (refuses to run a version the config cannot target)
+lint: install-lint ## Run golangci-lint (self-installs the pinned version first)
 	@echo "Running golangci-lint..."
-	@golangci-lint run ./...
+	@"$(GOLANGCI_LINT_BIN)" run ./...
 
 fmt: ## Format code with gofmt and gofumpt
 	@echo "Formatting code..."
@@ -57,18 +44,18 @@ fmt-diff: ## Format only changed Go files
 	fi
 	@echo "✅ Changed files formatted"
 
-lint-diff: require-golangci ## Lint only changed Go files
+lint-diff: install-lint ## Lint only changed Go files
 	@echo "Linting changed files..."
-	@golangci-lint run --new-from-rev=HEAD~1 ./...
+	@"$(GOLANGCI_LINT_BIN)" run --new-from-rev=HEAD~1 ./...
 
 fmt-check: ## Check if code is formatted (for CI)
 	@echo "Checking code format..."
 	@test -z "$$(gofmt -l .)" || { echo "Code is not formatted. Run: make fmt"; exit 1; }
 	@echo "✅ Code is properly formatted"
 
-lint-check: require-golangci ## Run lint without fixing (for CI)
+lint-check: install-lint ## Run lint without fixing (for CI)
 	@echo "Checking lint..."
-	@golangci-lint run ./...
+	@"$(GOLANGCI_LINT_BIN)" run ./...
 
 # ==============================================================================
 # Additional Quality Tools

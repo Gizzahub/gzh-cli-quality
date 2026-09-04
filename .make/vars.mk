@@ -33,3 +33,11 @@ RACE_FLAG := -race
 # `golangci-lint version` prints "has version 2.12.2 built with ...".
 GOLANGCI_LINT_VERSION := v2.12.2
 GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
+# All local lint paths use this exact managed binary. The directory is
+# repo-owned rather than the shared $(GOPATH)/bin -- every Go project on a
+# machine competed for one binary there, so two repos pinning different
+# golangci-lint versions could not both be green (TASK-159). It stays
+# overridable for isolated verification, while the filename remains fixed so
+# install-lint and lint always agree on the destination.
+GOLANGCI_LINT_DIR ?= $(CURDIR)/bin/tools
+GOLANGCI_LINT_BIN := $(GOLANGCI_LINT_DIR)/golangci-lint
