@@ -1,4 +1,4 @@
-# CLAUDE.md
+# gzh-cli-quality
 
 This file provides LLM-optimized guidance for Claude Code when working with this repository.
 
@@ -114,59 +114,6 @@ make lint-diff      # Lint changed files only
 
 ---
 
-## Project Structure
-
-```
-.
-├── cmd/
-│   └── quality/
-│       ├── AGENTS.md           # Module-specific guide
-│       ├── main.go             # Entry point
-│       ├── root.go             # Root command
-│       └── *.go                # Subcommands
-├── cache/                       # Caching system
-│   ├── cache.go                # Cache interface
-│   ├── manager.go              # Cache manager
-│   ├── storage.go              # File storage
-│   └── key.go                  # Cache key generation
-├── config/                      # Configuration
-│   ├── config.go               # Config types
-│   └── loader.go               # Config loading
-├── detector/                    # Language detection
-│   ├── detector.go             # File detector
-│   └── languages.go            # Language definitions
-├── executor/                    # Tool execution
-│   ├── executor.go             # Command executor
-│   └── runner.go               # Execution runner
-├── report/                      # Result reporting
-│   ├── formatter.go            # Formatter interface
-│   ├── json.go                 # JSON formatter
-│   ├── table.go                # Table formatter
-│   └── markdown.go             # Markdown formatter
-├── tools/                       # Tool implementations
-│   ├── go_tools.go             # Go linters (golangci-lint)
-│   ├── python_tools.go         # Python tools (ruff, mypy)
-│   ├── rust_tools.go           # Rust tools (clippy, fmt)
-│   └── shell_tools.go          # Shell checkers (shellcheck)
-├── internal/                    # Internal packages
-│   ├── errors/                 # Custom error types
-│   │   └── errors.go
-│   ├── logger/                 # Structured logging
-│   │   └── logger.go
-│   └── testutil/               # Test utilities
-│       └── testutil.go
-├── benchmarks/                  # Performance benchmarks
-├── tests/                       # Integration tests
-├── .make/                       # Modular Makefile
-├── .golangci.yml               # Linter config (30+ linters)
-├── CLAUDE.md                   # This file
-├── go.mod                      # Go module
-├── Makefile                    # Build automation
-└── README.md                   # Project documentation
-```
-
----
-
 ## Important Rules
 
 ### Critical Requirements
@@ -191,9 +138,6 @@ make lint-diff      # Lint changed files only
 {type}({scope}): {description}
 
 {body}
-
-Model: claude-{model}
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Types**: feat, fix, docs, refactor, test, chore
