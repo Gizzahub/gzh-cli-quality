@@ -41,7 +41,7 @@ RACE_FLAG := -race
 #   greater than maximum supported version 4" from its bundled x/tools reader.
 # - v2.15.0, the latest stable, lints clean under go1.26.9 and go1.27.2. This
 #   now runs ahead of the siblings' v2.13.1 pins; gzh-cli still passes only
-#   because its own mise.toml pins go 1.26.7.
+#   because its own mise.toml pins go 1.26.10.
 GOLANGCI_LINT_VERSION := v2.15.0
 GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
 # All local lint paths use this exact managed binary. The directory is
