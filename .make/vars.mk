@@ -30,17 +30,18 @@ RACE_FLAG := -race
 # Linter settings
 # .golangci.yml is the v2 schema, so this must be a v2 release — v1 cannot
 # parse it. GOLANGCI_LINT_BARE drops the leading `v` because
-# `golangci-lint version` prints "has version 2.13.1 built with ...".
+# `golangci-lint version` prints "has version X.Y.Z built with ...".
 #
-# v2.13.1 rather than v2.12.2: task worktrees live outside the devbox tree, so
-# the devbox mise.toml pin does not reach them and mise resolves the global
-# `go = "1.27.0"` there. v2.12.2 is built with go1.26 and panics on go1.27
-# packages ("file requires newer Go version go1.27"), so the integration gate
-# could never run this repo's linter -- reproduced, and the same panic is on
-# master. gzh-cli and gzh-cli-package-manager already pin v2.13.1 and pass;
-# this is aligning with them, not choosing a new version. (TASK-159)
-# v2.13.1 itself fails under go1.27.2 ("export data version 5 is greater than
-# maximum supported version 4"); v2.15.0 lints clean under go1.26.9 and go1.27.2.
+# Task worktrees live outside the devbox tree, so the devbox mise.toml pin does
+# not reach them and mise resolves the global go (1.27.x) there. The pin must
+# therefore lint under both the devbox go1.26 and the global go1.27.
+# - v2.12.2 panics on go1.27 packages ("file requires newer Go version go1.27").
+#   TASK-159 moved to v2.13.1 to match gzh-cli and gzh-cli-package-manager.
+# - v2.13.1 (and v2.13.2) then failed under go1.27.2: "export data version 5 is
+#   greater than maximum supported version 4" from its bundled x/tools reader.
+# - v2.15.0, the latest stable, lints clean under go1.26.9 and go1.27.2. This
+#   now runs ahead of the siblings' v2.13.1 pins; gzh-cli still passes only
+#   because its own mise.toml pins go 1.26.7.
 GOLANGCI_LINT_VERSION := v2.15.0
 GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
 # All local lint paths use this exact managed binary. The directory is
