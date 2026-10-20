@@ -39,7 +39,9 @@ RACE_FLAG := -race
 # could never run this repo's linter -- reproduced, and the same panic is on
 # master. gzh-cli and gzh-cli-package-manager already pin v2.13.1 and pass;
 # this is aligning with them, not choosing a new version. (TASK-159)
-GOLANGCI_LINT_VERSION := v2.13.1
+# v2.13.1 itself fails under go1.27.2 ("export data version 5 is greater than
+# maximum supported version 4"); v2.15.0 lints clean under go1.26.9 and go1.27.2.
+GOLANGCI_LINT_VERSION := v2.15.0
 GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
 # All local lint paths use this exact managed binary. The directory is
 # repo-owned rather than the shared $(GOPATH)/bin -- every Go project on a

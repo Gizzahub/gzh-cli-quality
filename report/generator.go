@@ -392,8 +392,8 @@ func (g *ReportGenerator) generateMarkdown(report *Report) string {
 			sb.WriteString("|------|--------|----------|------|---------|------|\n")
 
 			for _, issue := range issues {
-				sb.WriteString(fmt.Sprintf("| %d | %d | %s | `%s` | %s | %s |\n",
-					issue.Line, issue.Column, issue.Severity, issue.Rule, issue.Message, issue.Tool))
+				sb.WriteString(fmt.Sprintf("| %d | %d | %s | %s | %s | %s |\n",
+					issue.Line, issue.Column, issue.Severity, "`"+issue.Rule+"`", issue.Message, issue.Tool))
 			}
 
 			sb.WriteString("\n")
