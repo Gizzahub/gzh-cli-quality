@@ -61,14 +61,15 @@ lint-check: install-lint ## Run lint without fixing (for CI)
 # Additional Quality Tools
 # ==============================================================================
 
-fmt-md: ## Format markdown files (requires mdformat)
+# Git 조회·필터·formatter 실패를 전파하고 공백/개행 경로를 NUL로 보존한다.
+# ignored venv와 symlink는 저장소 소유 Markdown 입력에서 제외한다.
+# ./ 접두사는 '-'로 시작하는 파일명이 formatter 옵션이 되는 것을 막는다.
+MDFORMAT_RUN = bash -o pipefail -c 'mode=$$1; shift; { if [ "$$mode" = changed ]; then git diff --name-only -z --diff-filter=d HEAD -- "*.md"; else git ls-files -z --cached --others --exclude-standard -- "*.md"; fi; } | while IFS= read -r -d "" f; do if [ -f "$$f" ] && [ ! -L "$$f" ]; then printf "%s\0" "./$$f"; fi; done | xargs -0 -r "$$@"' _
+
+fmt-md: install-mdformat ## Format markdown files with the pinned mdformat bundle
 	@echo "Formatting markdown..."
-	@if command -v mdformat >/dev/null 2>&1; then \
-		find . -name "*.md" -not -path "./vendor/*" -not -path "./.git/*" | xargs mdformat; \
-		echo "✅ Markdown formatted"; \
-	else \
-		echo "⚠️  mdformat not installed. Install: pip install mdformat"; \
-	fi
+	@$(MDFORMAT_RUN) all "$(MDFORMAT)"
+	@echo "✅ Markdown formatted"
 
 security: ## Run security scan (gosec)
 	@echo "Running security scan..."
