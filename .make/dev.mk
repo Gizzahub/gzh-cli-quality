@@ -4,6 +4,7 @@
 .PHONY: dev dev-fast verify pr-check ci-local
 .PHONY: watch pre-commit release-dry
 .PHONY: comments todo deps-graph
+.PHONY: release-quality release-coverage-check
 
 # ==============================================================================
 # Development Workflows
@@ -39,13 +40,17 @@ watch: ## Watch for changes and run tests (requires entr)
 pre-commit: quality ## Run pre-commit checks
 	@echo "✅ Pre-commit checks passed"
 
-release-dry: ## Dry run release (goreleaser)
+release-quality: quality ## Enforce PRODUCT.md release coverage after quality checks
+	@$(MAKE) release-coverage-check
+
+release-coverage-check: ## Check an existing coverage.out against the 80% release floor
+	@report=$$($(GO) tool cover -func="$(COVERAGE_OUT)") || exit 1; \
+	printf '%s\n' "$$report" | awk '/^total:/ { found = 1; value = $$NF; sub(/%$$/, "", value); print "Release coverage: " value "% (required: 80%)"; if (value + 0 < 80) exit 1 } END { if (!found) exit 1 }'
+
+release-dry: install-goreleaser ## Build release archives and cask without publishing
 	@echo "Running release dry run..."
-	@if command -v goreleaser >/dev/null 2>&1; then \
-		goreleaser release --snapshot --clean; \
-	else \
-		echo "⚠️  goreleaser not installed. Run: make install-goreleaser"; \
-	fi
+	@"$(GORELEASER_BIN)" check
+	@"$(GORELEASER_BIN)" release --snapshot --clean
 
 # ==============================================================================
 # Code Analysis

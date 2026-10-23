@@ -2,12 +2,11 @@ version: 2
 
 before:
   hooks:
-    - go mod tidy
-    - go test ./...
+    - go mod verify
 
 builds:
   - id: gz-quality
-    main: ./cmd/gz-quality
+    main: ./cmd/quality
     binary: gz-quality
     env:
       - CGO_ENABLED=0
@@ -28,7 +27,7 @@ builds:
 
 archives:
   - id: default
-    format: tar.gz
+    formats: [tar.gz]
     name_template: >-
       {{ .ProjectName }}_
       {{- .Version }}_
@@ -37,13 +36,10 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [zip]
     files:
       - LICENSE
       - README.md
-      - ARCHITECTURE.md
-      - PRD.md
-      - REQUIREMENTS.md
 
 checksum:
   name_template: 'checksums.txt'
@@ -91,7 +87,7 @@ release:
 
     **Using Go Install:**
     ```bash
-    go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@{{.Version}}
+    go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@{{.Tag}}
     ```
 
     **Using Pre-built Binaries:**
@@ -102,3 +98,17 @@ release:
 
     ---
     For issues and feature requests, please visit: https://github.com/Gizzahub/gzh-cli-quality/issues
+
+# Match the existing gz-git distribution in Gizzahub/homebrew-tap.
+homebrew_casks:
+  - name: gz-quality
+    ids: [default]
+    binaries: [gz-quality]
+    directory: Casks
+    repository:
+      owner: Gizzahub
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: "https://github.com/Gizzahub/gzh-cli-quality"
+    description: "Multi-language formatter and linter orchestrator"
+    license: MIT

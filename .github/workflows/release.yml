@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'
@@ -24,11 +25,53 @@ jobs:
           go-version: '1.27.3'
           cache: true
 
-      - name: Run GoReleaser
+      - name: Verify release quality
+        run: make release-quality
+
+      - name: Resolve pinned GoReleaser version
+        id: goreleaser
+        run: echo "version=$(make -s print-goreleaser-version)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tap publishing credential
+        if: github.event_name == 'push'
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          test -n "$HOMEBREW_TAP_TOKEN" || {
+            echo "::error::HOMEBREW_TAP_TOKEN must grant Contents write access to Gizzahub/homebrew-tap"
+            exit 1
+          }
+
+      - name: Validate release configuration
         uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
-          version: latest
+          version: ${{ steps.goreleaser.outputs.version }}
+          args: check
+
+      - name: Build unpublished release candidate
+        if: github.event_name == 'workflow_dispatch'
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: ${{ steps.goreleaser.outputs.version }}
+          args: release --snapshot --clean
+
+      - name: Upload unpublished release candidate
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-candidate
+          path: dist/
+          if-no-files-found: error
+
+      - name: Run GoReleaser
+        if: github.event_name == 'push'
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          distribution: goreleaser
+          version: ${{ steps.goreleaser.outputs.version }}
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

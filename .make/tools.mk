@@ -98,10 +98,16 @@ install-fumpt: ## Install gofumpt
 		echo "gofumpt already installed"; \
 	fi
 
-install-goreleaser: ## Install goreleaser
-	@echo "Installing goreleaser..."
-	@if ! command -v goreleaser >/dev/null 2>&1; then \
-		$(GO) install github.com/goreleaser/goreleaser@latest; \
-	else \
-		echo "goreleaser already installed"; \
+.PHONY: print-goreleaser-version
+print-goreleaser-version: ## Print the release tool version used by CI
+	@echo $(GORELEASER_VERSION)
+
+GORELEASER_VERSION_OK = $(GO) version -m "$(GORELEASER_BIN)" 2>/dev/null | \
+	awk '$$1 == "mod" && $$2 == "github.com/goreleaser/goreleaser/v2" && $$3 == "$(GORELEASER_VERSION)" { found = 1 } END { exit !found }'
+
+install-goreleaser: ## Install the pinned GoReleaser into bin/tools
+	@if ! $(GORELEASER_VERSION_OK); then \
+		mkdir -p "$(dir $(GORELEASER_BIN))" && \
+		GOBIN="$(dir $(GORELEASER_BIN))" $(GO) install github.com/goreleaser/goreleaser/v2@$(GORELEASER_VERSION) || exit 1; \
 	fi
+	@$(GORELEASER_VERSION_OK) || { echo "GoReleaser version mismatch" >&2; exit 1; }

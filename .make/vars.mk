@@ -52,3 +52,7 @@ GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
 # install-lint and lint always agree on the destination.
 GOLANGCI_LINT_DIR ?= $(CURDIR)/bin/tools
 GOLANGCI_LINT_BIN := $(GOLANGCI_LINT_DIR)/golangci-lint
+
+# Shared by local release validation and the release workflow.
+GORELEASER_VERSION := v2.19.0
+GORELEASER_BIN := $(CURDIR)/bin/tools/goreleaser
