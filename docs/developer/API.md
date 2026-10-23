@@ -12,30 +12,31 @@ gz-quality run [flags]
 
 **플래그**:
 
-| 플래그 | 단축 | 타입 | 기본값 | 설명 |
-|--------|------|------|--------|------|
-| `--files` | `-f` | []string | [] | 특정 파일들만 처리 |
-| `--fix` | `-x` | bool | false | 자동 수정 적용 |
-| `--format-only` | - | bool | false | 포매팅만 실행 |
-| `--lint-only` | - | bool | false | 린팅만 실행 |
-| `--workers` | `-w` | int | CPU 수 | 병렬 워커 수 |
-| `--extra-args` | - | []string | [] | 도구에 전달할 추가 인수 |
-| `--dry-run` | - | bool | false | 실행하지 않고 계획만 표시 |
-| `--verbose` | `-v` | bool | false | 상세 출력 |
-| `--report` | - | string | "" | 리포트 형식 (json, html, markdown) |
-| `--output` | - | string | "" | 리포트 출력 경로 |
-| `--staged` | - | bool | false | Git staged 파일만 |
-| `--changed` | - | bool | false | 변경된 파일만 |
-| `--since` | - | string | "" | 특정 커밋 이후 파일 |
+| 플래그          | 단축 | 타입     | 기본값 | 설명                               |
+| --------------- | ---- | -------- | ------ | ---------------------------------- |
+| `--files`       | `-f` | []string | []     | 특정 파일들만 처리                 |
+| `--fix`         | `-x` | bool     | false  | 자동 수정 적용                     |
+| `--format-only` | -    | bool     | false  | 포매팅만 실행                      |
+| `--lint-only`   | -    | bool     | false  | 린팅만 실행                        |
+| `--workers`     | `-w` | int      | CPU 수 | 병렬 워커 수                       |
+| `--extra-args`  | -    | []string | []     | 도구에 전달할 추가 인수            |
+| `--dry-run`     | -    | bool     | false  | 실행하지 않고 계획만 표시          |
+| `--verbose`     | `-v` | bool     | false  | 상세 출력                          |
+| `--report`      | -    | string   | ""     | 리포트 형식 (json, html, markdown) |
+| `--output`      | -    | string   | ""     | 리포트 출력 경로                   |
+| `--staged`      | -    | bool     | false  | Git staged 파일만                  |
+| `--changed`     | -    | bool     | false  | 변경된 파일만                      |
+| `--since`       | -    | string   | ""     | 특정 커밋 이후 파일                |
 
 **예시**:
+
 ```bash
 gz-quality run --staged --fix
 gz-quality run --since main --report json --output report.json
 gz-quality run --format-only --workers 8
 ```
 
----
+______________________________________________________________________
 
 ### 1.2 gz-quality check
 
@@ -48,12 +49,13 @@ gz-quality check [flags]
 **플래그**: `gz-quality run`과 동일 (단, `--fix` 무시됨)
 
 **예시**:
+
 ```bash
 gz-quality check --staged
 gz-quality check --since HEAD~5
 ```
 
----
+______________________________________________________________________
 
 ### 1.3 gz-quality init
 
@@ -65,19 +67,20 @@ gz-quality init [flags]
 
 **플래그**:
 
-| 플래그 | 타입 | 기본값 | 설명 |
-|--------|------|--------|------|
-| `--force` | bool | false | 기존 파일 덮어쓰기 |
-| `--output` | string | ".gzquality.yml" | 출력 파일 경로 |
+| 플래그     | 타입   | 기본값           | 설명               |
+| ---------- | ------ | ---------------- | ------------------ |
+| `--force`  | bool   | false            | 기존 파일 덮어쓰기 |
+| `--output` | string | ".gzquality.yml" | 출력 파일 경로     |
 
 **예시**:
+
 ```bash
 gz-quality init
 gz-quality init --force
 gz-quality init --output custom-quality.yml
 ```
 
----
+______________________________________________________________________
 
 ### 1.4 gz-quality analyze
 
@@ -89,12 +92,13 @@ gz-quality analyze [flags]
 
 **플래그**:
 
-| 플래그 | 타입 | 기본값 | 설명 |
-|--------|------|--------|------|
-| `--verbose` | bool | false | 상세 분석 결과 |
-| `--json` | bool | false | JSON 형식 출력 |
+| 플래그      | 타입 | 기본값 | 설명           |
+| ----------- | ---- | ------ | -------------- |
+| `--verbose` | bool | false  | 상세 분석 결과 |
+| `--json`    | bool | false  | JSON 형식 출력 |
 
 **출력 예시**:
+
 ```
 📊 프로젝트 분석 결과
 
@@ -113,7 +117,7 @@ gz-quality analyze [flags]
     ✗ pylint (미설치)
 ```
 
----
+______________________________________________________________________
 
 ### 1.5 gz-quality tool
 
@@ -128,13 +132,14 @@ gz-quality tool <tool-name> [flags]
 **플래그**: `gz-quality run`과 동일한 Git/실행 플래그 지원
 
 **예시**:
+
 ```bash
 gz-quality tool ruff --staged --fix
 gz-quality tool golangci-lint --since main
 gz-quality tool prettier --files "src/**/*.ts"
 ```
 
----
+______________________________________________________________________
 
 ### 1.6 gz-quality install
 
@@ -146,12 +151,13 @@ gz-quality install [tool-name] [flags]
 
 **플래그**:
 
-| 플래그 | 타입 | 기본값 | 설명 |
-|--------|------|--------|------|
-| `--all` | bool | false | 모든 도구 설치 |
-| `--language` | string | "" | 특정 언어 도구만 설치 |
+| 플래그       | 타입   | 기본값 | 설명                  |
+| ------------ | ------ | ------ | --------------------- |
+| `--all`      | bool   | false  | 모든 도구 설치        |
+| `--language` | string | ""     | 특정 언어 도구만 설치 |
 
 **예시**:
+
 ```bash
 gz-quality install                    # 프로젝트에 필요한 도구
 gz-quality install golangci-lint      # 특정 도구
@@ -159,7 +165,7 @@ gz-quality install --language Python  # Python 도구만
 gz-quality install --all              # 모든 지원 도구
 ```
 
----
+______________________________________________________________________
 
 ### 1.7 gz-quality upgrade
 
@@ -170,12 +176,13 @@ gz-quality upgrade [tool-name] [flags]
 ```
 
 **예시**:
+
 ```bash
 gz-quality upgrade                # 모든 도구
 gz-quality upgrade golangci-lint  # 특정 도구
 ```
 
----
+______________________________________________________________________
 
 ### 1.8 gz-quality version
 
@@ -187,11 +194,12 @@ gz-quality version [flags]
 
 **플래그**:
 
-| 플래그 | 타입 | 기본값 | 설명 |
-|--------|------|--------|------|
-| `--json` | bool | false | JSON 형식 출력 |
+| 플래그   | 타입 | 기본값 | 설명           |
+| -------- | ---- | ------ | -------------- |
+| `--json` | bool | false  | JSON 형식 출력 |
 
 **출력 예시**:
+
 ```
 gzh-cli-quality v1.0.0
 
@@ -203,7 +211,7 @@ gzh-cli-quality v1.0.0
   ruff          0.1.14      /home/user/.local/bin/ruff
 ```
 
----
+______________________________________________________________________
 
 ### 1.9 gz-quality list
 
@@ -215,13 +223,14 @@ gz-quality list [flags]
 
 **플래그**:
 
-| 플래그 | 타입 | 기본값 | 설명 |
-|--------|------|--------|------|
-| `--language` | string | "" | 특정 언어만 필터 |
-| `--type` | string | "" | 도구 타입 (formatter, linter) |
-| `--installed` | bool | false | 설치된 도구만 |
+| 플래그        | 타입   | 기본값 | 설명                          |
+| ------------- | ------ | ------ | ----------------------------- |
+| `--language`  | string | ""     | 특정 언어만 필터              |
+| `--type`      | string | ""     | 도구 타입 (formatter, linter) |
+| `--installed` | bool   | false  | 설치된 도구만                 |
 
 **출력 예시**:
+
 ```
 사용 가능한 도구:
 
@@ -236,7 +245,7 @@ Python:
   ✗ pylint        linter      정적 분석기
 ```
 
----
+______________________________________________________________________
 
 ## 2. Go 패키지 API
 
@@ -324,7 +333,7 @@ type Issue struct {
 }
 ```
 
----
+______________________________________________________________________
 
 #### ToolRegistry 인터페이스
 
@@ -342,6 +351,7 @@ type ToolRegistry interface {
 ```
 
 **사용 예시**:
+
 ```go
 registry := tools.NewRegistry()
 registry.Register(NewGofumptTool())
@@ -356,7 +366,7 @@ if ruff != nil && ruff.IsAvailable() {
 }
 ```
 
----
+______________________________________________________________________
 
 ### 2.2 executor 패키지
 
@@ -407,6 +417,7 @@ type PlanOptions struct {
 ```
 
 **사용 예시**:
+
 ```go
 executor := executor.NewParallelExecutor(4, 10*time.Minute)
 planner := executor.NewExecutionPlanner(analyzer)
@@ -419,7 +430,7 @@ plan, err := planner.CreatePlan(projectRoot, registry, PlanOptions{
 results, err := executor.ExecuteParallel(ctx, plan, 4)
 ```
 
----
+______________________________________________________________________
 
 ### 2.3 config 패키지
 
@@ -464,7 +475,7 @@ type LanguageConfig struct {
 }
 ```
 
----
+______________________________________________________________________
 
 ### 2.4 report 패키지
 
@@ -511,7 +522,7 @@ type Summary struct {
 }
 ```
 
----
+______________________________________________________________________
 
 ## 3. 설정 스키마
 
@@ -596,17 +607,17 @@ exclude:
   - build/**
 ```
 
----
+______________________________________________________________________
 
 ## 4. 종료 코드
 
-| 코드 | 의미 |
-|------|------|
-| 0 | 성공 (이슈 없음) |
-| 1 | 이슈 발견 또는 부분 실패 |
-| 2 | 실행 오류 (설정, 도구 문제 등) |
+| 코드 | 의미                           |
+| ---- | ------------------------------ |
+| 0    | 성공 (이슈 없음)               |
+| 1    | 이슈 발견 또는 부분 실패       |
+| 2    | 실행 오류 (설정, 도구 문제 등) |
 
----
+______________________________________________________________________
 
 *최종 수정: 2025-11-27*
 *참조: [ARCHITECTURE.md](./ARCHITECTURE.md), [REQUIREMENTS.md](./REQUIREMENTS.md)*

@@ -20,7 +20,7 @@ The gzh-cli-quality team takes security bugs seriously. We appreciate your effor
 Instead, please report them via one of the following methods:
 
 1. **Email**: Send details to security@gizzahub.com (preferred)
-2. **GitHub Security Advisory**: Use the "Security" tab to privately report a vulnerability
+1. **GitHub Security Advisory**: Use the "Security" tab to privately report a vulnerability
 
 ### What to Include
 
@@ -116,9 +116,9 @@ gzh-cli-quality executes external commands. While we sanitize inputs:
 Security updates are published as:
 
 1. New releases on GitHub
-2. Security advisories on GitHub Security
-3. Announcements in project README
-4. CVE database entries (for severe issues)
+1. Security advisories on GitHub Security
+1. Announcements in project README
+1. CVE database entries (for severe issues)
 
 ## Bug Bounty Program
 
@@ -135,6 +135,6 @@ For security-related questions that are not vulnerabilities:
 - Open a discussion: https://github.com/Gizzahub/gzh-cli-quality/discussions
 - Email: security@gizzahub.com
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-11-27

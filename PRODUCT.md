@@ -19,12 +19,12 @@ gzh-cli-quality is a **multi-language quality tool orchestrator**. Through one C
 This is a feature-library project — a single PRODUCT.md is sufficient. It
 replaces a PRD.
 
-| 제공하는 것 (Is)                          | 되지 않을 것 (Is Not)                   |
-| ----------------------------------------- | --------------------------------------- |
-| 11+ 기존 도구의 통합 실행 (fmt + lint)   | linter/formatter 자체 구현              |
-| 병렬 실행·결과 캐싱·git 필터              | 도구 규칙(rule)을 정의하는 엔진         |
-| 다중 언어 자동 감지·무설정 시작           | 단일 언어 전용 도구                     |
-| JSON/HTML/Markdown 리포트                 | IDE 플러그인·GUI                        |
+| 제공하는 것 (Is)                       | 되지 않을 것 (Is Not)           |
+| -------------------------------------- | ------------------------------- |
+| 11+ 기존 도구의 통합 실행 (fmt + lint) | linter/formatter 자체 구현      |
+| 병렬 실행·결과 캐싱·git 필터           | 도구 규칙(rule)을 정의하는 엔진 |
+| 다중 언어 자동 감지·무설정 시작        | 단일 언어 전용 도구             |
+| JSON/HTML/Markdown 리포트              | IDE 플러그인·GUI                |
 
 ______________________________________________________________________
 

@@ -2,7 +2,7 @@
 
 This file provides LLM-optimized guidance for Claude Code when working with this repository.
 
----
+______________________________________________________________________
 
 ## Project Context
 
@@ -20,42 +20,42 @@ This file provides LLM-optimized guidance for Claude Code when working with this
 - **Direct constructors**: No DI containers, simple factory pattern
 - **Quality-first**: Focus on code quality, linting, and testing
 
----
+______________________________________________________________________
 
 ## Module-Specific Guides (AGENTS.md)
 
 **Read these before modifying code:**
 
-| Guide | Location | Purpose |
-|-------|----------|---------|
-| Common Rules | `cmd/AGENTS_COMMON.md` | Project-wide conventions |
-| Quality CLI | `cmd/quality/AGENTS.md` | CLI-specific rules |
+| Guide        | Location                | Purpose                  |
+| ------------ | ----------------------- | ------------------------ |
+| Common Rules | `cmd/AGENTS_COMMON.md`  | Project-wide conventions |
+| Quality CLI  | `cmd/quality/AGENTS.md` | CLI-specific rules       |
 
----
+______________________________________________________________________
 
 ## Internal Packages
 
-| Package | Purpose | Key Features |
-|---------|---------|--------------|
-| `cache/` | Result caching | Storage, manager, key generation |
-| `config/` | Configuration | YAML/JSON config parsing |
-| `detector/` | Language detection | File type identification |
-| `executor/` | Tool execution | Command runner, output parsing |
-| `report/` | Result reporting | Formatters (JSON, table, markdown) |
-| `tools/` | Tool implementations | Go, Python, Rust, shell linters |
-| `internal/errors` | Custom errors | Quality-specific error types |
-| `internal/logger` | Structured logging | Leveled logging with context |
-| `internal/testutil` | Test utilities | Mock builders, assertions |
+| Package             | Purpose              | Key Features                       |
+| ------------------- | -------------------- | ---------------------------------- |
+| `cache/`            | Result caching       | Storage, manager, key generation   |
+| `config/`           | Configuration        | YAML/JSON config parsing           |
+| `detector/`         | Language detection   | File type identification           |
+| `executor/`         | Tool execution       | Command runner, output parsing     |
+| `report/`           | Result reporting     | Formatters (JSON, table, markdown) |
+| `tools/`            | Tool implementations | Go, Python, Rust, shell linters    |
+| `internal/errors`   | Custom errors        | Quality-specific error types       |
+| `internal/logger`   | Structured logging   | Leveled logging with context       |
+| `internal/testutil` | Test utilities       | Mock builders, assertions          |
 
----
+______________________________________________________________________
 
 ## Development Workflow
 
 ### Before Code Modification
 
 1. **Read AGENTS.md** for the module you're modifying
-2. Check existing patterns in `internal/`, `cache/`, `tools/`
-3. Review CONTRIBUTING.md for guidelines
+1. Check existing patterns in `internal/`, `cache/`, `tools/`
+1. Review CONTRIBUTING.md for guidelines
 
 ### Code Modification Process
 
@@ -71,7 +71,7 @@ make dev-fast   # format + unit tests only
 make pr-check
 ```
 
----
+______________________________________________________________________
 
 ## Essential Commands Reference
 
@@ -112,7 +112,7 @@ make fmt-diff       # Format changed files only
 make lint-diff      # Lint changed files only
 ```
 
----
+______________________________________________________________________
 
 ## Important Rules
 
@@ -143,7 +143,7 @@ make lint-diff      # Lint changed files only
 **Types**: feat, fix, docs, refactor, test, chore
 **Scope**: REQUIRED (e.g., cmd, cache, tools, config, detector)
 
----
+______________________________________________________________________
 
 ## FAQ
 
@@ -168,6 +168,6 @@ A: Use `internal/logger` - `log := logger.New("component")`
 **Q: What files should AI not modify?**
 A: See `.claudeignore`
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-05

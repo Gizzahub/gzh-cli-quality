@@ -33,6 +33,7 @@ Closes #
 - [ ] Manual testing
 
 **Test Configuration**:
+
 - OS: <!-- e.g., Ubuntu 22.04 -->
 - Go version: <!-- e.g., 1.24.0 -->
 - gz-quality version: <!-- e.g., dev -->

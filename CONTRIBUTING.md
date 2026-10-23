@@ -85,6 +85,7 @@ make quality
 ```
 
 **Type:**
+
 - `feat`: 새로운 기능
 - `fix`: 버그 수정
 - `docs`: 문서 변경
@@ -94,6 +95,7 @@ make quality
 - `chore`: 빌드 프로세스, 도구 설정 등
 
 **예시:**
+
 ```
 feat(detector): Add PHP language detection
 
@@ -107,11 +109,11 @@ Closes #123
 ### 5. Pull Request
 
 1. Fork 저장소
-2. 브랜치에서 작업
-3. 품질 검사 통과 확인
-4. Pull Request 생성
-5. CI 통과 대기
-6. 리뷰 반영
+1. 브랜치에서 작업
+1. 품질 검사 통과 확인
+1. Pull Request 생성
+1. CI 통과 대기
+1. 리뷰 반영
 
 ## 코드 스타일 가이드
 
@@ -184,9 +186,9 @@ func TestNewTool(t *testing.T) {
 릴리스는 메인테이너가 수행합니다:
 
 1. 버전 태그 생성: `git tag -a v1.2.3 -m "Release v1.2.3"`
-2. 태그 푸시: `git push origin v1.2.3`
-3. GitHub Actions가 자동으로 릴리스 생성
-4. GoReleaser가 멀티 플랫폼 바이너리 빌드
+1. 태그 푸시: `git push origin v1.2.3`
+1. GitHub Actions가 자동으로 릴리스 생성
+1. GoReleaser가 멀티 플랫폼 바이너리 빌드
 
 ## 이슈 리포팅
 
@@ -227,6 +229,6 @@ func TestNewTool(t *testing.T) {
 
 질문이 있으시면 [GitHub Discussions](https://github.com/Gizzahub/gzh-cli-quality/discussions)에 올려주세요.
 
----
+______________________________________________________________________
 
 다시 한번 기여해주셔서 감사합니다! 🙏

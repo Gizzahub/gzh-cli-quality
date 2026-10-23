@@ -17,8 +17,8 @@ type QualityTool interface {
 ### Steps
 
 1. Create `tools/<lang>_tools.go` implementing `QualityTool`
-2. Register in `tools/registry.go` default initialization
-3. Add test file `tools/<lang>_tools_test.go`
+1. Register in `tools/registry.go` default initialization
+1. Add test file `tools/<lang>_tools_test.go`
 
 ### Example: Go tools (tools/go_tools.go)
 
@@ -26,7 +26,7 @@ Implements `gofumpt` (FORMAT), `golangci-lint` (LINT), `goimports` (FORMAT).
 
 Each tool follows the same pattern: detect binary → build args → run → parse output.
 
-________________________________________________________________________
+______________________________________________________________________
 
 ## Using the Tool Registry
 
@@ -40,40 +40,40 @@ goTools := registry.GetToolsByLanguage("Go")
 linters := registry.GetToolsByType(tools.LINT)
 ```
 
-________________________________________________________________________
+______________________________________________________________________
 
 ## CLI Commands
 
-| Command | Purpose |
-|---------|---------|
-| `gz-quality check` | Run all available tools on a directory |
-| `gz-quality check --lang go` | Run only Go tools |
-| `gz-quality check --format` | Run only formatters |
-| `gz-quality check --fix` | Auto-fix where supported |
+| Command                      | Purpose                                |
+| ---------------------------- | -------------------------------------- |
+| `gz-quality check`           | Run all available tools on a directory |
+| `gz-quality check --lang go` | Run only Go tools                      |
+| `gz-quality check --format`  | Run only formatters                    |
+| `gz-quality check --fix`     | Auto-fix where supported               |
 
-________________________________________________________________________
+______________________________________________________________________
 
 ## Supported Languages
 
-| Language | Formatter | Linter |
-|----------|-----------|--------|
-| Go | gofumpt, goimports | golangci-lint |
-| Python | black, isort | ruff, flake8 |
-| Rust | rustfmt | clippy |
-| Shell | shfmt | shellcheck |
-| JavaScript | prettier | eslint |
-| C++ | clang-format | clang-tidy |
-| Java | google-java-format | checkstyle |
-| Kotlin | ktlint | ktlint |
-| CSS | prettier | stylelint |
-| Dockerfile | - | hadolint |
-| Markdown | prettier | markdownlint |
-| Protobuf | - | protolint |
-| SQL | - | sqlfluff |
-| YAML | prettier | yamllint |
-| TOML | - | taplo |
+| Language   | Formatter          | Linter        |
+| ---------- | ------------------ | ------------- |
+| Go         | gofumpt, goimports | golangci-lint |
+| Python     | black, isort       | ruff, flake8  |
+| Rust       | rustfmt            | clippy        |
+| Shell      | shfmt              | shellcheck    |
+| JavaScript | prettier           | eslint        |
+| C++        | clang-format       | clang-tidy    |
+| Java       | google-java-format | checkstyle    |
+| Kotlin     | ktlint             | ktlint        |
+| CSS        | prettier           | stylelint     |
+| Dockerfile | -                  | hadolint      |
+| Markdown   | prettier           | markdownlint  |
+| Protobuf   | -                  | protolint     |
+| SQL        | -                  | sqlfluff      |
+| YAML       | prettier           | yamllint      |
+| TOML       | -                  | taplo         |
 
-________________________________________________________________________
+______________________________________________________________________
 
 ## Tool Result Structure
 

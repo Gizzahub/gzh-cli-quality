@@ -11,6 +11,7 @@ bash hooks/install.sh
 ```
 
 이 스크립트는:
+
 - 기존 pre-commit hook을 백업
 - gz-quality pre-commit hook을 설치
 - 실행 권한을 자동으로 설정
@@ -81,11 +82,13 @@ git commit -m "fix: resolve bug"
 Git pre-commit hook 스크립트입니다.
 
 **기능**:
+
 - Staged 파일에서 품질 검사 실행
 - 관련 파일 타입만 검사 (.go, .py, .js, .ts, .rs)
 - 실패 시 커밋 중단
 
 **설정 옵션**:
+
 ```bash
 export GZ_QUALITY_CMD="gz-quality"           # gz-quality 명령어 경로
 export GZ_QUALITY_MODE="check"        # 실행 모드 (check/format/run)
@@ -97,12 +100,14 @@ export GZ_QUALITY_FLAGS="--staged"    # 추가 플래그
 Hook 설치 자동화 스크립트입니다.
 
 **기능**:
+
 - Git 저장소 확인
 - gz-quality 설치 여부 확인
 - 기존 hook 백업
 - 새 hook 설치 및 권한 설정
 
 **사용**:
+
 ```bash
 bash hooks/install.sh
 ```
@@ -112,6 +117,7 @@ bash hooks/install.sh
 pre-commit 프레임워크용 hook 정의 파일입니다.
 
 **제공 hooks**:
+
 - `gz-quality-check`: 전체 품질 검사
 - `gz-quality-format`: 포매팅만
 - `gz-quality-check-go`: Go 파일만
@@ -124,6 +130,7 @@ pre-commit 프레임워크용 hook 정의 파일입니다.
 사용자용 pre-commit 설정 예제 파일입니다.
 
 **사용**:
+
 ```bash
 cp .pre-commit-config.example.yaml .pre-commit-config.yaml
 # 필요에 따라 편집
@@ -275,6 +282,6 @@ rm .pre-commit-config.yaml
 - [사용 예제](../docs/user/02-examples.md)
 - [기여 가이드](../CONTRIBUTING.md)
 
----
+______________________________________________________________________
 
 **참고**: Hook은 로컬 개발 환경에서만 실행됩니다. CI/CD 파이프라인에서는 별도로 gz-quality를 실행해야 합니다.

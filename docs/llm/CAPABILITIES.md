@@ -2,7 +2,7 @@
 
 Comprehensive reference of all capabilities provided by gzh-cli-quality.
 
----
+______________________________________________________________________
 
 ## Execution Modes
 
@@ -13,15 +13,18 @@ Comprehensive reference of all capabilities provided by gzh-cli-quality.
 **Scope**: All files in project
 
 **Actions**:
+
 - Run all formatters (gofumpt, black, prettier, rustfmt)
 - Run all linters (golangci-lint, ruff, eslint, clippy)
 
 **Use Cases**:
+
 - Full project audit
 - Pre-commit verification
 - Initial project setup
 
 **Example**:
+
 ```bash
 gz-quality run
 gz-quality run --verbose
@@ -29,6 +32,7 @@ gz-quality run --dry-run  # Preview without executing
 ```
 
 **Expected Output**:
+
 ```
 🔍 프로젝트 분석 중...
 📋 실행 계획: 5개 도구, 150개 파일
@@ -41,7 +45,7 @@ gz-quality run --dry-run  # Preview without executing
 ✨ 완료: 3.5s, 150 files, 8 issues
 ```
 
----
+______________________________________________________________________
 
 ### 2. Staged Files Check
 
@@ -50,16 +54,19 @@ gz-quality run --dry-run  # Preview without executing
 **Scope**: Git staged files only
 
 **Actions**:
+
 - Analyze files in Git staging area
 - Run formatters and linters on staged files only
 - Respect Git index state
 
 **Use Cases**:
+
 - Pre-commit hook integration
 - Quick feedback during development
 - Avoid processing entire codebase
 
 **Example**:
+
 ```bash
 # Stage files
 git add main.go utils.py
@@ -75,11 +82,13 @@ git add .
 ```
 
 **Git Command Used Internally**:
+
 ```bash
 git diff --name-only --staged
 ```
 
 **Workflow**:
+
 ```
 1. User: git add file.go
 2. Tool: Detect staged files via Git
@@ -88,7 +97,7 @@ git diff --name-only --staged
 5. User: git commit
 ```
 
----
+______________________________________________________________________
 
 ### 3. Changed Files Check
 
@@ -97,16 +106,19 @@ git diff --name-only --staged
 **Scope**: Staged + modified + untracked files
 
 **Actions**:
+
 - Process all changes in working directory
 - Include unstaged modifications
 - Include untracked files
 
 **Use Cases**:
+
 - Work-in-progress validation
 - Broader check than --staged
 - Local development workflow
 
 **Example**:
+
 ```bash
 # Check all changed files
 gz-quality run --changed
@@ -116,13 +128,14 @@ gz-quality tool golangci-lint --changed
 ```
 
 **Git Commands Used Internally**:
+
 ```bash
 git diff --name-only                      # Modified files
 git diff --name-only --staged            # Staged files
 git ls-files --others --exclude-standard # Untracked files
 ```
 
----
+______________________________________________________________________
 
 ### 4. Diff-based Check
 
@@ -131,16 +144,19 @@ git ls-files --others --exclude-standard # Untracked files
 **Scope**: Files changed since commit reference
 
 **Actions**:
+
 - Compare working tree with specified commit
 - Process only differing files
 - Support commit hash, branch name, tag
 
 **Use Cases**:
+
 - PR validation
 - Feature branch review
 - Incremental quality checks
 
 **Example**:
+
 ```bash
 # Since main branch
 gz-quality run --since main
@@ -156,11 +172,13 @@ gz-quality run --since v1.0.0
 ```
 
 **Git Command Used Internally**:
+
 ```bash
 git diff --name-only <ref>...HEAD
 ```
 
 **Validation Workflow**:
+
 ```
 1. PR created: feature-branch → main
 2. CI runs: gz-quality check --since main
@@ -168,7 +186,7 @@ git diff --name-only <ref>...HEAD
 4. Report generated for PR review
 ```
 
----
+______________________________________________________________________
 
 ### 5. Lint-only Check
 
@@ -177,16 +195,19 @@ git diff --name-only <ref>...HEAD
 **Scope**: All files (or with Git flags)
 
 **Actions**:
+
 - Run linters only (golangci-lint, ruff, eslint, clippy)
 - Skip formatters (no file modifications)
 - Read-only validation
 
 **Use Cases**:
+
 - CI/CD validation
 - Code review
 - Quality gate enforcement
 
 **Example**:
+
 ```bash
 # Check all files
 gz-quality check
@@ -202,11 +223,12 @@ gz-quality check --report json --output report.json
 ```
 
 **Exit Codes**:
+
 - 0: No issues found
 - 1: Issues found
 - 2: Execution error
 
----
+______________________________________________________________________
 
 ### 6. Format-only Mode
 
@@ -215,16 +237,19 @@ gz-quality check --report json --output report.json
 **Scope**: All files (or with Git flags)
 
 **Actions**:
+
 - Run formatters only (gofumpt, black, prettier, rustfmt)
 - Skip linters
 - Apply code style enforcement
 
 **Use Cases**:
+
 - Quick code formatting
 - Style consistency enforcement
 - Pre-commit formatting
 
 **Example**:
+
 ```bash
 # Format all files
 gz-quality run --format-only
@@ -237,12 +262,13 @@ gz-quality run --format-only --staged --fix
 ```
 
 **Tools Executed**:
+
 - Go: gofumpt, goimports
 - Python: black
 - JavaScript/TypeScript: prettier
 - Rust: rustfmt
 
----
+______________________________________________________________________
 
 ### 7. Specific Tool Execution
 
@@ -251,16 +277,19 @@ gz-quality run --format-only --staged --fix
 **Scope**: Single tool execution
 
 **Actions**:
+
 - Execute specified tool only
 - Support all Git integration flags
 - Pass additional arguments to tool
 
 **Use Cases**:
+
 - Debugging tool behavior
 - Targeted quality checks
 - Tool-specific configuration testing
 
 **Example**:
+
 ```bash
 # Run gofumpt
 gz-quality tool gofumpt
@@ -276,12 +305,13 @@ gz-quality tool golangci-lint -- --enable-all --max-issues-per-linter 0
 ```
 
 **Supported Tools**:
+
 - Go: `gofumpt`, `goimports`, `golangci-lint`
 - Python: `black`, `ruff`, `pylint`
 - JavaScript/TypeScript: `prettier`, `eslint`, `tsc`
 - Rust: `rustfmt`, `cargo-fmt`, `clippy`
 
----
+______________________________________________________________________
 
 ### 8. Project Analysis
 
@@ -290,17 +320,20 @@ gz-quality tool golangci-lint -- --enable-all --max-issues-per-linter 0
 **Scope**: Project metadata
 
 **Actions**:
+
 - Detect languages via file extensions and markers
 - Discover installed tools via PATH
 - Recommend missing tools
 - Show project statistics
 
 **Use Cases**:
+
 - Initial project assessment
 - Troubleshooting tool detection
 - Documentation of project structure
 
 **Example**:
+
 ```bash
 # Basic analysis
 gz-quality analyze
@@ -313,6 +346,7 @@ gz-quality analyze --json
 ```
 
 **Output**:
+
 ```
 📊 프로젝트 분석 결과
 
@@ -342,7 +376,7 @@ gz-quality analyze --json
     ✓ tsc (설치됨, 5.3.3)
 ```
 
----
+______________________________________________________________________
 
 ### 9. Configuration Initialization
 
@@ -351,16 +385,19 @@ gz-quality analyze --json
 **Scope**: Configuration file
 
 **Actions**:
+
 - Generate `.gzquality.yml` in project root
 - Include detected languages and tools
 - Set default values
 
 **Use Cases**:
+
 - Initial project setup
 - Configuration template generation
 - Reset configuration to defaults
 
 **Example**:
+
 ```bash
 # Generate config
 gz-quality init
@@ -373,6 +410,7 @@ gz-quality init --output custom-config.yml
 ```
 
 **Generated File** (`.gzquality.yml`):
+
 ```yaml
 default_workers: 4
 timeout: "10m"
@@ -412,7 +450,7 @@ exclude:
   - "build/**"
 ```
 
----
+______________________________________________________________________
 
 ### 10. Tool Installation
 
@@ -421,16 +459,19 @@ exclude:
 **Scope**: External tool installation
 
 **Actions**:
+
 - Install quality tools to system
 - Verify PATH and permissions
 - Support individual or batch installation
 
 **Use Cases**:
+
 - New developer onboarding
 - CI/CD environment setup
 - Missing tool resolution
 
 **Example**:
+
 ```bash
 # Install all required tools
 gz-quality install
@@ -448,12 +489,13 @@ gz-quality install --all
 ```
 
 **Installation Methods**:
+
 - Go tools: `go install <package>@latest`
 - Python tools: `pip install <package>`
 - Node tools: `npm install -g <package>`
 - Rust tools: `rustup component add <package>`
 
----
+______________________________________________________________________
 
 ### 11. Tool Upgrade
 
@@ -462,11 +504,13 @@ gz-quality install --all
 **Scope**: Tool version management
 
 **Actions**:
+
 - Upgrade tools to latest version
 - Support individual or batch upgrade
 - Verify upgrade success
 
 **Example**:
+
 ```bash
 # Upgrade all tools
 gz-quality upgrade
@@ -476,7 +520,7 @@ gz-quality upgrade golangci-lint
 gz-quality upgrade ruff
 ```
 
----
+______________________________________________________________________
 
 ### 12. Version Information
 
@@ -485,11 +529,13 @@ gz-quality upgrade ruff
 **Scope**: Version metadata
 
 **Actions**:
+
 - Show gz-quality version
 - Show installed tool versions
 - Show tool locations
 
 **Example**:
+
 ```bash
 # Basic version
 gz-quality version
@@ -499,6 +545,7 @@ gz-quality version --json
 ```
 
 **Output**:
+
 ```
 gzh-cli-quality v0.1.1
 
@@ -512,7 +559,7 @@ gzh-cli-quality v0.1.1
   eslint        8.56.0      /usr/local/bin/eslint
 ```
 
----
+______________________________________________________________________
 
 ### 13. List Available Tools
 
@@ -521,12 +568,14 @@ gzh-cli-quality v0.1.1
 **Scope**: Tool catalog
 
 **Actions**:
+
 - List all supported tools
 - Show tool type (formatter/linter)
 - Show installation status
 - Support filtering
 
 **Example**:
+
 ```bash
 # List all tools
 gz-quality list
@@ -544,6 +593,7 @@ gz-quality list --installed
 ```
 
 **Output**:
+
 ```
 사용 가능한 도구:
 
@@ -568,7 +618,7 @@ Rust:
   ✗ clippy        linter      Rust 린터 (미설치)
 ```
 
----
+______________________________________________________________________
 
 ## Advanced Capabilities
 
@@ -581,6 +631,7 @@ Rust:
 **Default**: CPU core count
 
 **Example**:
+
 ```bash
 # Use 8 workers
 gz-quality run --workers 8
@@ -593,11 +644,12 @@ gz-quality run
 ```
 
 **Performance Impact**:
+
 - More workers = faster execution (up to CPU limit)
 - Too many workers = resource contention
 - Optimal: CPU core count or slightly less
 
----
+______________________________________________________________________
 
 ### 15. Dry Run Mode
 
@@ -606,11 +658,13 @@ gz-quality run
 **Description**: Show execution plan without running tools
 
 **Use Cases**:
+
 - Preview what will be executed
 - Validate configuration
 - Debug tool selection
 
 **Example**:
+
 ```bash
 # Preview execution plan
 gz-quality run --dry-run
@@ -620,6 +674,7 @@ gz-quality run --dry-run --verbose
 ```
 
 **Output**:
+
 ```
 📋 실행 계획 (dry-run):
 
@@ -654,7 +709,7 @@ Task 5: golangci-lint
 예상 실행 시간: ~3.5s
 ```
 
----
+______________________________________________________________________
 
 ### 16. Report Generation
 
@@ -665,11 +720,13 @@ Task 5: golangci-lint
 **Output Flag**: `--output <path>`
 
 **Use Cases**:
+
 - CI/CD integration (JSON)
 - Visual review (HTML)
 - PR comments (Markdown)
 
 **Example**:
+
 ```bash
 # JSON report
 gz-quality check --report json --output quality-report.json
@@ -682,6 +739,7 @@ gz-quality check --report markdown --output quality-report.md
 ```
 
 **JSON Report Structure**:
+
 ```json
 {
   "timestamp": "2025-12-01T10:30:00Z",
@@ -732,7 +790,7 @@ gz-quality check --report markdown --output quality-report.md
 }
 ```
 
----
+______________________________________________________________________
 
 ### 17. Verbose Output
 
@@ -741,17 +799,20 @@ gz-quality check --report markdown --output quality-report.md
 **Description**: Enable detailed logging
 
 **Use Cases**:
+
 - Debugging tool execution
 - Understanding performance
 - Troubleshooting failures
 
 **Example**:
+
 ```bash
 gz-quality run --verbose
 gz-quality run -v
 ```
 
 **Verbose Output**:
+
 ```
 [DEBUG] Loading configuration from .gzquality.yml
 [DEBUG] Detected languages: Go, Python, TypeScript
@@ -768,7 +829,7 @@ gz-quality run -v
 [INFO] All tasks completed successfully
 ```
 
----
+______________________________________________________________________
 
 ### 18. Timeout Control
 
@@ -779,6 +840,7 @@ gz-quality run -v
 **Default**: 10 minutes
 
 **Example**:
+
 ```bash
 # 5 minute timeout
 gz-quality run --timeout 5m
@@ -788,11 +850,12 @@ gz-quality run --timeout 30s
 ```
 
 **Config**:
+
 ```yaml
 timeout: "15m"  # 15 minutes
 ```
 
----
+______________________________________________________________________
 
 ### 19. File Pattern Filtering
 
@@ -801,11 +864,13 @@ timeout: "15m"  # 15 minutes
 **Description**: Process specific file patterns
 
 **Use Cases**:
+
 - Test specific directories
 - Debug single file
 - Selective quality checks
 
 **Example**:
+
 ```bash
 # Single file
 gz-quality run --files "main.go"
@@ -820,7 +885,7 @@ gz-quality run --files "**/*.py,**/*.go"
 gz-quality run --files "internal/**"
 ```
 
----
+______________________________________________________________________
 
 ### 20. Auto-fix Mode
 
@@ -829,11 +894,13 @@ gz-quality run --files "internal/**"
 **Description**: Apply automatic fixes from tools
 
 **Use Cases**:
+
 - Quick formatting
 - Auto-correct linting issues
 - Batch code cleanup
 
 **Example**:
+
 ```bash
 # Auto-fix all issues
 gz-quality run --fix
@@ -846,17 +913,19 @@ gz-quality run -x
 ```
 
 **Behavior**:
+
 - Formatters always modify files (gofumpt, black, prettier)
 - Linters apply fixes when available (ruff --fix, eslint --fix)
 - Some linters have no auto-fix (golangci-lint)
 
----
+______________________________________________________________________
 
 ## Integration Capabilities
 
 ### 21. Pre-commit Hook Integration
 
 **Manual Hook**:
+
 ```bash
 #!/bin/bash
 # .git/hooks/pre-commit
@@ -865,6 +934,7 @@ exit $?
 ```
 
 **pre-commit Framework**:
+
 ```yaml
 # .pre-commit-config.yaml
 repos:
@@ -878,11 +948,12 @@ repos:
         pass_filenames: false
 ```
 
----
+______________________________________________________________________
 
 ### 22. CI/CD Integration
 
 **GitHub Actions**:
+
 ```yaml
 name: Quality Check
 on: [push, pull_request]
@@ -928,11 +999,12 @@ jobs:
           path: quality-report.json
 ```
 
----
+______________________________________________________________________
 
 ### 23. Docker Integration
 
 **Dockerfile**:
+
 ```dockerfile
 FROM golang:1.24-alpine AS builder
 
@@ -951,6 +1023,7 @@ CMD ["run"]
 ```
 
 **Usage**:
+
 ```bash
 # Build image
 docker build -t gz-quality:latest .
@@ -962,17 +1035,17 @@ docker run --rm -v $(pwd):/workspace gz-quality:latest run
 docker run --rm -v $(pwd):/workspace gz-quality:latest check --since main
 ```
 
----
+______________________________________________________________________
 
 ## Error Handling
 
 ### Exit Codes
 
-| Code | Meaning | Example Scenario |
-|------|---------|------------------|
-| 0 | Success | No issues found, all tools passed |
-| 1 | Issues found | Linting errors detected |
-| 2 | Execution error | Tool not found, config error, Git error |
+| Code | Meaning         | Example Scenario                        |
+| ---- | --------------- | --------------------------------------- |
+| 0    | Success         | No issues found, all tools passed       |
+| 1    | Issues found    | Linting errors detected                 |
+| 2    | Execution error | Tool not found, config error, Git error |
 
 ### Example Usage in Scripts
 
@@ -999,13 +1072,14 @@ else
 fi
 ```
 
----
+______________________________________________________________________
 
 ## Performance Optimization
 
 ### Best Practices
 
 1. **Use Incremental Checks**:
+
    ```bash
    # Faster: Check only changed files
    gz-quality check --changed
@@ -1014,7 +1088,8 @@ fi
    gz-quality check
    ```
 
-2. **Optimize Worker Count**:
+1. **Optimize Worker Count**:
+
    ```bash
    # Match CPU cores
    gz-quality run --workers $(nproc)
@@ -1023,7 +1098,8 @@ fi
    gz-quality run --workers 2
    ```
 
-3. **Disable Slow Tools Locally**:
+1. **Disable Slow Tools Locally**:
+
    ```yaml
    # .gzquality.yml
    tools:
@@ -1034,7 +1110,8 @@ fi
        timeout: "2m"   # Add timeout
    ```
 
-4. **Use Caching in CI**:
+1. **Use Caching in CI**:
+
    ```yaml
    # GitHub Actions
    - uses: actions/cache@v3
@@ -1045,7 +1122,7 @@ fi
        key: ${{ runner.os }}-quality-${{ hashFiles('**/go.sum', '**/requirements.txt') }}
    ```
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-01
 **Related**: See `CONTEXT.md` for architecture details

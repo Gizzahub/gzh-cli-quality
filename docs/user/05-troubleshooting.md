@@ -4,22 +4,23 @@ gzh-cli-quality 사용 중 발생하는 흔한 문제와 해결 방법을 안내
 
 ## 목차
 
-- [설치 문제](#설치-문제)
-- [실행 문제](#실행-문제)
-- [성능 문제](#성능-문제)
-- [도구 관련 문제](#도구-관련-문제)
-- [Git 통합 문제](#git-통합-문제)
-- [설정 문제](#설정-문제)
-- [CI/CD 문제](#cicd-문제)
+- [설치 문제](#%EC%84%A4%EC%B9%98-%EB%AC%B8%EC%A0%9C)
+- [실행 문제](#%EC%8B%A4%ED%96%89-%EB%AC%B8%EC%A0%9C)
+- [성능 문제](#%EC%84%B1%EB%8A%A5-%EB%AC%B8%EC%A0%9C)
+- [도구 관련 문제](#%EB%8F%84%EA%B5%AC-%EA%B4%80%EB%A0%A8-%EB%AC%B8%EC%A0%9C)
+- [Git 통합 문제](#git-%ED%86%B5%ED%95%A9-%EB%AC%B8%EC%A0%9C)
+- [설정 문제](#%EC%84%A4%EC%A0%95-%EB%AC%B8%EC%A0%9C)
+- [CI/CD 문제](#cicd-%EB%AC%B8%EC%A0%9C)
 
----
+______________________________________________________________________
 
 ## 설치 문제
 
 ### Q1: "gz-quality: command not found" 에러
 
 **증상**:
-```bash
+
+````bash
 $ gz-quality version
 bash: gz-quality: command not found
 ```bash
@@ -756,3 +757,4 @@ https://github.com/Gizzahub/gzh-cli-quality/issues/new 에 `debug.txt` 내용 �
 ---
 
 **팁**: 대부분의 문제는 PATH 설정, 도구 설치, 설정 파일 문법 오류 중 하나입니다. 위 내용으로 90% 이상 해결 가능합니다.
+````

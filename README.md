@@ -7,14 +7,14 @@
 [![Benchmarks](https://github.com/Gizzahub/gzh-cli-quality/workflows/Benchmarks/badge.svg)](https://github.com/Gizzahub/gzh-cli-quality/actions/workflows/benchmarks.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey.svg)](#설치)
-[![Languages](https://img.shields.io/badge/languages-Go%20%7C%20Python%20%7C%20JS%2FTS%20%7C%20Rust-orange.svg)](#지원-도구)
-[![Tools](https://img.shields.io/badge/tools-11+-blueviolet.svg)](#지원-도구)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey.svg)](#%EC%84%A4%EC%B9%98)
+[![Languages](https://img.shields.io/badge/languages-Go%20%7C%20Python%20%7C%20JS%2FTS%20%7C%20Rust-orange.svg)](#%EC%A7%80%EC%9B%90-%EB%8F%84%EA%B5%AC)
+[![Tools](https://img.shields.io/badge/tools-11+-blueviolet.svg)](#%EC%A7%80%EC%9B%90-%EB%8F%84%EA%B5%AC)
 [![Documentation](https://img.shields.io/badge/docs-comprehensive-success.svg)](./docs/)
 
 </div>
 
----
+______________________________________________________________________
 
 **멀티 언어 코드 품질 도구 오케스트레이터** - Go, Python, JavaScript/TypeScript, Rust 프로젝트의 포매팅과 린팅을 하나의 명령어로 통합 실행합니다.
 
@@ -30,12 +30,12 @@
 
 ## 지원 도구
 
-| 언어 | 포매터 | 린터 |
-|------|--------|------|
-| Go | gofumpt, goimports | golangci-lint |
-| Python | black | ruff, pylint |
-| JavaScript/TypeScript | prettier | eslint, tsc |
-| Rust | rustfmt, cargo-fmt | clippy |
+| 언어                  | 포매터             | 린터          |
+| --------------------- | ------------------ | ------------- |
+| Go                    | gofumpt, goimports | golangci-lint |
+| Python                | black              | ruff, pylint  |
+| JavaScript/TypeScript | prettier           | eslint, tsc   |
+| Rust                  | rustfmt, cargo-fmt | clippy        |
 
 ## 빠른 시작
 
@@ -96,19 +96,19 @@ gz-quality tool golangci-lint --since main
 
 ## CLI 명령어
 
-| 명령어 | 설명 |
-|--------|------|
-| `gz-quality run` | 모든 포매팅 및 린팅 도구 실행 |
-| `gz-quality check` | 린팅만 실행 (변경 없이 검사) |
-| `gz-quality init` | 프로젝트 설정 파일 생성 |
-| `gz-quality analyze` | 프로젝트 분석 및 권장 도구 표시 |
-| `gz-quality tool <name>` | 특정 도구 직접 실행 |
-| `gz-quality install` | 품질 도구 설치 |
-| `gz-quality upgrade` | 품질 도구 업그레이드 |
-| `gz-quality version` | 도구 버전 확인 |
-| `gz-quality list` | 사용 가능한 도구 목록 |
-| `gz-quality cache status` | 캐시 상태 확인 |
-| `gz-quality cache clear` | 캐시 삭제 |
+| 명령어                    | 설명                            |
+| ------------------------- | ------------------------------- |
+| `gz-quality run`          | 모든 포매팅 및 린팅 도구 실행   |
+| `gz-quality check`        | 린팅만 실행 (변경 없이 검사)    |
+| `gz-quality init`         | 프로젝트 설정 파일 생성         |
+| `gz-quality analyze`      | 프로젝트 분석 및 권장 도구 표시 |
+| `gz-quality tool <name>`  | 특정 도구 직접 실행             |
+| `gz-quality install`      | 품질 도구 설치                  |
+| `gz-quality upgrade`      | 품질 도구 업그레이드            |
+| `gz-quality version`      | 도구 버전 확인                  |
+| `gz-quality list`         | 사용 가능한 도구 목록           |
+| `gz-quality cache status` | 캐시 상태 확인                  |
+| `gz-quality cache clear`  | 캐시 삭제                       |
 
 ### 주요 옵션
 
@@ -239,6 +239,7 @@ gz-quality tool ruff --fix
 ### 👤 사용자 가이드 (한국어)
 
 #### 시작하기
+
 - **[5분 빠른 시작](./docs/user/00-quick-start.md)** ⭐ - 설치부터 첫 실행까지
 - **[설치 가이드](./docs/user/01-installation.md)** 📦 - 상세 설치 방법 (모든 플랫폼)
 - **[설정 가이드](./docs/user/03-configuration.md)** ⚙️ - `.gzquality.yml` 완벽 가이드
@@ -246,6 +247,7 @@ gz-quality tool ruff --fix
 - **[문제 해결](./docs/user/05-troubleshooting.md)** 🔧 - 상세 트러블슈팅
 
 #### 실전 가이드
+
 - [사용 예제](./docs/user/02-examples.md) - 실전 워크플로우 패턴
 - **[Migration Guide](./docs/user/07-migration.md)** 🔄 - 기존 도구에서 전환하기 (837줄)
 - **[Cookbook](./docs/user/08-cookbook.md)** 📚 - 10가지 실전 레시피 (1143줄)
@@ -261,15 +263,18 @@ gz-quality tool ruff --fix
 ### 🔧 개발자 문서
 
 #### 설계 및 아키텍처
+
 - [제품 요구사항 (PRD)](./docs/developer/PRD.md) - 제품 비전 및 요구사항
 - [상세 요구사항](./docs/developer/REQUIREMENTS.md) - 기능/비기능 요구사항 명세
 - [시스템 아키텍처](./docs/developer/ARCHITECTURE.md) - 컴포넌트 설계 및 데이터 플로우
 
 #### API 및 확장
+
 - [API 레퍼런스](./docs/developer/API.md) - CLI 명령어 및 Go 패키지 API
 - [도구 추가 가이드](./docs/developer/ADDING_TOOLS.md) - 새로운 품질 도구 통합 방법
 
 #### 품질 및 성능
+
 - [테스트 가이드](./docs/developer/TESTING.md) - 테스트 전략 및 커버리지 (76.2%)
 - [성능 벤치마크](./docs/developer/BENCHMARKS.md) - 27개 벤치마크 및 성능 메트릭
 - [커버리지 리포트](./docs/developer/COVERAGE.md) - 패키지별 테스트 커버리지 상세
@@ -317,11 +322,13 @@ gz-quality version
 ## 요구사항
 
 ### 런타임
+
 - Go 1.24.0+
 - Git 2.0+
 - 각 언어별 품질 도구 (자동 설치 지원: `gz-quality install`)
 
 ### 개발 환경
+
 - Go 1.24.0+
 - Make
 - golangci-lint (선택사항, `make lint` 실행시 필요)
@@ -330,6 +337,6 @@ gz-quality version
 
 MIT License - [LICENSE](./LICENSE) 참조
 
----
+______________________________________________________________________
 
 *gzh-cli에서 분리된 품질 도구 모듈*

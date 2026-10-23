@@ -8,13 +8,13 @@ gzh-cli-quality를 처음 사용하시나요? 이 가이드를 따라 5분 안�
 - Git 2.0 이상 설치
 - 체크할 프로젝트 (Go/Python/JavaScript/TypeScript/Rust)
 
----
+______________________________________________________________________
 
 ## 1단계: 설치 (1분)
 
 ### 방법 1: Go Install (권장)
 
-```bash
+````bash
 # 최신 안정 버전 설치
 go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 
@@ -265,95 +265,101 @@ git commit -m "test"  # 자동으로 품질 검사 실행
 
 ### 일반적인 개발 워크플로우
 
-```
+````
+
 ┌─────────────────────────────────────────────────────────────────┐
-│                      개발 → 커밋 워크플로우                        │
+│ 개발 → 커밋 워크플로우 │
 └─────────────────────────────────────────────────────────────────┘
 
-  1. 코드 작성
-     ↓
-  2. 변경 파일 확인
-     $ git status
-     ↓
-  3. 빠른 포매팅 (변경 파일만)
-     $ gz-quality run --changed --format-only --fix
-     ↓
-  4. 전체 품질 검사
-     $ gz-quality check --changed
-     ↓
-  5. 이슈가 있다면?
-     ├─→ [Yes] → 수정 후 3단계로
-     └─→ [No]  → 다음 단계로
-     ↓
-  6. Stage & Commit
-     $ git add .
-     $ git commit -m "feat: add feature"
-     ↓
-  7. Push
-     $ git push
+1. 코드 작성
+   ↓
+1. 변경 파일 확인
+   $ git status
+   ↓
+1. 빠른 포매팅 (변경 파일만)
+   $ gz-quality run --changed --format-only --fix
+   ↓
+1. 전체 품질 검사
+   $ gz-quality check --changed
+   ↓
+1. 이슈가 있다면?
+   ├─→ [Yes] → 수정 후 3단계로
+   └─→ [No] → 다음 단계로
+   ↓
+1. Stage & Commit
+   $ git add .
+   $ git commit -m "feat: add feature"
+   ↓
+1. Push
+   $ git push
+
 ```
 
 ### 커밋 전 체크 워크플로우
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Pre-commit 품질 체크                           │
+│ Pre-commit 품질 체크 │
 └─────────────────────────────────────────────────────────────────┘
 
-  $ git add <files>
-     ↓
-  $ git commit -m "message"
-     ↓
-  [Pre-commit Hook 실행]
-     ↓
-  $ gz-quality run --staged --fix
-     ↓
-     ├─ 포매팅 ─→ gofumpt, black, prettier (자동 수정)
-     ↓
-     ├─ 린팅 ─→ golangci-lint, ruff, eslint (검사만)
-     ↓
-     ├─ 결과 집계
-     ↓
-     ├─→ [✅ 성공] → 커밋 진행
-     └─→ [❌ 실패] → 커밋 중단
-                    ↓
-                    수정 필요
-                    $ git add <fixed-files>
-                    $ git commit -m "message"
+$ git add <files>
+↓
+$ git commit -m "message"
+↓
+[Pre-commit Hook 실행]
+↓
+$ gz-quality run --staged --fix
+↓
+├─ 포매팅 ─→ gofumpt, black, prettier (자동 수정)
+↓
+├─ 린팅 ─→ golangci-lint, ruff, eslint (검사만)
+↓
+├─ 결과 집계
+↓
+├─→ [✅ 성공] → 커밋 진행
+└─→ [❌ 실패] → 커밋 중단
+↓
+수정 필요
+$ git add <fixed-files>
+$ git commit -m "message"
+
 ```
 
 ### PR 검토 워크플로우
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────┐
-│                      PR 생성 전 검증                              │
+│ PR 생성 전 검증 │
 └─────────────────────────────────────────────────────────────────┘
 
-  1. 브랜치 작업 완료
-     $ git checkout feature/new-feature
-     ↓
-  2. main 브랜치 이후 변경사항 검사
-     $ gz-quality check --since main
-     ↓
-  3. 리포트 생성 (CI/CD용)
-     $ gz-quality check --since main \
-       --report json --output quality-report.json
-     ↓
-  4. 결과 확인
-     ├─→ [✅ 모두 통과] → PR 생성
-     │                   $ gh pr create
-     │                   ↓
-     │                   CI/CD 자동 검증
-     │                   ↓
-     │                   코드 리뷰
-     │                   ↓
-     │                   병합
-     │
-     └─→ [⚠️ 이슈 발견] → 수정 필요
-                        ↓
-                        $ gz-quality run --since main --fix
-                        ↓
-                        2단계로
+1. 브랜치 작업 완료
+   $ git checkout feature/new-feature
+   ↓
+1. main 브랜치 이후 변경사항 검사
+   $ gz-quality check --since main
+   ↓
+1. 리포트 생성 (CI/CD용)
+   $ gz-quality check --since main \
+   --report json --output quality-report.json
+   ↓
+1. 결과 확인
+   ├─→ [✅ 모두 통과] → PR 생성
+   │ $ gh pr create
+   │ ↓
+   │ CI/CD 자동 검증
+   │ ↓
+   │ 코드 리뷰
+   │ ↓
+   │ 병합
+   │
+   └─→ [⚠️ 이슈 발견] → 수정 필요
+   ↓
+   $ gz-quality run --since main --fix
+   ↓
+   2단계로
+
 ```
 
 ---
@@ -379,3 +385,4 @@ git commit -m "test"  # 자동으로 품질 검사 실행
 ---
 
 **팁**: `gz-quality --help` 명령어로 언제든지 도움말을 볼 수 있습니다.
+```

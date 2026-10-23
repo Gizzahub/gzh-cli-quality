@@ -4,35 +4,35 @@ gzh-cli-quality를 시스템에 설치하는 모든 방법을 안내합니다.
 
 ## 목차
 
-- [시스템 요구사항](#시스템-요구사항)
-- [gz-quality 설치](#gz-quality-설치)
-- [품질 도구 설치](#품질-도구-설치)
-- [설치 확인](#설치-확인)
-- [문제 해결](#문제-해결)
+- [시스템 요구사항](#%EC%8B%9C%EC%8A%A4%ED%85%9C-%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD)
+- [gz-quality 설치](#gz-quality-%EC%84%A4%EC%B9%98)
+- [품질 도구 설치](#%ED%92%88%EC%A7%88-%EB%8F%84%EA%B5%AC-%EC%84%A4%EC%B9%98)
+- [설치 확인](#%EC%84%A4%EC%B9%98-%ED%99%95%EC%9D%B8)
+- [문제 해결](#%EB%AC%B8%EC%A0%9C-%ED%95%B4%EA%B2%B0)
 
----
+______________________________________________________________________
 
 ## 시스템 요구사항
 
 ### 필수 요구사항
 
-| 항목 | 버전 | 확인 방법 |
-|------|------|----------|
-| **Go** | 1.24.0 이상 | `go version` |
-| **Git** | 2.0 이상 | `git --version` |
+| 항목    | 버전        | 확인 방법       |
+| ------- | ----------- | --------------- |
+| **Go**  | 1.24.0 이상 | `go version`    |
+| **Git** | 2.0 이상    | `git --version` |
 
 ### 선택 요구사항 (언어별)
 
 프로젝트에서 사용하는 언어에 따라 해당 도구가 필요합니다:
 
-| 언어 | 도구 | 설치 방법 |
-|------|------|----------|
-| **Go** | gofumpt, goimports, golangci-lint | [Go 도구 설치](#go-도구) |
-| **Python** | black, ruff, pylint | [Python 도구 설치](#python-도구) |
-| **JavaScript/TypeScript** | prettier, eslint, tsc | [Node 도구 설치](#javascripttypescript-도구) |
-| **Rust** | rustfmt, clippy | [Rust 도구 설치](#rust-도구) |
+| 언어                      | 도구                              | 설치 방법                                                  |
+| ------------------------- | --------------------------------- | ---------------------------------------------------------- |
+| **Go**                    | gofumpt, goimports, golangci-lint | [Go 도구 설치](#go-%EB%8F%84%EA%B5%AC)                     |
+| **Python**                | black, ruff, pylint               | [Python 도구 설치](#python-%EB%8F%84%EA%B5%AC)             |
+| **JavaScript/TypeScript** | prettier, eslint, tsc             | [Node 도구 설치](#javascripttypescript-%EB%8F%84%EA%B5%AC) |
+| **Rust**                  | rustfmt, clippy                   | [Rust 도구 설치](#rust-%EB%8F%84%EA%B5%AC)                 |
 
----
+______________________________________________________________________
 
 ## gz-quality 설치
 
@@ -40,7 +40,7 @@ gzh-cli-quality를 시스템에 설치하는 모든 방법을 안내합니다.
 
 가장 간단하고 빠른 설치 방법입니다.
 
-```bash
+````bash
 # 최신 안정 버전
 go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
 
@@ -690,3 +690,4 @@ rustup component remove rustfmt clippy
 ---
 
 **문제가 계속되면**: [문제 해결 가이드](./05-troubleshooting.md) 또는 [GitHub Issues](https://github.com/Gizzahub/gzh-cli-quality/issues) 참조
+````

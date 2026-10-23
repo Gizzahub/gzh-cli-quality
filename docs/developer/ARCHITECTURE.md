@@ -5,12 +5,13 @@
 gzh-cli-quality는 **멀티 언어 코드 품질 도구 오케스트레이터**로, 다양한 포매터와 린터를 통합 실행하는 CLI 애플리케이션입니다.
 
 ### 1.1 설계 원칙
+
 - **단일 책임**: 각 컴포넌트는 하나의 역할만 수행
 - **인터페이스 분리**: 도구 확장을 위한 명확한 계약
 - **의존성 역전**: 구체 구현이 아닌 인터페이스에 의존
 - **병렬 처리**: Worker Pool 패턴으로 효율적 실행
 
----
+______________________________________________________________________
 
 ## 2. 시스템 개요
 
@@ -63,7 +64,7 @@ gzh-cli-quality는 **멀티 언어 코드 품질 도구 오케스트레이터**�
 └─────────────────────────────────────────────────────────────────┘
 ```
 
----
+______________________________________________________________________
 
 ## 3. 컴포넌트 상세
 
@@ -72,11 +73,13 @@ gzh-cli-quality는 **멀티 언어 코드 품질 도구 오케스트레이터**�
 **위치**: `quality.go`
 
 **책임**:
+
 - CLI 명령어 정의 및 플래그 처리
 - 실행 흐름 조정
 - 결과 집계 및 출력
 
 **주요 구조체**:
+
 ```go
 type QualityManager struct {
     registry tools.ToolRegistry       // 도구 레지스트리
@@ -87,6 +90,7 @@ type QualityManager struct {
 ```
 
 **실행 흐름**:
+
 ```
 1. 플래그 파싱 → PlanOptions 생성
 2. 프로젝트 분석 (언어, 파일 감지)
@@ -95,7 +99,7 @@ type QualityManager struct {
 5. 결과 집계 → 리포트 생성
 ```
 
----
+______________________________________________________________________
 
 ### 3.2 Tools Package (도구 시스템)
 
@@ -173,6 +177,7 @@ type ToolRegistry interface {
 ```
 
 **구현 특성**:
+
 - Thread-safe (sync.RWMutex)
 - 이름 기반 조회 (O(1))
 - 언어/타입별 필터링
@@ -200,14 +205,14 @@ func (b *BaseTool) GetVersion() (string, error)  // 버전 명령 실행
 
 #### 3.2.4 언어별 도구 구현
 
-| 파일 | 도구 | 특이사항 |
-|------|------|----------|
-| `go_tools.go` | gofumpt, goimports, golangci-lint | go.mod 감지 |
-| `python_tools.go` | black, ruff, pylint | venv/uv 지원 |
-| `javascript_tools.go` | prettier, eslint, tsc | node_modules 탐색 |
-| `rust_tools.go` | rustfmt, clippy, cargo-fmt | Cargo.toml 감지 |
+| 파일                  | 도구                              | 특이사항          |
+| --------------------- | --------------------------------- | ----------------- |
+| `go_tools.go`         | gofumpt, goimports, golangci-lint | go.mod 감지       |
+| `python_tools.go`     | black, ruff, pylint               | venv/uv 지원      |
+| `javascript_tools.go` | prettier, eslint, tsc             | node_modules 탐색 |
+| `rust_tools.go`       | rustfmt, clippy, cargo-fmt        | Cargo.toml 감지   |
 
----
+______________________________________________________________________
 
 ### 3.3 Executor Package (실행 엔진)
 
@@ -216,6 +221,7 @@ func (b *BaseTool) GetVersion() (string, error)  // 버전 명령 실행
 #### 3.3.1 ParallelExecutor (`runner.go`)
 
 **Worker Pool 패턴**:
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     ParallelExecutor                         │
@@ -240,6 +246,7 @@ func (b *BaseTool) GetVersion() (string, error)  // 버전 명령 실행
 ```
 
 **구현**:
+
 ```go
 type ParallelExecutor struct {
     maxWorkers int           // 최대 워커 수
@@ -254,6 +261,7 @@ func (e *ParallelExecutor) ExecuteParallel(
 ```
 
 **특성**:
+
 - Context 기반 취소 지원
 - Priority 기반 태스크 정렬
 - 개별 도구 실패는 전체 실행을 중단하지 않음
@@ -291,7 +299,7 @@ type Task struct {
 }
 ```
 
----
+______________________________________________________________________
 
 ### 3.4 Detector Package (감지 시스템)
 
@@ -300,6 +308,7 @@ type Task struct {
 #### 3.4.1 FileTypeDetector (`language.go`)
 
 **언어 감지 규칙**:
+
 ```go
 type LanguageRule struct {
     Name       string   // 언어 이름
@@ -311,6 +320,7 @@ type LanguageRule struct {
 ```
 
 **감지 결과**:
+
 ```go
 type LanguageInfo struct {
     Name       string            // Go, Python, JavaScript 등
@@ -324,11 +334,12 @@ type LanguageInfo struct {
 #### 3.4.2 SystemToolDetector (`tools.go`)
 
 **도구 감지**:
+
 - PATH에서 실행 파일 탐색
 - 버전 명령 실행으로 설치 확인
 - 설정 파일 위치 탐색
 
----
+______________________________________________________________________
 
 ### 3.5 Config Package (설정 시스템)
 
@@ -370,7 +381,7 @@ type LanguageConfig struct {
 4. CLI 플래그 (최우선)
 ```
 
----
+______________________________________________________________________
 
 ### 3.6 Report Package (리포트 시스템)
 
@@ -403,13 +414,13 @@ type Summary struct {
 
 #### 3.6.2 출력 형식
 
-| 형식 | 용도 | 메서드 |
-|------|------|--------|
-| JSON | CI/CD 통합, 자동화 | `WriteJSON()` |
-| HTML | 시각화 리포트 | `WriteHTML()` |
-| Markdown | PR 코멘트, 문서화 | `WriteMarkdown()` |
+| 형식     | 용도               | 메서드            |
+| -------- | ------------------ | ----------------- |
+| JSON     | CI/CD 통합, 자동화 | `WriteJSON()`     |
+| HTML     | 시각화 리포트      | `WriteHTML()`     |
+| Markdown | PR 코멘트, 문서화  | `WriteMarkdown()` |
 
----
+______________________________________________________________________
 
 ## 4. 데이터 플로우
 
@@ -469,7 +480,7 @@ type Summary struct {
 └──────────────────────────────────────────────────────────────┘
 ```
 
----
+______________________________________________________________________
 
 ## 5. 디렉토리 구조
 
@@ -509,7 +520,7 @@ gzh-cli-quality/
     └── ADDING_TOOLS.md     # 도구 추가 가이드
 ```
 
----
+______________________________________________________________________
 
 ## 6. 설계 결정 사항
 
@@ -518,40 +529,45 @@ gzh-cli-quality/
 **결정**: 고정 크기 Worker Pool + 채널 기반 태스크 분배
 
 **근거**:
+
 - 도구 실행은 I/O 바운드 작업
 - 워커 수 제한으로 리소스 관리 용이
 - Context 취소를 통한 graceful shutdown
 
 **대안 검토**:
+
 - Goroutine per Task: 리소스 제어 어려움
 - Fan-out/Fan-in: 구현 복잡성 증가
 
----
+______________________________________________________________________
 
 ### D-2: 도구 우선순위 시스템
 
 **결정**: 정수형 Priority 필드 (높을수록 먼저 실행)
 
 **기본 우선순위**:
-| 타입 | 기본 Priority | 근거 |
-|------|--------------|------|
-| 포매터 | 10 | 포매팅 먼저 (린터가 포매팅된 코드 검사) |
-| 포매터+린터 | 7 | 포매팅 후, 린터 전 |
-| 린터 | 5 | 마지막 실행 |
-| 타입체커 | 3 | 가장 느림, 마지막 |
 
----
+| 타입        | 기본 Priority | 근거                                    |
+| ----------- | ------------- | --------------------------------------- |
+| 포매터      | 10            | 포매팅 먼저 (린터가 포매팅된 코드 검사) |
+| 포매터+린터 | 7             | 포매팅 후, 린터 전                      |
+| 린터        | 5             | 마지막 실행                             |
+| 타입체커    | 3             | 가장 느림, 마지막                       |
+
+______________________________________________________________________
 
 ### D-3: Git 통합 방식
 
 **결정**: Git CLI 직접 호출
 
 **근거**:
+
 - go-git 라이브러리 의존성 최소화
 - 모든 Git 기능 완전 지원
 - PATH에 git 있으면 동작
 
 **명령어**:
+
 ```bash
 git diff --name-only --staged        # --staged
 git diff --name-only                 # --changed (modified)
@@ -559,18 +575,20 @@ git ls-files --others --exclude-standard  # --changed (untracked)
 git diff --name-only <ref>...HEAD   # --since
 ```
 
----
+______________________________________________________________________
 
 ### D-4: 오류 처리 전략
 
 **결정**: 개별 도구 실패는 전체 실행 중단 안함
 
 **근거**:
+
 - 부분 결과라도 사용자에게 유용
 - CI/CD에서 모든 도구 결과 수집 필요
 - 실패한 도구 정보는 결과에 포함
 
 **구현**:
+
 ```go
 for result := range resultChan {
     results = append(results, result)  // 에러 포함해도 수집
@@ -578,15 +596,15 @@ for result := range resultChan {
 // 최종 반환시 부분 실패 표시
 ```
 
----
+______________________________________________________________________
 
 ## 7. 확장 가이드
 
 ### 7.1 새 도구 추가
 
 1. `QualityTool` 인터페이스 구현
-2. `BaseTool` 임베딩으로 공통 기능 재사용
-3. `registerAllTools()`에서 레지스트리 등록
+1. `BaseTool` 임베딩으로 공통 기능 재사용
+1. `registerAllTools()`에서 레지스트리 등록
 
 상세 가이드: [ADDING_TOOLS.md](./ADDING_TOOLS.md)
 
@@ -594,10 +612,10 @@ for result := range resultChan {
 
 1. `ReportGenerator`에 `WriteXXX()` 메서드 추가 (예: `WriteJSON()`, `WriteHTML()`)
    - Note: `XXX`는 플레이스홀더이며 실제 형식명으로 대체 (JSON, HTML, XML 등)
-2. CLI에 `--report xxx` 옵션 추가
-3. 템플릿 기반 생성 권장
+1. CLI에 `--report xxx` 옵션 추가
+1. 템플릿 기반 생성 권장
 
----
+______________________________________________________________________
 
 *최종 수정: 2025-11-27*
 *참조 문서: [PRD.md](./PRD.md), [REQUIREMENTS.md](./REQUIREMENTS.md)*

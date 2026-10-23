@@ -10,23 +10,23 @@ This document describes the testing strategy, best practices, and guidelines for
 
 **Total Project Coverage: 76.2%** ✅
 
-| Package | Coverage | Status | Notes |
-|---------|----------|--------|-------|
-| report | 95.3% | ✅ Excellent | Highest coverage |
-| git | 92.0% | ✅ Excellent | |
-| detector | 91.8% | ✅ Excellent | |
-| config | 85.1% | ✅ Excellent | |
-| executor | 80.0% | ✅ Excellent | |
-| tools | 78.5% | ✅ Good | Exceeds 75% target |
-| root | 57.4% | ⚠️ Moderate | Integration tests |
-| cmd/gz-quality | 0.0% | ⚠️ Expected | main package |
+| Package        | Coverage | Status       | Notes              |
+| -------------- | -------- | ------------ | ------------------ |
+| report         | 95.3%    | ✅ Excellent | Highest coverage   |
+| git            | 92.0%    | ✅ Excellent |                    |
+| detector       | 91.8%    | ✅ Excellent |                    |
+| config         | 85.1%    | ✅ Excellent |                    |
+| executor       | 80.0%    | ✅ Excellent |                    |
+| tools          | 78.5%    | ✅ Good      | Exceeds 75% target |
+| root           | 57.4%    | ⚠️ Moderate  | Integration tests  |
+| cmd/gz-quality | 0.0%     | ⚠️ Expected  | main package       |
 
 ### Coverage Goals
 
 - **Minimum Target**: 70% total coverage
 - **Good Target**: 75% package coverage
 - **Excellent**: 85%+ package coverage
-- **Exceptions**: main packages (cmd/*) are expected to have 0% coverage
+- **Exceptions**: main packages (cmd/\*) are expected to have 0% coverage
 
 ## Test Organization
 
@@ -268,6 +268,7 @@ go test -race ./...
 ### What to Test
 
 ✅ **Always Test**:
+
 - Public API functions and methods
 - Error handling paths
 - Edge cases and boundary conditions
@@ -275,11 +276,13 @@ go test -race ./...
 - Configuration parsing and validation
 
 ⚠️ **Consider Testing**:
+
 - Internal helper functions (if complex)
 - Private methods with significant logic
 - CLI command handlers (integration style)
 
 ❌ **Don't Test**:
+
 - Simple getters/setters
 - Trivial helper functions
 - main() functions
@@ -287,28 +290,28 @@ go test -race ./...
 
 ### Coverage Targets by Package Type
 
-| Package Type | Minimum | Target | Excellent |
-|--------------|---------|--------|-----------|
-| Core Logic | 70% | 80% | 90%+ |
-| Tools/Utilities | 65% | 75% | 85%+ |
-| CLI Commands | 40% | 50% | 60%+ |
-| Main Packages | - | 0% | 0% |
+| Package Type    | Minimum | Target | Excellent |
+| --------------- | ------- | ------ | --------- |
+| Core Logic      | 70%     | 80%    | 90%+      |
+| Tools/Utilities | 65%     | 75%    | 85%+      |
+| CLI Commands    | 40%     | 50%    | 60%+      |
+| Main Packages   | -       | 0%     | 0%        |
 
 ## Test Maintenance
 
 ### When Adding New Features
 
 1. **Write tests first** (TDD) or **immediately after** implementation
-2. **Ensure coverage** doesn't decrease
-3. **Add integration tests** for new commands/features
-4. **Update this documentation** if testing strategy changes
+1. **Ensure coverage** doesn't decrease
+1. **Add integration tests** for new commands/features
+1. **Update this documentation** if testing strategy changes
 
 ### When Fixing Bugs
 
 1. **Write a failing test** that reproduces the bug
-2. **Fix the bug** to make the test pass
-3. **Ensure no regressions** by running full test suite
-4. **Commit test with fix** in same commit
+1. **Fix the bug** to make the test pass
+1. **Ensure no regressions** by running full test suite
+1. **Commit test with fix** in same commit
 
 ### Regular Maintenance
 
@@ -333,6 +336,7 @@ assert.Equal(t, expectedPath, actualPath)
 ### Tests are Flaky
 
 **Possible Causes**:
+
 - Race conditions (use `-race` flag)
 - Timing issues (add appropriate waits)
 - Shared global state (ensure isolation)
@@ -341,16 +345,18 @@ assert.Equal(t, expectedPath, actualPath)
 ### Coverage is Lower Than Expected
 
 **Check**:
+
 1. Are you testing error paths?
-2. Are table-driven tests covering all scenarios?
-3. Are there untested helper functions?
-4. Run `go tool cover -html=coverage.out` to see uncovered lines
+1. Are table-driven tests covering all scenarios?
+1. Are there untested helper functions?
+1. Run `go tool cover -html=coverage.out` to see uncovered lines
 
 ## Continuous Integration
 
 ### GitHub Actions Workflow
 
 Tests run automatically on:
+
 - Every push to main branch
 - Every pull request
 - Weekly scheduled run
@@ -368,10 +374,10 @@ See `.github/workflows/coverage.yml` for configuration.
 When contributing tests:
 
 1. **Follow existing patterns**: Use table-driven tests where appropriate
-2. **Test both success and failure**: Don't just test happy paths
-3. **Use meaningful test names**: `TestFunctionName_Scenario`
-4. **Keep tests focused**: One test should test one thing
-5. **Document complex tests**: Add comments for non-obvious test logic
+1. **Test both success and failure**: Don't just test happy paths
+1. **Use meaningful test names**: `TestFunctionName_Scenario`
+1. **Keep tests focused**: One test should test one thing
+1. **Document complex tests**: Add comments for non-obvious test logic
 
 ## References
 
@@ -380,7 +386,7 @@ When contributing tests:
 - [Table-Driven Tests](https://github.com/golang/go/wiki/TableDrivenTests)
 - [Go Code Coverage](https://go.dev/blog/cover)
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-11-29
 **Coverage**: 76.2% (Total Project)

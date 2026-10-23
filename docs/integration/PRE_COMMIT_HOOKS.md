@@ -13,7 +13,7 @@ Complete guide for integrating gz-quality with pre-commit hooks for automatic co
 - [Performance Optimization](#performance-optimization)
 - [Troubleshooting](#troubleshooting)
 
----
+______________________________________________________________________
 
 ## Quick Start
 
@@ -26,11 +26,13 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.1
 ### 2. Choose Installation Method
 
 **Option A: Git Hooks (Simple)**
+
 ```bash
 bash hooks/install.sh
 ```
 
 **Option B: pre-commit Framework (Recommended)**
+
 ```bash
 pip install pre-commit
 cp .pre-commit-config.example.yaml .pre-commit-config.yaml
@@ -49,7 +51,7 @@ git commit -m "test: verify pre-commit hook"
 # → Hook runs automatically
 ```
 
----
+______________________________________________________________________
 
 ## Installation Methods
 
@@ -66,6 +68,7 @@ bash hooks/install.sh
 ```
 
 The install script will:
+
 - Check if gz-quality is installed
 - Backup existing pre-commit hook
 - Install new hook with correct permissions
@@ -95,7 +98,7 @@ git add .
 git commit -m "test" --dry-run
 ```
 
----
+______________________________________________________________________
 
 ### Method 2: pre-commit Framework
 
@@ -133,14 +136,14 @@ repos:
 
 #### Available Hook IDs
 
-| Hook ID | Description | Use Case |
-|---------|-------------|----------|
-| `gz-quality-check` | Full check (format + lint) | Default, comprehensive |
-| `gz-quality-format` | Format only, auto-fix | Fast feedback loop |
-| `gz-quality-check-go` | Go files only | Go-only projects |
-| `gz-quality-check-python` | Python files only | Python-only projects |
-| `gz-quality-check-javascript` | JS/TS files only | Frontend projects |
-| `gz-quality-check-rust` | Rust files only | Rust projects |
+| Hook ID                       | Description                | Use Case               |
+| ----------------------------- | -------------------------- | ---------------------- |
+| `gz-quality-check`            | Full check (format + lint) | Default, comprehensive |
+| `gz-quality-format`           | Format only, auto-fix      | Fast feedback loop     |
+| `gz-quality-check-go`         | Go files only              | Go-only projects       |
+| `gz-quality-check-python`     | Python files only          | Python-only projects   |
+| `gz-quality-check-javascript` | JS/TS files only           | Frontend projects      |
+| `gz-quality-check-rust`       | Rust files only            | Rust projects          |
 
 #### Commands
 
@@ -161,7 +164,7 @@ pre-commit autoupdate
 git commit --no-verify
 ```
 
----
+______________________________________________________________________
 
 ### Method 3: Husky (Node.js Projects)
 
@@ -189,7 +192,7 @@ npx husky add .husky/pre-commit "gz-quality check --staged"
 }
 ```
 
----
+______________________________________________________________________
 
 ## Configuration Options
 
@@ -237,7 +240,7 @@ tools:
     args: ["--fix"]
 ```
 
----
+______________________________________________________________________
 
 ## Hook Types
 
@@ -256,11 +259,12 @@ git commit
 ```
 
 **Behavior**:
+
 - ✅ Reports issues
 - ❌ Does not modify files
 - 🚫 Blocks commit if issues found
 
----
+______________________________________________________________________
 
 ### 2. Format Hook
 
@@ -277,11 +281,12 @@ git commit
 ```
 
 **Behavior**:
+
 - ✅ Fixes formatting automatically
 - ⚠️ Does not check linting
 - ✅ Allows commit after fixes
 
----
+______________________________________________________________________
 
 ### 3. Full Hook (Format + Lint)
 
@@ -299,11 +304,12 @@ git commit
 ```
 
 **Behavior**:
+
 - ✅ Fixes formatting
 - ✅ Reports linting issues
 - 🚫 Blocks if linting fails
 
----
+______________________________________________________________________
 
 ### 4. Language-Specific Hooks
 
@@ -326,11 +332,12 @@ repos:
 ```
 
 **Behavior**:
+
 - ✅ Runs only on matching file types
 - ⚡ Faster for specific changes
 - 📦 Parallel execution per language
 
----
+______________________________________________________________________
 
 ## Advanced Usage
 
@@ -353,7 +360,7 @@ if git diff --cached --name-only | grep -q '\.py$'; then
 fi
 ```
 
----
+______________________________________________________________________
 
 ### Staged + Unstaged Files
 
@@ -370,7 +377,7 @@ gz-quality check --changed
 gz-quality check --paths src/ pkg/
 ```
 
----
+______________________________________________________________________
 
 ### Multi-Hook Chain
 
@@ -403,7 +410,7 @@ repos:
         pass_filenames: false
 ```
 
----
+______________________________________________________________________
 
 ### Custom Hook Script
 
@@ -438,7 +445,7 @@ fi
 echo "✅ All checks passed!"
 ```
 
----
+______________________________________________________________________
 
 ## Real-World Scenarios
 
@@ -466,11 +473,12 @@ repos:
 ```
 
 **Benefits**:
+
 - ⚡ Only runs relevant checks per language
 - 🎯 Fast feedback for focused changes
 - 📊 Parallel execution across languages
 
----
+______________________________________________________________________
 
 ### Scenario 2: Fast Feedback Loop (Format First)
 
@@ -491,6 +499,7 @@ repos:
 ```
 
 **Workflow**:
+
 ```bash
 # Local: Fast formatting (< 1s)
 git commit -m "feat: add feature"
@@ -499,7 +508,7 @@ git commit -m "feat: add feature"
 gz-quality check --since origin/main
 ```
 
----
+______________________________________________________________________
 
 ### Scenario 3: Strict Quality Gate
 
@@ -521,7 +530,7 @@ repos:
 fail_fast: true  # Stop on first failure
 ```
 
----
+______________________________________________________________________
 
 ### Scenario 4: Gradual Adoption (Warnings Only)
 
@@ -547,7 +556,7 @@ echo ""
 exit 0  # Always allow commit
 ```
 
----
+______________________________________________________________________
 
 ### Scenario 5: Auto-Fix Everything
 
@@ -577,7 +586,7 @@ gz-quality check --staged
 echo "✅ All issues fixed and verified!"
 ```
 
----
+______________________________________________________________________
 
 ## Performance Optimization
 
@@ -590,11 +599,12 @@ gz-quality check --staged
 ```
 
 **Benchmark**:
+
 - 1,000 files in repo
 - 10 files staged
 - ⏱️ **< 1 second** (only checks 10 files)
 
----
+______________________________________________________________________
 
 ### 2. Parallel Execution
 
@@ -609,11 +619,12 @@ gz-quality run --staged --workers 4
 ```
 
 **Benchmark**:
+
 - 100 files staged
 - 8 CPU cores
 - ⏱️ **3 seconds** (vs 24s sequential)
 
----
+______________________________________________________________________
 
 ### 3. Skip Slow Tools
 
@@ -628,7 +639,7 @@ gz-quality tool ruff --staged --fix
 gz-quality check --since origin/main
 ```
 
----
+______________________________________________________________________
 
 ### 4. Cache Tool Installations
 
@@ -649,7 +660,7 @@ repos:
       - id: gz-quality-check
 ```
 
----
+______________________________________________________________________
 
 ### 5. Incremental Checks
 
@@ -663,7 +674,7 @@ gz-quality check --since origin/main
 gz-quality check --since HEAD~3
 ```
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
@@ -672,6 +683,7 @@ gz-quality check --since HEAD~3
 **Symptom**: Commits succeed without running quality checks
 
 **Diagnosis**:
+
 ```bash
 # Check if hook exists
 ls -la .git/hooks/pre-commit
@@ -684,6 +696,7 @@ ls -la .git/hooks/pre-commit
 ```
 
 **Fix**:
+
 ```bash
 # Set execute permission
 chmod +x .git/hooks/pre-commit
@@ -692,13 +705,14 @@ chmod +x .git/hooks/pre-commit
 bash hooks/install.sh
 ```
 
----
+______________________________________________________________________
 
 ### Command Not Found
 
 **Symptom**: `gz-quality: command not found`
 
 **Diagnosis**:
+
 ```bash
 # Check if installed
 which gz-quality
@@ -709,6 +723,7 @@ ls -la $GOPATH/bin/gz-quality
 ```
 
 **Fix**:
+
 ```bash
 # Add Go bin to PATH
 echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
@@ -721,13 +736,14 @@ export GZ_QUALITY_CMD="$HOME/go/bin/gz-quality"
 go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.1
 ```
 
----
+______________________________________________________________________
 
 ### Hook Too Slow
 
 **Symptom**: Hook takes > 10 seconds
 
 **Diagnosis**:
+
 ```bash
 # Time the hook
 time gz-quality check --staged
@@ -737,6 +753,7 @@ gz-quality check --staged --verbose
 ```
 
 **Fix**:
+
 ```bash
 # 1. Use --staged (should be default)
 export GZ_QUALITY_FLAGS="--staged"
@@ -755,13 +772,14 @@ exclude:
   - "**/dist/**"
 ```
 
----
+______________________________________________________________________
 
 ### False Positives
 
 **Symptom**: Hook reports errors in generated files
 
 **Fix**:
+
 ```yaml
 # .gzquality.yml
 exclude:
@@ -773,13 +791,14 @@ exclude:
   - "docs/generated/**"
 ```
 
----
+______________________________________________________________________
 
 ### Permission Denied
 
 **Symptom**: `permission denied: .gzquality.yml`
 
 **Fix**:
+
 ```bash
 # Fix file permissions
 chmod 644 .gzquality.yml
@@ -788,13 +807,14 @@ chmod 644 .gzquality.yml
 chmod 755 .git/hooks
 ```
 
----
+______________________________________________________________________
 
 ### Pre-commit Framework Issues
 
 **Symptom**: `pre-commit` command not found
 
 **Fix**:
+
 ```bash
 # Install pre-commit
 pip install --user pre-commit
@@ -807,6 +827,7 @@ apt install pre-commit   # Ubuntu
 **Symptom**: Hook fails with Go installation error
 
 **Fix**:
+
 ```yaml
 # .pre-commit-config.yaml
 repos:
@@ -817,11 +838,12 @@ repos:
         language_version: "1.24"  # Specify Go version
 ```
 
----
+______________________________________________________________________
 
 ### Skip Hook for Emergency Commits
 
 **Temporary bypass**:
+
 ```bash
 # Skip all hooks once
 git commit --no-verify -m "hotfix: emergency fix"
@@ -832,7 +854,7 @@ git commit -m "WIP: work in progress"
 mv .git/hooks/pre-commit.disabled .git/hooks/pre-commit
 ```
 
----
+______________________________________________________________________
 
 ## Best Practices
 
@@ -853,7 +875,7 @@ Begin with formatting hooks, add linting later:
   stages: [commit]
 ```
 
----
+______________________________________________________________________
 
 ### 2. Layer Hooks by Speed
 
@@ -883,7 +905,7 @@ repos:
         language: system
 ```
 
----
+______________________________________________________________________
 
 ### 3. Align Local and CI
 
@@ -898,7 +920,7 @@ Keep local hooks in sync with CI:
 - run: gz-quality check --since origin/main
 ```
 
----
+______________________________________________________________________
 
 ### 4. Document Bypass Procedure
 
@@ -917,7 +939,7 @@ Only use for:
 - Generated files you can't fix
 ```
 
----
+______________________________________________________________________
 
 ### 5. Monitor Hook Performance
 
@@ -931,7 +953,7 @@ END=$(date +%s)
 echo "Hook took $((END - START)) seconds"
 ```
 
----
+______________________________________________________________________
 
 ## Related Documentation
 
@@ -940,7 +962,7 @@ echo "Hook took $((END - START)) seconds"
 - [Configuration Reference](../developer/API.md) - Configuration options
 - [Multi-Repo Workflows](./MULTI_REPO_WORKFLOWS.md) - Large-scale project patterns
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-11-27
 **gz-quality Version**: v0.1.1

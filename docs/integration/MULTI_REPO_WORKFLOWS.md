@@ -14,7 +14,7 @@ Patterns and best practices for managing code quality across multiple repositori
 - [Real-World Examples](#real-world-examples)
 - [Best Practices](#best-practices)
 
----
+______________________________________________________________________
 
 ## Overview
 
@@ -38,7 +38,7 @@ gz-quality addresses these with:
 - ✅ Aggregated reporting across repos
 - ✅ Automated updates via dependabot/renovate
 
----
+______________________________________________________________________
 
 ## Repository Types
 
@@ -64,15 +64,17 @@ monorepo/
 ```
 
 **Benefits**:
+
 - Single CI/CD pipeline
 - Consistent tooling
 - Atomic cross-project changes
 
 **Challenges**:
+
 - Longer CI times
 - Different language requirements per service
 
----
+______________________________________________________________________
 
 ### 2. Polyrepo
 
@@ -91,16 +93,18 @@ org/
 ```
 
 **Benefits**:
+
 - Independent deployment
 - Focused CI/CD
 - Clear ownership
 
 **Challenges**:
+
 - Configuration duplication
 - Version drift
 - Cross-repo changes are complex
 
----
+______________________________________________________________________
 
 ### 3. Hybrid (Monorepo + Libraries)
 
@@ -118,15 +122,17 @@ org/
 ```
 
 **Benefits**:
+
 - Core services together
 - Libraries independently versioned
 - Flexible architecture
 
 **Challenges**:
+
 - More complex CI/CD
 - Dependency management
 
----
+______________________________________________________________________
 
 ## Workflow Patterns
 
@@ -157,12 +163,13 @@ tools:
 ```
 
 **Benefits**:
+
 - ✅ Single source of truth
 - ✅ Easy to update all repos
 - ✅ Version controlled configuration
 - ✅ Rollback support
 
----
+______________________________________________________________________
 
 ### Pattern 2: Per-Repository Configuration
 
@@ -175,21 +182,24 @@ frontend-web/.gzquality.yml
 ```
 
 **Benefits**:
+
 - ✅ Maximum flexibility
 - ✅ No external dependencies
 - ✅ Repository-specific tuning
 
 **Challenges**:
+
 - ❌ Configuration drift
 - ❌ Hard to enforce consistency
 - ❌ Updates require multiple PRs
 
 **When to Use**:
+
 - Projects have vastly different requirements
 - Teams have strong autonomy
 - Flexibility > consistency
 
----
+______________________________________________________________________
 
 ### Pattern 3: Template Repository
 
@@ -206,17 +216,19 @@ org/template-go-service/
 ```
 
 **Benefits**:
+
 - ✅ New projects start with quality checks
 - ✅ Consistent baseline configuration
 - ✅ Pre-configured CI/CD
 
 **Challenges**:
+
 - ❌ Divergence after creation
 - ❌ Updates not automatic
 
 **Enhancement**: Combine with Pattern 1 (shared config) for updates
 
----
+______________________________________________________________________
 
 ### Pattern 4: Git Submodules
 
@@ -233,16 +245,18 @@ backend-api/
 ```
 
 **Benefits**:
+
 - ✅ Version-controlled configuration
 - ✅ Easy to update across repos (`git submodule update`)
 - ✅ Explicit version pinning
 
 **Challenges**:
+
 - ❌ Git submodule complexity
 - ❌ Requires manual updates
 - ❌ Merge conflicts possible
 
----
+______________________________________________________________________
 
 ## Configuration Management
 
@@ -342,7 +356,7 @@ tools:
     enabled: false  # Using gofumpt only
 ```
 
----
+______________________________________________________________________
 
 ## CI/CD Strategies
 
@@ -419,12 +433,13 @@ jobs:
 ```
 
 **Benefits**:
+
 - ✅ DRY: Single workflow definition
 - ✅ Easy updates (update once, affects all repos)
 - ✅ Consistent behavior across repos
 - ✅ Centralized maintenance
 
----
+______________________________________________________________________
 
 ### Strategy 2: Composite Action
 
@@ -471,7 +486,7 @@ runs:
     mode: 'check'
 ```
 
----
+______________________________________________________________________
 
 ### Strategy 3: Shared Scripts
 
@@ -512,7 +527,7 @@ script:
 - run: curl -fsSL https://raw.githubusercontent.com/org/scripts/main/run-quality-check.sh | bash
 ```
 
----
+______________________________________________________________________
 
 ## Tool Installation
 
@@ -548,7 +563,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@$GZ_QUALITY_VERSIO
 # Install other tools as needed
 ```
 
----
+______________________________________________________________________
 
 ### Docker Image Strategy
 
@@ -593,12 +608,13 @@ jobs:
 ```
 
 **Benefits**:
+
 - ✅ Consistent tool versions across all repos
 - ✅ Fast CI (pre-installed tools)
 - ✅ Easy to update (rebuild image)
 - ✅ Reproducible builds
 
----
+______________________________________________________________________
 
 ## Reporting and Aggregation
 
@@ -617,7 +633,7 @@ gz-quality check --report json --output reports/backend-worker-quality.json
 gz-quality check --report json --output reports/frontend-web-quality.json
 ```
 
----
+______________________________________________________________________
 
 ### Centralized Dashboard
 
@@ -660,7 +676,7 @@ jobs:
           npm run deploy
 ```
 
----
+______________________________________________________________________
 
 ### Report Aggregation Script
 
@@ -710,13 +726,14 @@ if __name__ == '__main__':
     aggregate_reports(sys.argv[1], sys.argv[2])
 ```
 
----
+______________________________________________________________________
 
 ## Real-World Examples
 
 ### Example 1: Microservices Organization
 
 **Structure**:
+
 - 20 Go microservices
 - 5 Python data pipelines
 - 3 TypeScript frontends
@@ -748,16 +765,18 @@ org/
 ```
 
 **Benefits**:
+
 - Update once in `config-quality`, affects all 28 repos
 - Consistent quality standards organization-wide
 - Central dashboard for monitoring
 - Automated daily quality reports
 
----
+______________________________________________________________________
 
 ### Example 2: Platform + Libraries
 
 **Structure**:
+
 - 1 large monorepo (platform)
 - 10 shared library repos
 
@@ -842,16 +861,18 @@ jobs:
 ```
 
 **Benefits**:
+
 - Monorepo: Check only changed services (fast)
 - Libraries: Stricter checks (higher quality bar)
 - Independent CI pipelines
 - Reusable configuration
 
----
+______________________________________________________________________
 
 ### Example 3: Multi-Region Teams
 
 **Structure**:
+
 - US team: 5 repos (Go services)
 - EU team: 5 repos (Python services)
 - APAC team: 3 repos (TypeScript frontends)
@@ -901,12 +922,13 @@ tools:
 ```
 
 **Benefits**:
+
 - Team autonomy with shared baseline
 - Regional language preferences
 - Global consistency where needed
 - Easy to add new teams
 
----
+______________________________________________________________________
 
 ## Best Practices
 
@@ -922,7 +944,7 @@ Pin all versions explicitly:
   # ✅ DO: @v0.1.1 (reproducible)
 ```
 
----
+______________________________________________________________________
 
 ### 2. Automate Updates
 
@@ -942,7 +964,7 @@ updates:
           - "github.com/Gizzahub/gzh-cli-quality"
 ```
 
----
+______________________________________________________________________
 
 ### 3. Monitor Drift
 
@@ -965,7 +987,7 @@ for repo in "${REPOS[@]}"; do
 done
 ```
 
----
+______________________________________________________________________
 
 ### 4. Gradual Rollout
 
@@ -978,7 +1000,7 @@ Week 3: Roll out to 25% of repos
 Week 4: Roll out to remaining repos
 ```
 
----
+______________________________________________________________________
 
 ### 5. Escape Hatches
 
@@ -999,7 +1021,7 @@ tools:
 # Issue: https://github.com/org/backend-api/issues/123
 ```
 
----
+______________________________________________________________________
 
 ### 6. Measure and Report
 
@@ -1013,7 +1035,7 @@ Track quality metrics organization-wide:
 - Trend: -15% vs last month ✅
 ```
 
----
+______________________________________________________________________
 
 ### 7. Documentation
 
@@ -1029,7 +1051,7 @@ org/quality-handbook/
 └── examples/               # Real examples
 ```
 
----
+______________________________________________________________________
 
 ### 8. Regular Reviews
 
@@ -1041,7 +1063,7 @@ Schedule quarterly reviews:
 - Update documentation
 - Celebrate improvements
 
----
+______________________________________________________________________
 
 ## Related Documentation
 
@@ -1050,7 +1072,7 @@ Schedule quarterly reviews:
 - [Configuration Reference](../developer/API.md) - Complete configuration options
 - [Usage Examples](../user/02-examples.md) - Detailed usage examples
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-11-27
 **gz-quality Version**: v0.1.1

@@ -48,7 +48,7 @@ Design document for implementing a file-based caching system to improve gz-quali
 - [Testing Strategy](#testing-strategy)
 - [Risks and Mitigations](#risks-and-mitigations)
 
----
+______________________________________________________________________
 
 ## Goals and Motivation
 
@@ -98,30 +98,30 @@ $ gz-quality run --use-cache
 # Total: 3.8s (79% faster!)
 ```
 
----
+______________________________________________________________________
 
 ## Requirements
 
 ### Functional Requirements
 
 1. **FR1**: Cache tool execution results per file
-2. **FR2**: Invalidate cache when file content changes
-3. **FR3**: Invalidate cache when tool version changes
-4. **FR4**: Invalidate cache when tool configuration changes
-5. **FR5**: Support cache cleanup (size limits, age limits)
-6. **FR6**: Provide cache statistics (hit rate, size)
-7. **FR7**: Allow cache to be disabled via flag
-8. **FR8**: Support cache prewarming for CI/CD
+1. **FR2**: Invalidate cache when file content changes
+1. **FR3**: Invalidate cache when tool version changes
+1. **FR4**: Invalidate cache when tool configuration changes
+1. **FR5**: Support cache cleanup (size limits, age limits)
+1. **FR6**: Provide cache statistics (hit rate, size)
+1. **FR7**: Allow cache to be disabled via flag
+1. **FR8**: Support cache prewarming for CI/CD
 
 ### Non-Functional Requirements
 
 1. **NFR1**: Cache lookup must be < 1ms per file
-2. **NFR2**: Cache storage must be < 100MB for typical projects
-3. **NFR3**: Cache must be thread-safe (concurrent access)
-4. **NFR4**: Cache corruption must not break tool execution
-5. **NFR5**: Cache must be portable (macOS, Linux, Windows)
+1. **NFR2**: Cache storage must be < 100MB for typical projects
+1. **NFR3**: Cache must be thread-safe (concurrent access)
+1. **NFR4**: Cache corruption must not break tool execution
+1. **NFR5**: Cache must be portable (macOS, Linux, Windows)
 
----
+______________________________________________________________________
 
 ## Architecture
 
@@ -193,6 +193,7 @@ func (cm *CacheManager) Cleanup(ctx context.Context) error
 ```
 
 **Responsibilities:**
+
 - Cache hit/miss logic
 - Cache eviction policies
 - Statistics tracking
@@ -216,6 +217,7 @@ type FilesystemStorage struct {
 ```
 
 **Responsibilities:**
+
 - Low-level file I/O
 - Directory management
 - Atomic writes
@@ -239,11 +241,12 @@ func (ck CacheKey) String() string {
 ```
 
 **Responsibilities:**
+
 - Unique identification of cache entries
 - Deterministic key generation
 - Collision avoidance
 
----
+______________________________________________________________________
 
 ## Cache Key Design
 
@@ -252,9 +255,9 @@ func (ck CacheKey) String() string {
 A cache entry is valid only if **ALL** of the following match:
 
 1. **File Content**: Same file hash (SHA256)
-2. **Tool Version**: Same tool version
-3. **Tool Config**: Same configuration files
-4. **Execution Options**: Same flags (--fix, --format-only, etc.)
+1. **Tool Version**: Same tool version
+1. **Tool Config**: Same configuration files
+1. **Execution Options**: Same flags (--fix, --format-only, etc.)
 
 ### Key Generation Algorithm
 
@@ -306,7 +309,7 @@ gofumpt-v0.7.0-a1b2c3d4-e5f6g7h8-i9j0k1l2
 ✅ **Option-aware**: Different options = different results
 ✅ **Collision-resistant**: SHA256 provides strong guarantees
 
----
+______________________________________________________________________
 
 ## Cache Storage
 
@@ -398,20 +401,20 @@ INSERT INTO cache_metadata VALUES ('created_at', '2025-12-02T00:00:00Z');
 ✅ Built-in (no external dependencies)
 ✅ Lightweight (embedded database)
 
----
+______________________________________________________________________
 
 ## Cache Invalidation
 
 ### Invalidation Triggers
 
-| Trigger | Action | Reason |
-|---------|--------|--------|
-| **File modified** | Delete entries for that file | Content changed |
-| **Tool upgraded** | Delete entries for that tool | Different version |
-| **Config changed** | Delete entries using that config | Different rules |
-| **Manual clear** | Delete all entries | User request |
-| **Age limit** | Delete old entries | Prevent unbounded growth |
-| **Size limit** | Delete oldest entries | Prevent disk exhaustion |
+| Trigger            | Action                           | Reason                   |
+| ------------------ | -------------------------------- | ------------------------ |
+| **File modified**  | Delete entries for that file     | Content changed          |
+| **Tool upgraded**  | Delete entries for that tool     | Different version        |
+| **Config changed** | Delete entries using that config | Different rules          |
+| **Manual clear**   | Delete all entries               | User request             |
+| **Age limit**      | Delete old entries               | Prevent unbounded growth |
+| **Size limit**     | Delete oldest entries            | Prevent disk exhaustion  |
 
 ### LRU Eviction Policy
 
@@ -448,7 +451,7 @@ func (cm *CacheManager) Cleanup(ctx context.Context) error {
 - **Background**: Every 1 hour (async goroutine)
 - **On exit**: Final cleanup (graceful shutdown)
 
----
+______________________________________________________________________
 
 ## Integration Points
 
@@ -552,7 +555,7 @@ cache:
   cleanup_interval: "1h"
 ```
 
----
+______________________________________________________________________
 
 ## Performance Impact
 
@@ -599,14 +602,14 @@ $ time gz-quality run --cache
 
 ### Cache Performance Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| **Lookup time** | < 1ms | Indexed SQLite query |
-| **Write time** | < 5ms | JSON write + DB insert |
-| **Hit rate (typical)** | > 80% | Based on change frequency |
-| **Hit rate (CI/CD)** | > 95% | Small PRs, cached base |
-| **Storage overhead** | < 100MB | For 1000-file project |
-| **Memory overhead** | < 10MB | In-memory index only |
+| Metric                 | Target  | Measurement               |
+| ---------------------- | ------- | ------------------------- |
+| **Lookup time**        | < 1ms   | Indexed SQLite query      |
+| **Write time**         | < 5ms   | JSON write + DB insert    |
+| **Hit rate (typical)** | > 80%   | Based on change frequency |
+| **Hit rate (CI/CD)**   | > 95%   | Small PRs, cached base    |
+| **Storage overhead**   | < 100MB | For 1000-file project     |
+| **Memory overhead**    | < 10MB  | In-memory index only      |
 
 ### Benchmark Targets
 
@@ -625,20 +628,22 @@ func BenchmarkCacheLookup1000Files(b *testing.B) {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Implementation Plan
 
 ### Phase 1: Core Infrastructure ✅ COMPLETED
 
 **Tasks:**
+
 1. ✅ Create `cache/` package structure
-2. ✅ Implement `CacheKey` generation
-3. ✅ Implement `FilesystemStorage`
-4. ✅ Implement `CacheManager` (basic operations)
-5. ✅ Add unit tests (>80% coverage)
+1. ✅ Implement `CacheKey` generation
+1. ✅ Implement `FilesystemStorage`
+1. ✅ Implement `CacheManager` (basic operations)
+1. ✅ Add unit tests (>80% coverage)
 
 **Deliverables:**
+
 - ✅ `cache/key.go` - Cache key generation with SHA256 hashing
 - ✅ `cache/storage.go` - Filesystem storage with atomic writes
 - ✅ `cache/manager.go` - Cache manager with hit/miss tracking
@@ -648,13 +653,15 @@ func BenchmarkCacheLookup1000Files(b *testing.B) {
 ### Phase 2: Executor Integration ✅ COMPLETED
 
 **Tasks:**
+
 1. ✅ Add cache parameter to `ParallelExecutor`
-2. ✅ Implement cache lookup before tool execution
-3. ✅ Implement cache storage after successful execution
-4. ✅ Add integration tests
-5. ✅ Add file-specific result filtering for multi-file caching
+1. ✅ Implement cache lookup before tool execution
+1. ✅ Implement cache storage after successful execution
+1. ✅ Add integration tests
+1. ✅ Add file-specific result filtering for multi-file caching
 
 **Deliverables:**
+
 - ✅ Modified `executor/runner.go` with `NewParallelExecutorWithCache()`
 - ✅ `executor/cache_integration_test.go` - Integration tests
 - ✅ `filterIssuesByFile()` - Per-file issue extraction
@@ -662,13 +669,15 @@ func BenchmarkCacheLookup1000Files(b *testing.B) {
 ### Phase 3: CLI Integration ✅ COMPLETED
 
 **Tasks:**
+
 1. ✅ Add `--cache` and `--no-cache` flags to commands
-2. ✅ Implement `cache clear` command
-3. ✅ Implement `cache stats` command
-4. ✅ Add configuration file support (`CacheConfig`)
-5. ✅ Cache state display in results
+1. ✅ Implement `cache clear` command
+1. ✅ Implement `cache stats` command
+1. ✅ Add configuration file support (`CacheConfig`)
+1. ✅ Cache state display in results
 
 **Deliverables:**
+
 - ✅ Modified `quality.go` with cache commands
 - ✅ Modified `config/config.go` with `CacheConfig` struct
 - ✅ CLI help text updates
@@ -677,27 +686,30 @@ func BenchmarkCacheLookup1000Files(b *testing.B) {
 ### Phase 4: Optimization & Production 🔄 IN PROGRESS
 
 **Tasks:**
+
 1. ⏳ Add SQLite index for fast lookups (using filesystem for now)
-2. ✅ Implement LRU eviction policy (`Cleanup()` method)
-3. ⏳ Add cache prewarming for CI/CD
-4. ✅ Performance testing with benchmarks
-5. ✅ Edge case handling (concurrent access via mutex)
+1. ✅ Implement LRU eviction policy (`Cleanup()` method)
+1. ⏳ Add cache prewarming for CI/CD
+1. ✅ Performance testing with benchmarks
+1. ✅ Edge case handling (concurrent access via mutex)
 
 **Deliverables:**
+
 - ✅ `executor/bench_test.go` - Cache performance benchmarks
 - ✅ LRU-based cleanup in `manager.go`
 - ⏳ SQLite integration (optional enhancement)
 - ⏳ CI/CD prewarming documentation
 
 **Benchmark Results (Apple M1 Ultra):**
-| Scenario | Time | Notes |
-|----------|------|-------|
-| Cache Hit | ~335µs/op | Single file, warm cache |
-| Cache Miss | ~350µs/op | Single file, cold cache |
-| Multi-file All Hit | ~3.1ms/op | 10 files, all cached |
-| No Cache (baseline) | ~5µs/op | Mock tool execution |
 
----
+| Scenario            | Time      | Notes                   |
+| ------------------- | --------- | ----------------------- |
+| Cache Hit           | ~335µs/op | Single file, warm cache |
+| Cache Miss          | ~350µs/op | Single file, cold cache |
+| Multi-file All Hit  | ~3.1ms/op | 10 files, all cached    |
+| No Cache (baseline) | ~5µs/op   | Mock tool execution     |
+
+______________________________________________________________________
 
 ## Testing Strategy
 
@@ -755,7 +767,7 @@ $ gz-quality cache-stats
 $ gz-quality cache-clear
 ```
 
----
+______________________________________________________________________
 
 ## Risks and Mitigations
 
@@ -764,6 +776,7 @@ $ gz-quality cache-clear
 **Impact**: High - Broken cache could cause incorrect results
 **Probability**: Medium
 **Mitigation**:
+
 - Validate cache entries on read (checksum verification)
 - Graceful degradation (cache miss on corruption)
 - Automatic cleanup of corrupt entries
@@ -774,6 +787,7 @@ $ gz-quality cache-clear
 **Impact**: High - Outdated results could be served
 **Probability**: Low (with proper invalidation)
 **Mitigation**:
+
 - Strong cache key (includes file hash, tool version, config)
 - Conservative invalidation (invalidate on any doubt)
 - Cache version in metadata (invalidate on upgrade)
@@ -784,6 +798,7 @@ $ gz-quality cache-clear
 **Impact**: Medium - Large cache could fill disk
 **Probability**: Low (with size limits)
 **Mitigation**:
+
 - Default size limit (100MB)
 - LRU eviction policy
 - Automatic cleanup
@@ -794,6 +809,7 @@ $ gz-quality cache-clear
 **Impact**: Medium - Cache overhead could slow down small projects
 **Probability**: Low
 **Mitigation**:
+
 - Cache lookup must be < 1ms (SQLite index)
 - Only cache successful results
 - Disable cache for small projects (< 10 files)
@@ -804,24 +820,25 @@ $ gz-quality cache-clear
 **Impact**: Medium - Race conditions in parallel execution
 **Probability**: Medium
 **Mitigation**:
+
 - Use SQLite (built-in concurrency control)
 - Atomic file writes (write-then-rename)
 - File locks for critical sections
 - Concurrency tests
 
----
+______________________________________________________________________
 
 ## Future Enhancements
 
 ### Phase 5: Advanced Features (Future)
 
 1. **Distributed Cache**: Share cache across team (Redis, S3)
-2. **Cache Compression**: Reduce storage overhead
-3. **Smart Prewarming**: Predict cache needs
-4. **Cache Analytics**: Dashboard for cache performance
-5. **Incremental Results**: Cache partial results (per-function)
+1. **Cache Compression**: Reduce storage overhead
+1. **Smart Prewarming**: Predict cache needs
+1. **Cache Analytics**: Dashboard for cache performance
+1. **Incremental Results**: Cache partial results (per-function)
 
----
+______________________________________________________________________
 
 ## Appendix
 
@@ -875,7 +892,7 @@ With cache (99% hit rate):
 Speedup: 1000s / 10s = 100x faster!
 ```
 
----
+______________________________________________________________________
 
 **Document Version**: 1.1
 **Last Updated**: 2025-12-02
@@ -884,11 +901,11 @@ Speedup: 1000s / 10s = 100x faster!
 
 ### Implementation Summary
 
-| Phase | Status | Commits |
-|-------|--------|---------|
-| Phase 1: Core Infrastructure | ✅ Complete | `b799237`, `a5c6680` |
-| Phase 2: Executor Integration | ✅ Complete | `208c9f9`, `afd9463` |
-| Phase 3: CLI Integration | ✅ Complete | `f532bc1`, `9908056` |
-| Phase 4: Optimization | 🔄 In Progress | `563ffe8` |
+| Phase                         | Status         | Commits              |
+| ----------------------------- | -------------- | -------------------- |
+| Phase 1: Core Infrastructure  | ✅ Complete    | `b799237`, `a5c6680` |
+| Phase 2: Executor Integration | ✅ Complete    | `208c9f9`, `afd9463` |
+| Phase 3: CLI Integration      | ✅ Complete    | `f532bc1`, `9908056` |
+| Phase 4: Optimization         | 🔄 In Progress | `563ffe8`            |
 
 **Total Lines Added**: ~2000+ lines of production code and tests

@@ -9,10 +9,10 @@
 - [CircleCI](#circleci)
 - [Jenkins](#jenkins)
 - [Pre-commit Hooks](#pre-commit-hooks)
-- [Docker 통합](#docker-통합)
-- [테스트 커버리지 통합](#테스트-커버리지-통합)
+- [Docker 통합](#docker-%ED%86%B5%ED%95%A9)
+- [테스트 커버리지 통합](#%ED%85%8C%EC%8A%A4%ED%8A%B8-%EC%BB%A4%EB%B2%84%EB%A6%AC%EC%A7%80-%ED%86%B5%ED%95%A9)
 
----
+______________________________________________________________________
 
 ## GitHub Actions
 
@@ -42,6 +42,7 @@
 ```
 
 **실제 예시**:
+
 ```markdown
 # My Project
 
@@ -50,7 +51,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen.svg)](./coverage.html)
 ```
 
----
+______________________________________________________________________
 
 ### 기본 워크플로우
 
@@ -149,7 +150,7 @@ steps:
       });
 ```
 
----
+______________________________________________________________________
 
 ## GitLab CI
 
@@ -163,6 +164,7 @@ GitLab 파이프라인 상태를 README에 표시:
 ```
 
 **커스텀 배지**:
+
 ```markdown
 <!-- shields.io를 통한 GitLab 배지 -->
 ![GitLab Pipeline](https://img.shields.io/gitlab/pipeline/username/project?branch=main&label=quality)
@@ -172,7 +174,7 @@ GitLab 파이프라인 상태를 README에 표시:
 ![Quality](https://img.shields.io/badge/quality-passing-success.svg)
 ```
 
----
+______________________________________________________________________
 
 ### 기본 설정
 
@@ -217,7 +219,7 @@ quality-check:mr:
     - merge_requests
 ```
 
----
+______________________________________________________________________
 
 ## CircleCI
 
@@ -265,7 +267,7 @@ workflows:
                 - develop
 ```
 
----
+______________________________________________________________________
 
 ## Jenkins
 
@@ -324,7 +326,7 @@ pipeline {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Pre-commit Hooks
 
@@ -408,7 +410,7 @@ npx husky install
 npx husky add .husky/pre-commit "gz-quality check --staged"
 ```
 
----
+______________________________________________________________________
 
 ## Docker 통합
 
@@ -477,7 +479,7 @@ volumes:
 docker-compose run --rm quality-check
 ```
 
----
+______________________________________________________________________
 
 ## 고급 설정
 
@@ -553,7 +555,7 @@ quality-check:
     - gz-quality check
 ```
 
----
+______________________________________________________________________
 
 ## 모범 사례
 
@@ -603,7 +605,7 @@ go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v1.0.0
 go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.1.1
 ```
 
----
+______________________________________________________________________
 
 ## 문제 해결
 
@@ -633,7 +635,7 @@ $(go env GOPATH)/bin/gz-quality check
 docker run --rm -v $(pwd):/workspace -u $(id -u):$(id -g) gz-quality:latest check
 ```
 
----
+______________________________________________________________________
 
 ## 실제 프로젝트 시나리오
 
@@ -920,11 +922,12 @@ jobs:
         run: gz-quality check
 ```
 
----
+______________________________________________________________________
 
 ## 성능 최적화 팁
 
 ### 1. Changed Files만 검사
+
 ```bash
 # PR에서 변경된 파일만
 gz-quality check --since origin/main
@@ -934,6 +937,7 @@ gz-quality check --since HEAD~3
 ```
 
 ### 2. Worker 수 조정
+
 ```bash
 # CPU 코어 수에 맞춰 자동 조정 (기본값)
 gz-quality run
@@ -943,6 +947,7 @@ gz-quality run --workers 8
 ```
 
 ### 3. 도구별 타임아웃 설정
+
 ```yaml
 # .gzquality.yml
 timeout: "10m"
@@ -955,6 +960,7 @@ tools:
 ```
 
 ### 4. 캐싱 전략
+
 ```yaml
 # Go 모듈 캐싱
 - uses: actions/cache@v3
@@ -969,7 +975,7 @@ tools:
     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 ```
 
----
+______________________________________________________________________
 
 ## 문제 해결
 
@@ -978,6 +984,7 @@ tools:
 **증상**: `golangci-lint: command not found`
 
 **해결**:
+
 ```yaml
 - name: Add Go bin to PATH
   run: echo "$HOME/go/bin" >> $GITHUB_PATH
@@ -993,6 +1000,7 @@ tools:
 **증상**: `permission denied: .gzquality.yml`
 
 **해결**:
+
 ```yaml
 - name: Fix permissions
   run: chmod -R 755 .
@@ -1006,6 +1014,7 @@ tools:
 **증상**: 대규모 프로젝트에서 메모리 부족
 
 **해결**:
+
 ```yaml
 # 1. Worker 수 감소
 - run: gz-quality run --workers 2
@@ -1018,7 +1027,7 @@ tools:
 - run: gz-quality tool ruff
 ```
 
----
+______________________________________________________________________
 
 ## 테스트 커버리지 통합
 
@@ -1026,21 +1035,21 @@ tools:
 
 프로젝트는 다음 커버리지 목표를 유지합니다:
 
-| 패키지 | 최소 커버리지 | 권장 커버리지 | 현재 상태 |
-|--------|--------------|--------------|----------|
-| config | 80% | 90% | ✅ 85.1% |
-| detector | 50% | 70% | ✅ 53.3% |
-| git | 85% | 95% | ✅ 92.0% |
-| executor | 75% | 85% | ✅ 80.0% |
-| report | 90% | 95% | ✅ 95.3% |
-| tools | 15% | 30% | ✅ 16.0% |
-| **전체** | **40%** | **50%** | ✅ **45.9%** |
+| 패키지   | 최소 커버리지 | 권장 커버리지 | 현재 상태    |
+| -------- | ------------- | ------------- | ------------ |
+| config   | 80%           | 90%           | ✅ 85.1%     |
+| detector | 50%           | 70%           | ✅ 53.3%     |
+| git      | 85%           | 95%           | ✅ 92.0%     |
+| executor | 75%           | 85%           | ✅ 80.0%     |
+| report   | 90%           | 95%           | ✅ 95.3%     |
+| tools    | 15%           | 30%           | ✅ 16.0%     |
+| **전체** | **40%**       | **50%**       | ✅ **45.9%** |
 
 ### GitHub Actions - 커버리지 체크
 
 `.github/workflows/coverage.yml`:
 
-```yaml
+````yaml
 name: Test Coverage
 
 on:
@@ -1110,7 +1119,7 @@ jobs:
               repo: context.repo.repo,
               body: body
             });
-```
+````
 
 ### GitLab CI - 커버리지 추적
 
@@ -1285,11 +1294,11 @@ go tool cover -func=coverage.out | grep "0.0%" | awk '{print $1}'
 
 **2. 중요도 기반 우선순위:**
 
-| 우선순위 | 패키지 유형 | 목표 커버리지 |
-|---------|-----------|-------------|
-| 높음 | 핵심 비즈니스 로직 (executor, git) | 80%+ |
-| 중간 | 유틸리티/도구 (config, detector) | 60%+ |
-| 낮음 | 외부 통합 (tools 구현체) | 30%+ |
+| 우선순위 | 패키지 유형                        | 목표 커버리지 |
+| -------- | ---------------------------------- | ------------- |
+| 높음     | 핵심 비즈니스 로직 (executor, git) | 80%+          |
+| 중간     | 유틸리티/도구 (config, detector)   | 60%+          |
+| 낮음     | 외부 통합 (tools 구현체)           | 30%+          |
 
 **3. 테스트 작성 가이드:**
 
@@ -1317,9 +1326,10 @@ timeout: "5m"`
 - ✅ **의미있는 테스트**: 엣지 케이스, 에러 핸들링
 - ❌ **숫자 채우기**: getter/setter만 테스트
 
----
+______________________________________________________________________
 
 **관련 문서**:
+
 - [사용 예제](../user/02-examples.md)
 - [도구 추가하기](../developer/ADDING_TOOLS.md)
 - [API 레퍼런스](../developer/API.md)
