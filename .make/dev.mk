@@ -44,8 +44,8 @@ release-quality: quality ## Enforce PRODUCT.md release coverage after quality ch
 	@$(MAKE) release-coverage-check
 
 release-coverage-check: ## Check an existing coverage.out against the 80% release floor
-	@report=$$($(GO) tool cover -func="$(COVERAGE_OUT)") || exit 1; \
-	printf '%s\n' "$$report" | awk '/^total:/ { found = 1; value = $$NF; sub(/%$$/, "", value); print "Release coverage: " value "% (required: 80%)"; if (value + 0 < 80) exit 1 } END { if (!found) exit 1 }'
+	@$(GO) tool cover -func="$(COVERAGE_OUT)" >/dev/null || exit 1
+	@awk 'NR > 1 { total += $$2; if ($$3 > 0) covered += $$2 } END { if (total == 0) exit 1; printf "Release coverage: %.4f%% (required: 80%%)\n", 100 * covered / total; if (covered * 100 < total * 80) exit 1 }' "$(COVERAGE_OUT)"
 
 release-dry: install-goreleaser ## Build release archives and cask without publishing
 	@echo "Running release dry run..."

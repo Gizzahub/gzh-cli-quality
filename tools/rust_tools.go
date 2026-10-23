@@ -29,12 +29,16 @@ func NewRustfmtTool() *RustfmtTool {
 	tool.SetInstallCommand([]string{"rustup", "component", "add", "rustfmt"})
 	tool.SetConfigPatterns([]string{"rustfmt.toml", ".rustfmt.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the rustfmt command.
 func (t *RustfmtTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{}
+	if !options.Fix {
+		args = append(args, "--check")
+	}
 
 	// Add config file if specified
 	if options.ConfigFile != "" {
@@ -71,6 +75,7 @@ func NewClippyTool() *ClippyTool {
 	tool.SetInstallCommand([]string{"rustup", "component", "add", "clippy"})
 	tool.SetConfigPatterns([]string{"clippy.toml", ".clippy.toml", "Cargo.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -184,12 +189,16 @@ func NewCargoFmtTool() *CargoFmtTool {
 	tool.SetInstallCommand([]string{"rustup", "component", "add", "rustfmt"})
 	tool.SetConfigPatterns([]string{"rustfmt.toml", ".rustfmt.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the cargo fmt command.
 func (t *CargoFmtTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{"fmt"}
+	if !options.Fix {
+		args = append(args, "--check")
+	}
 
 	// Add extra flags if provided
 	args = append(args, options.ExtraArgs...)

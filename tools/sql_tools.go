@@ -23,6 +23,7 @@ func NewSqlfluffTool() *SqlfluffTool {
 	tool.SetInstallCommand([]string{"uv", "tool", "install", "sqlfluff"})
 	tool.SetConfigPatterns([]string{".sqlfluff", "setup.cfg", "pyproject.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -31,14 +32,14 @@ func (t *SqlfluffTool) BuildCommand(files []string, options ExecuteOptions) *exe
 	var args []string
 
 	// Determine operation mode
-	if options.FormatOnly || options.Fix {
+	if options.Fix {
 		args = append(args, "fix")
 	} else {
 		args = append(args, "lint")
 	}
 
 	// Output format for parsing (only in lint mode)
-	if !options.FormatOnly && !options.Fix {
+	if !options.Fix {
 		args = append(args, "--format", "json")
 	}
 

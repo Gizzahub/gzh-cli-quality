@@ -22,12 +22,16 @@ func NewGoogleJavaFormatTool() *GoogleJavaFormatTool {
 
 	tool.SetInstallCommand([]string{"brew", "install", "google-java-format"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the google-java-format command.
 func (t *GoogleJavaFormatTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
-	args := []string{"-i"} // In-place formatting
+	args := []string{"--dry-run", "--set-exit-if-changed"}
+	if options.Fix {
+		args = []string{"-i"}
+	}
 
 	// Add extra flags if provided
 	args = append(args, options.ExtraArgs...)
@@ -61,6 +65,7 @@ func NewCheckstyleTool() *CheckstyleTool {
 	tool.SetInstallCommand([]string{"brew", "install", "checkstyle"})
 	tool.SetConfigPatterns([]string{"checkstyle.xml", ".checkstyle.xml", "config/checkstyle/checkstyle.xml"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -156,6 +161,7 @@ func NewSpotbugsTool() *SpotbugsTool {
 	tool.SetInstallCommand([]string{"brew", "install", "spotbugs"})
 	tool.SetConfigPatterns([]string{"spotbugs.xml", ".spotbugs.xml", "spotbugs-exclude.xml"})
 
+	tool.adapter = tool
 	return tool
 }
 

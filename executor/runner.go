@@ -129,7 +129,7 @@ func (e *ParallelExecutor) ExecuteParallel(ctx context.Context, plan *tools.Exec
 				errors = append(errors, err)
 			}
 		case <-timeoutCtx.Done():
-			return results, fmt.Errorf("execution timed out after %v", e.timeout)
+			return results, fmt.Errorf("execution timed out after %v: %w", e.timeout, timeoutCtx.Err())
 		}
 
 		if resultChan == nil && errorChan == nil {
@@ -165,6 +165,12 @@ func (e *ParallelExecutor) worker(ctx context.Context, wg *sync.WaitGroup, taskC
 			} else {
 				// Execute without cache
 				result, err = task.Tool.Execute(ctx, task.Files, task.Options)
+			}
+			if result == nil {
+				result = &tools.Result{Tool: task.Tool.Name(), Language: task.Tool.Language(), Error: "tool returned no execution result"}
+				if err == nil {
+					err = fmt.Errorf("tool %s returned no execution result", task.Tool.Name())
+				}
 			}
 
 			// Send result
@@ -225,7 +231,7 @@ func (e *ParallelExecutor) executeSingleFileWithCache(ctx context.Context, tool 
 	}
 
 	// Store successful result in cache
-	if result.Success && keyErr == nil {
+	if result != nil && result.Success && keyErr == nil {
 		_ = e.cache.Set(cacheKey, result) // Fire and forget
 	}
 
@@ -265,11 +271,15 @@ func (e *ParallelExecutor) executeMultiFileWithCache(ctx context.Context, task t
 
 	// Execute tool for uncached files
 	result, err := task.Tool.Execute(ctx, uncachedFiles, task.Options)
+	if result == nil && err == nil {
+		err = fmt.Errorf("tool %s returned no execution result", task.Tool.Name())
+	}
 	if err != nil {
 		// Still return partial cached results if available
 		if len(cachedResults) > 0 {
 			merged := mergeResults(cachedResults, task.Tool)
-			merged.Error = result.Error
+			merged.Success = false
+			merged.Error = err.Error()
 			return merged, err
 		}
 		return result, err
@@ -277,7 +287,7 @@ func (e *ParallelExecutor) executeMultiFileWithCache(ctx context.Context, task t
 
 	// Store successful result in cache for each uncached file
 	// Split the result by file to store file-specific issues only
-	if result.Success {
+	if result != nil && result.Success {
 		for _, filePath := range uncachedFiles {
 			cacheKey, keyErr := cache.GenerateKey(filePath, task.Tool, task.Options)
 			if keyErr == nil {

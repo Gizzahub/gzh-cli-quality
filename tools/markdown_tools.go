@@ -24,6 +24,7 @@ func NewMarkdownlintTool() *MarkdownlintTool {
 	tool.SetInstallCommand([]string{"npm", "install", "-g", "markdownlint-cli2"})
 	tool.SetConfigPatterns([]string{".markdownlint.json", ".markdownlint.yaml", ".markdownlint.yml", ".markdownlint-cli2.jsonc"})
 
+	tool.adapter = tool
 	return tool
 }
 

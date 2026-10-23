@@ -331,6 +331,19 @@ func (m *QualityManager) executeQuality(ctx context.Context, opts *executionOpti
 		}
 	}
 
+	return executionResultError(results)
+}
+
+// executionResultError keeps tool failures visible to CLI callers and CI.
+func executionResultError(results []*tools.Result) error {
+	for _, result := range results {
+		if result == nil {
+			return fmt.Errorf("tool returned no execution result")
+		}
+		if !result.Success {
+			return fmt.Errorf("tool %s failed: %s", result.Tool, result.Error)
+		}
+	}
 	return nil
 }
 
@@ -1115,7 +1128,7 @@ func (m *QualityManager) runDirectTool(cmd *cobra.Command, _ []string, tool tool
 	// Display results
 	m.displayResults(results, duration, verbose)
 
-	return nil
+	return executionResultError(results)
 }
 
 // validateGitFlags validates Git-based filtering flags.

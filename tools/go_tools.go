@@ -25,12 +25,16 @@ func NewGofumptTool() *GofumptTool {
 	tool.SetInstallCommand([]string{"go", "install", "mvdan.cc/gofumpt@latest"})
 	tool.SetConfigPatterns([]string{".gofumpt"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the gofumpt command.
 func (t *GofumptTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
-	args := []string{"-w"} // Always write changes
+	args := []string{"-l"}
+	if options.Fix {
+		args = []string{"-w"}
+	}
 
 	// Add extra flags if provided
 	args = append(args, options.ExtraArgs...)
@@ -61,12 +65,16 @@ func NewGoimportsTool() *GoimportsTool {
 
 	tool.SetInstallCommand([]string{"go", "install", "golang.org/x/tools/cmd/goimports@latest"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the goimports command.
 func (t *GoimportsTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
-	args := []string{"-w"} // Always write changes
+	args := []string{"-l"}
+	if options.Fix {
+		args = []string{"-w"}
+	}
 
 	// Add local import setting if project root is available
 	if options.ProjectRoot != "" {
@@ -103,9 +111,10 @@ func NewGolangciLintTool() *GolangciLintTool {
 		BaseTool: NewBaseTool("golangci-lint", "Go", "golangci-lint", LINT),
 	}
 
-	tool.SetInstallCommand([]string{"go", "install", "github.com/golangci/golangci-lint/cmd/golangci-lint@latest"})
+	tool.SetInstallCommand([]string{"go", "install", "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest"})
 	tool.SetConfigPatterns([]string{".golangci.yml", ".golangci.yaml", "golangci.yml", "golangci.yaml"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -124,7 +133,7 @@ func (t *GolangciLintTool) BuildCommand(files []string, options ExecuteOptions) 
 	}
 
 	// Output format for parsing
-	args = append(args, "--out-format", "json")
+	args = append(args, "--output.json.path", "stdout", "--show-stats=false")
 
 	// Add extra flags if provided
 	args = append(args, options.ExtraArgs...)
@@ -238,6 +247,7 @@ func NewGosecTool() *GosecTool {
 
 	tool.SetInstallCommand([]string{"go", "install", "github.com/securego/gosec/v2/cmd/gosec@latest"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -328,6 +338,7 @@ func NewGovulncheckTool() *GovulncheckTool {
 
 	tool.SetInstallCommand([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@latest"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -403,12 +414,16 @@ func NewGciTool() *GciTool {
 	tool.SetInstallCommand([]string{"go", "install", "github.com/daixiang0/gci@latest"})
 	tool.SetConfigPatterns([]string{".gci.yml", ".gci.yaml"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the gci command.
 func (t *GciTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
-	args := []string{"write"}
+	args := []string{"diff"}
+	if options.Fix {
+		args = []string{"write"}
+	}
 
 	// Default section order: standard, default, prefix
 	if options.ProjectRoot != "" {
@@ -454,12 +469,16 @@ func NewGolinesTool() *GolinesTool {
 
 	tool.SetInstallCommand([]string{"go", "install", "github.com/segmentio/golines@latest"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the golines command.
 func (t *GolinesTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
-	args := []string{"-w", "-m", "120"} // Write changes, max 120 chars
+	args := []string{"--dry-run", "-m", "120"}
+	if options.Fix {
+		args = []string{"-w", "-m", "120"}
+	}
 
 	// Add extra flags if provided
 	args = append(args, options.ExtraArgs...)

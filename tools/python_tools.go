@@ -25,12 +25,16 @@ func NewBlackTool() *BlackTool {
 	tool.SetInstallCommand([]string{"uv", "tool", "install", "black"})
 	tool.SetConfigPatterns([]string{"pyproject.toml", ".black", "black.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the black command.
 func (t *BlackTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
 	args := []string{}
+	if !options.Fix {
+		args = append(args, "--check")
+	}
 
 	// Add config file if specified
 	if options.ConfigFile != "" {
@@ -75,6 +79,7 @@ func NewRuffTool() *RuffTool {
 	tool.SetInstallCommand([]string{"uv", "tool", "install", "ruff"})
 	tool.SetConfigPatterns([]string{"ruff.toml", ".ruff.toml", "pyproject.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -85,6 +90,9 @@ func (t *RuffTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cm
 	// Determine operation mode
 	if options.FormatOnly {
 		args = append(args, "format")
+		if !options.Fix {
+			args = append(args, "--check")
+		}
 	} else {
 		args = append(args, "check")
 	}
@@ -182,6 +190,7 @@ func (t *RuffTool) Execute(ctx context.Context, files []string, options ExecuteO
 // executeMode executes ruff in a specific mode.
 func (t *RuffTool) executeMode(ctx context.Context, files []string, options ExecuteOptions) (*Result, error) {
 	cmd := t.BuildCommand(files, options)
+	applyExecutionOptions(cmd, options)
 	result, err := t.ExecuteCommand(ctx, cmd, files)
 	if err != nil {
 		return result, err
@@ -263,6 +272,7 @@ func NewPylintTool() *PylintTool {
 	tool.SetInstallCommand([]string{"uv", "tool", "install", "pylint"})
 	tool.SetConfigPatterns([]string{".pylintrc", "pylint.cfg", "pyproject.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -358,6 +368,7 @@ func NewMypyTool() *MypyTool {
 	tool.SetInstallCommand([]string{"uv", "tool", "install", "mypy"})
 	tool.SetConfigPatterns([]string{"mypy.ini", ".mypy.ini", "pyproject.toml", "setup.cfg"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -447,6 +458,7 @@ func NewBanditTool() *BanditTool {
 	tool.SetInstallCommand([]string{"uv", "tool", "install", "bandit"})
 	tool.SetConfigPatterns([]string{".bandit", "bandit.yaml", "pyproject.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 

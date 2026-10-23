@@ -24,6 +24,7 @@ func NewTaploTool() *TaploTool {
 	tool.SetInstallCommand([]string{"cargo", "install", "taplo-cli"})
 	tool.SetConfigPatterns([]string{"taplo.toml", ".taplo.toml"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -34,6 +35,9 @@ func (t *TaploTool) BuildCommand(files []string, options ExecuteOptions) *exec.C
 	// Determine operation mode
 	if options.FormatOnly || options.Fix {
 		args = append(args, "fmt")
+		if !options.Fix {
+			args = append(args, "--check")
+		}
 	} else {
 		args = append(args, "lint")
 	}

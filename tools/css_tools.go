@@ -23,6 +23,7 @@ func NewStylelintTool() *StylelintTool {
 	tool.SetInstallCommand([]string{"npm", "install", "-g", "stylelint", "stylelint-config-standard"})
 	tool.SetConfigPatterns([]string{".stylelintrc", ".stylelintrc.json", ".stylelintrc.yml", "stylelint.config.js"})
 
+	tool.adapter = tool
 	return tool
 }
 

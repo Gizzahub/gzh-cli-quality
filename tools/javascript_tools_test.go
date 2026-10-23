@@ -43,13 +43,13 @@ func TestPrettierTool_BuildCommand(t *testing.T) {
 			name:         "basic JS files",
 			files:        []string{"main.js", "utils.js"},
 			options:      ExecuteOptions{},
-			expectedArgs: []string{"--write", "main.js", "utils.js"},
+			expectedArgs: []string{"--check", "main.js", "utils.js"},
 		},
 		{
 			name:         "TypeScript files",
 			files:        []string{"main.ts", "types.tsx"},
 			options:      ExecuteOptions{},
-			expectedArgs: []string{"--write", "main.ts", "types.tsx"},
+			expectedArgs: []string{"--check", "main.ts", "types.tsx"},
 		},
 		{
 			name:  "with config file",
@@ -57,7 +57,7 @@ func TestPrettierTool_BuildCommand(t *testing.T) {
 			options: ExecuteOptions{
 				ConfigFile: ".prettierrc",
 			},
-			expectedArgs: []string{"--write", "--config", ".prettierrc"},
+			expectedArgs: []string{"--check", "--config", ".prettierrc"},
 		},
 		{
 			name:         "filters unsupported files",

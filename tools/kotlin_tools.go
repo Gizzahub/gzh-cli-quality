@@ -24,6 +24,7 @@ func NewKtlintTool() *KtlintTool {
 	tool.SetInstallCommand([]string{"brew", "install", "ktlint"})
 	tool.SetConfigPatterns([]string{".editorconfig", ".ktlint"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -32,12 +33,12 @@ func (t *KtlintTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 	args := []string{}
 
 	// Add format flag if requested
-	if options.Fix || options.FormatOnly {
+	if options.Fix {
 		args = append(args, "-F") // Format mode
 	}
 
 	// Output format for parsing (only in lint mode)
-	if !options.Fix && !options.FormatOnly {
+	if !options.Fix {
 		args = append(args, "--reporter=json")
 	}
 
@@ -112,6 +113,7 @@ func NewDetektTool() *DetektTool {
 	tool.SetInstallCommand([]string{"brew", "install", "detekt"})
 	tool.SetConfigPatterns([]string{"detekt.yml", "detekt.yaml", ".detekt.yml", "config/detekt/detekt.yml"})
 
+	tool.adapter = tool
 	return tool
 }
 

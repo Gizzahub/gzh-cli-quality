@@ -26,12 +26,16 @@ func NewPrettierTool() *PrettierTool {
 		"prettier.config.js", "prettier.config.cjs", "package.json",
 	})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the prettier command.
 func (t *PrettierTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
-	args := []string{"--write"} // Always write changes
+	args := []string{"--check"}
+	if options.Fix {
+		args = []string{"--write"}
+	}
 
 	// Add config file if specified
 	if options.ConfigFile != "" {
@@ -80,6 +84,7 @@ func NewESLintTool() *ESLintTool {
 		"eslint.config.js", "eslint.config.mjs", "eslint.config.cjs", "package.json",
 	})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -206,6 +211,7 @@ func NewTSCTool() *TSCTool {
 	tool.SetInstallCommand([]string{"npm", "install", "-g", "typescript"})
 	tool.SetConfigPatterns([]string{"tsconfig.json", "jsconfig.json"})
 
+	tool.adapter = tool
 	return tool
 }
 

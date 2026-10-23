@@ -23,6 +23,7 @@ func NewHadolintTool() *HadolintTool {
 	tool.SetInstallCommand([]string{"brew", "install", "hadolint"})
 	tool.SetConfigPatterns([]string{".hadolint.yaml", ".hadolint.yml", "hadolint.yaml"})
 
+	tool.adapter = tool
 	return tool
 }
 

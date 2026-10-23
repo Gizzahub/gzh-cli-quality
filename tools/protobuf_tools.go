@@ -23,6 +23,7 @@ func NewBufTool() *BufTool {
 	tool.SetInstallCommand([]string{"go", "install", "github.com/bufbuild/buf/cmd/buf@latest"})
 	tool.SetConfigPatterns([]string{"buf.yaml", "buf.gen.yaml"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -32,7 +33,12 @@ func (t *BufTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd
 
 	// Determine operation mode
 	if options.FormatOnly {
-		args = append(args, "format", "-w") // Write changes
+		args = append(args, "format")
+		if options.Fix {
+			args = append(args, "-w")
+		} else {
+			args = append(args, "--diff", "--exit-code")
+		}
 	} else {
 		args = append(args, "lint", "--error-format", "json")
 	}

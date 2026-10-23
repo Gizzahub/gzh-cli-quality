@@ -24,6 +24,7 @@ func NewYamllintTool() *YamllintTool {
 	tool.SetInstallCommand([]string{"uv", "tool", "install", "yamllint"})
 	tool.SetConfigPatterns([]string{".yamllint", ".yamllint.yaml", ".yamllint.yml"})
 
+	tool.adapter = tool
 	return tool
 }
 

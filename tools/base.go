@@ -21,6 +21,10 @@ type BaseTool struct {
 	executable     string
 	installCmd     []string
 	configPatterns []string
+	adapter        interface {
+		BuildCommand([]string, ExecuteOptions) *exec.Cmd
+		ParseOutput(string) []Issue
+	}
 }
 
 // NewBaseTool creates a new base tool.
@@ -137,7 +141,17 @@ func (t *BaseTool) ExecuteCommand(ctx context.Context, cmd *exec.Cmd, files []st
 		Issues:   []Issue{},
 	}
 
-	output, err := cmd.CombinedOutput()
+	// Rebuild with the caller's context while preserving command execution options.
+	contextCmd := exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+	contextCmd.Args = cmd.Args
+	contextCmd.Dir, contextCmd.Env, contextCmd.Stdin = cmd.Dir, cmd.Env, cmd.Stdin
+	contextCmd.Stdout, contextCmd.Stderr = cmd.Stdout, cmd.Stderr
+	contextCmd.ExtraFiles, contextCmd.SysProcAttr = cmd.ExtraFiles, cmd.SysProcAttr
+	contextCmd.WaitDelay = time.Second
+	output, err := contextCmd.CombinedOutput()
+	if ctx.Err() != nil {
+		err = ctx.Err()
+	}
 	duration := time.Since(startTime)
 	result.Duration = duration
 	result.Output = string(output)
@@ -197,15 +211,31 @@ func (t *BaseTool) Execute(ctx context.Context, files []string, options ExecuteO
 		}, nil
 	}
 
-	cmd := t.BuildCommand(files, options)
+	adapter := t.adapter
+	if adapter == nil {
+		adapter = t
+	}
+	cmd := adapter.BuildCommand(files, options)
+	applyExecutionOptions(cmd, options)
 	result, err := t.ExecuteCommand(ctx, cmd, files)
 	if err != nil {
 		return result, err
 	}
 
-	// Parse output for issues if the tool failed
-	if !result.Success {
-		result.Issues = t.ParseOutput(result.Output)
+	// Successful tools may also report warnings or findings.
+	if result.Output != "" {
+		result.Issues = adapter.ParseOutput(result.Output)
+	}
+
+	// These formatters report differences on stdout without a failing exit code.
+	// Their check modes emit only filenames or diffs, so any output means the
+	// requested formatting check did not pass.
+	if result.Success && !options.Fix && strings.TrimSpace(result.Output) != "" {
+		switch t.name {
+		case "gofumpt", "goimports", "gci", "golines", "shfmt":
+			result.Success = false
+			result.Error = "formatting changes required"
+		}
 	}
 
 	return result, nil
@@ -228,4 +258,17 @@ func FilterFilesByExtensions(files, extensions []string) []string {
 	}
 
 	return filtered
+}
+
+// applyExecutionOptions keeps adapter execution consistent with BaseTool execution.
+func applyExecutionOptions(cmd *exec.Cmd, options ExecuteOptions) {
+	if options.ProjectRoot != "" {
+		cmd.Dir = options.ProjectRoot
+	}
+	if len(options.Env) > 0 {
+		cmd.Env = cmd.Environ()
+		for key, value := range options.Env {
+			cmd.Env = append(cmd.Env, key+"="+value)
+		}
+	}
 }

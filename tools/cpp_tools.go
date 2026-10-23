@@ -24,12 +24,16 @@ func NewClangFormatTool() *ClangFormatTool {
 	tool.SetInstallCommand([]string{"pacman", "-S", "--noconfirm", "clang"})
 	tool.SetConfigPatterns([]string{".clang-format", "_clang-format"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the clang-format command.
 func (t *ClangFormatTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
-	args := []string{"-i"} // In-place formatting
+	args := []string{"--dry-run", "--Werror"}
+	if options.Fix {
+		args = []string{"-i"}
+	}
 
 	// Add style if config not found
 	if options.ConfigFile != "" {
@@ -68,6 +72,7 @@ func NewClangTidyTool() *ClangTidyTool {
 	tool.SetInstallCommand([]string{"pacman", "-S", "--noconfirm", "clang"})
 	tool.SetConfigPatterns([]string{".clang-tidy"})
 
+	tool.adapter = tool
 	return tool
 }
 

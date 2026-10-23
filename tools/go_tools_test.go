@@ -45,7 +45,7 @@ func TestGofumptTool_BuildCommand(t *testing.T) {
 			options: ExecuteOptions{
 				ProjectRoot: "/test/project",
 			},
-			expectedArgs: []string{"-w", "main.go", "utils.go"},
+			expectedArgs: []string{"-l", "main.go", "utils.go"},
 		},
 		{
 			name:  "with extra args",
@@ -53,13 +53,13 @@ func TestGofumptTool_BuildCommand(t *testing.T) {
 			options: ExecuteOptions{
 				ExtraArgs: []string{"-l", "-s"},
 			},
-			expectedArgs: []string{"-w", "-l", "-s", "main.go"},
+			expectedArgs: []string{"-l", "-l", "-s", "main.go"},
 		},
 		{
 			name:         "filters non-Go files",
 			files:        []string{"main.go", "test.py", "README.md"},
 			options:      ExecuteOptions{},
-			expectedArgs: []string{"-w", "main.go"},
+			expectedArgs: []string{"-l", "main.go"},
 		},
 	}
 
@@ -100,13 +100,13 @@ func TestGoimportsTool_BuildCommand(t *testing.T) {
 			name:         "basic Go files",
 			files:        []string{"main.go"},
 			options:      ExecuteOptions{},
-			expectedArgs: []string{"-w", "main.go"},
+			expectedArgs: []string{"-l", "main.go"},
 		},
 		{
 			name:         "filters non-Go files",
 			files:        []string{"main.go", "test.js", "config.yml"},
 			options:      ExecuteOptions{},
-			expectedArgs: []string{"-w", "main.go"},
+			expectedArgs: []string{"-l", "main.go"},
 		},
 		{
 			name:  "with extra args",
@@ -114,7 +114,7 @@ func TestGoimportsTool_BuildCommand(t *testing.T) {
 			options: ExecuteOptions{
 				ExtraArgs: []string{"-v"},
 			},
-			expectedArgs: []string{"-w", "-v", "main.go"},
+			expectedArgs: []string{"-l", "-v", "main.go"},
 		},
 	}
 
@@ -203,8 +203,9 @@ func TestGolangciLintTool_BuildCommand(t *testing.T) {
 			cmdArgs := cmd.Args[1:]
 
 			assert.Contains(t, cmdArgs, "run")
-			assert.Contains(t, cmdArgs, "--out-format")
-			assert.Contains(t, cmdArgs, "json")
+			assert.Contains(t, cmdArgs, "--output.json.path")
+			assert.Contains(t, cmdArgs, "stdout")
+			assert.Contains(t, cmdArgs, "--show-stats=false")
 
 			if tt.checkFix {
 				assert.Contains(t, cmdArgs, "--fix")

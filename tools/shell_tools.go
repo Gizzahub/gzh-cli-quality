@@ -23,6 +23,7 @@ func NewShellcheckTool() *ShellcheckTool {
 	tool.SetInstallCommand([]string{"pacman", "-S", "--noconfirm", "shellcheck"})
 	tool.SetConfigPatterns([]string{".shellcheckrc"})
 
+	tool.adapter = tool
 	return tool
 }
 
@@ -122,12 +123,16 @@ func NewShfmtTool() *ShfmtTool {
 	tool.SetInstallCommand([]string{"go", "install", "mvdan.cc/sh/v3/cmd/shfmt@latest"})
 	tool.SetConfigPatterns([]string{".editorconfig"})
 
+	tool.adapter = tool
 	return tool
 }
 
 // BuildCommand builds the shfmt command.
 func (t *ShfmtTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd {
-	args := []string{"-w"} // Write changes
+	args := []string{"-d"}
+	if options.Fix {
+		args = []string{"-w"}
+	}
 
 	// Add indent settings
 	args = append(args, "-i", "2") // 2 space indent
