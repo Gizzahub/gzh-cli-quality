@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Gizzahub/gzh-cli-quality/executor"
 	"github.com/Gizzahub/gzh-cli-quality/tools"
 	"github.com/stretchr/testify/require"
 )
@@ -16,10 +17,24 @@ type releaseTool struct {
 	mockTool
 	result *tools.Result
 	err    error
+	calls  int
 }
 
 func (m *releaseTool) Execute(context.Context, []string, tools.ExecuteOptions) (*tools.Result, error) {
+	m.calls++
 	return m.result, m.err
+}
+
+// Keep the real planner/executor while making its analysis independent of
+// installed tools, user configuration and detector recommendation heuristics.
+type releaseAnalyzer struct{ tool tools.QualityTool }
+
+func (a releaseAnalyzer) AnalyzeProject(root string, _ tools.ToolRegistry) (*executor.AnalysisResult, error) {
+	return &executor.AnalysisResult{ProjectRoot: root, Languages: map[string][]string{"Go": {"sample.go"}}}, nil
+}
+
+func (a releaseAnalyzer) GetOptimalToolSelection(*executor.AnalysisResult, tools.ToolRegistry) map[string][]tools.QualityTool {
+	return map[string][]tools.QualityTool{"Go": {a.tool}}
 }
 
 func captureReleaseOutput(t *testing.T, action func()) string {
@@ -40,24 +55,27 @@ func captureReleaseOutput(t *testing.T, action func()) string {
 func TestReleaseExecutionFailureAndReport(t *testing.T) {
 	t.Chdir(t.TempDir())
 	require.NoError(t, os.WriteFile("sample.go", []byte("package sample\n"), 0o600))
-	manager := NewQualityManager()
-	defer func() {
-		if manager.cacheManager != nil {
-			require.NoError(t, manager.cacheManager.Close())
-		}
-	}()
-	manager.registry = tools.NewRegistry()
-	manager.registry.Register(&releaseTool{
+	tool := &releaseTool{
 		mockTool: mockTool{name: "golangci-lint", language: "Go", toolType: tools.LINT},
 		result:   &tools.Result{Tool: "golangci-lint", Language: "Go", Error: "exit status 2", FilesProcessed: 1},
-	})
+	}
+	manager := &QualityManager{
+		registry: tools.NewRegistry(),
+		planner:  executor.NewExecutionPlanner(releaseAnalyzer{tool: tool}),
+		executor: executor.NewParallelExecutor(1, time.Minute),
+	}
+	manager.registry.Register(tool)
 	output := captureReleaseOutput(t, func() {
 		cmd := manager.newRunCmd()
 		cmd.SetArgs([]string{"--no-cache", "--report=json", "--output=report.json"})
 		require.ErrorContains(t, cmd.Execute(), "golangci-lint failed")
 	})
 	require.Contains(t, output, "0/1")
+	require.Equal(t, 1, tool.calls, "the failing tool must actually execute")
 	require.FileExists(t, "report.json")
+	report, err := os.ReadFile("report.json")
+	require.NoError(t, err)
+	require.Contains(t, string(report), "exit status 2")
 	require.NoError(t, executionResultError([]*tools.Result{{Success: true}}))
 	require.ErrorContains(t, executionResultError([]*tools.Result{nil}), "no execution result")
 }

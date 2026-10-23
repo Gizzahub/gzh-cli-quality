@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -21,10 +22,27 @@ func adapterTools() []commandTool {
 	return []commandTool{NewGofumptTool(), NewGoimportsTool(), NewGolangciLintTool(), NewGosecTool(), NewGovulncheckTool(), NewGciTool(), NewGolinesTool(), NewBlackTool(), NewRuffTool(), NewPylintTool(), NewMypyTool(), NewBanditTool(), NewRustfmtTool(), NewClippyTool(), NewCargoFmtTool(), NewPrettierTool(), NewESLintTool(), NewTSCTool(), NewClangFormatTool(), NewClangTidyTool(), NewGoogleJavaFormatTool(), NewCheckstyleTool(), NewSpotbugsTool(), NewKtlintTool(), NewDetektTool(), NewStylelintTool(), NewHadolintTool(), NewMarkdownlintTool(), NewBufTool(), NewShellcheckTool(), NewShfmtTool(), NewSqlfluffTool(), NewTaploTool(), NewYamllintTool()}
 }
 
-func fakeExecutable(t *testing.T, dir, name, script string) string {
+// Build a real native executable so adapter subprocesses also run on Windows.
+// Keep its behavior in a sidecar so changing a fixture never depends on a shell.
+func fakeExecutable(t *testing.T, dir, name, mode string) string {
 	t.Helper()
+	suffix := ""
+	if runtime.GOOS == "windows" {
+		suffix = ".exe"
+	}
+	helper := filepath.Join(dir, "adapter-fixture"+suffix)
+	if _, err := os.Stat(helper); os.IsNotExist(err) {
+		output, err := exec.Command("go", "build", "-o", helper, "./testdata/fake-tool").CombinedOutput()
+		require.NoError(t, err, "build native fixture: %s", output)
+	}
+	name += suffix
 	path := filepath.Join(dir, name)
-	require.NoError(t, os.WriteFile(path, []byte("#!/bin/sh\n"+script+"\n"), 0o755))
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		data, err := os.ReadFile(helper)
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(path, data, 0o755))
+	}
+	require.NoError(t, os.WriteFile(path+".mode", []byte(mode), 0o600))
 	return path
 }
 
@@ -36,10 +54,7 @@ func TestAdapterExecutionDispatch(t *testing.T) {
 	for _, tool := range adapterTools() {
 		t.Run(tool.Name(), func(t *testing.T) {
 			name := filepath.Base(tool.BuildCommand(nil, ExecuteOptions{}).Args[0])
-			fakeExecutable(t, dir, name, `{
-printf 'cwd=%s\nenv=%s\n' "$PWD" "$QUALITY_TEST_VALUE"
-printf 'arg=%s\n' "$@"
-} > "$QUALITY_TEST_LOG"`)
+			fakeExecutable(t, dir, name, "observe")
 			files := []string{"source.go", "source.py", "source.rs", "source.js", "source.ts", "source.cpp", "source.java", "source.kt", "source.css", "Dockerfile", "source.md", "source.proto", "source.sh", "source.sql", "source.toml", "source.yaml"}
 			for _, options := range []ExecuteOptions{{}, {Fix: true, ConfigFile: "custom.conf", ExtraArgs: []string{"--test-extra"}}, {FormatOnly: true}, {LintOnly: true}} {
 				options.ProjectRoot = dir
@@ -100,25 +115,14 @@ func TestAdapterParsers(t *testing.T) {
 func TestFormatterCheckPreservesFiles(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
-	// The fake implements only the adapters' explicit mutation flags. This detects
-	// accidental write flags in check mode without installing external formatters.
-	script := `write=false
-name=${0##*/}
-case "$name" in black|rustfmt|cargo|ruff|taplo) write=true;; esac
-for arg in "$@"; do
- case "$arg" in
- --check|--dry-run|--diff|--exit-code) write=false;;
- -w|--write|-F|write|fix) write=true;;
- -i) if [ "$name" != shfmt ]; then write=true; fi;;
- esac
-done
-if $write; then printf 'formatted\n' > "$QUALITY_TEST_FILE"; fi`
+	// The native fixture implements the adapters' explicit mutation flags and
+	// write-by-default commands without installing external formatters.
 	for _, tool := range adapterTools() {
 		if tool.Type() == LINT {
 			continue
 		}
 		t.Run(tool.Name(), func(t *testing.T) {
-			fakeExecutable(t, dir, filepath.Base(tool.BuildCommand(nil, ExecuteOptions{}).Args[0]), script)
+			fakeExecutable(t, dir, filepath.Base(tool.BuildCommand(nil, ExecuteOptions{}).Args[0]), "format")
 			file := filepath.Join(dir, "input.txt")
 			original := []byte("original bytes\n")
 			require.NoError(t, os.WriteFile(file, original, 0o644))
@@ -144,12 +148,12 @@ if $write; then printf 'formatted\n' > "$QUALITY_TEST_FILE"; fi`
 func TestExecutionCancellationAndFailures(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
-	fakeExecutable(t, dir, "yamllint", `printf 'a.yaml:2:3: [error] bad value (syntax)\n'; exit 1`)
+	fakeExecutable(t, dir, "yamllint", "diagnostic")
 	result, err := NewYamllintTool().Execute(context.Background(), []string{"a.yaml"}, ExecuteOptions{})
 	require.NoError(t, err)
 	require.False(t, result.Success)
 	require.Len(t, result.Issues, 1)
-	fakeExecutable(t, dir, "yamllint", `exec sleep 10`)
+	fakeExecutable(t, dir, "yamllint", "sleep")
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
 	defer cancel()
 	result, err = NewYamllintTool().Execute(ctx, nil, ExecuteOptions{})
@@ -170,12 +174,12 @@ func TestFormatterDifferencesFailCheck(t *testing.T) {
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 	for _, tool := range []commandTool{NewGofumptTool(), NewGoimportsTool(), NewGciTool(), NewGolinesTool(), NewShfmtTool()} {
 		t.Run(tool.Name(), func(t *testing.T) {
-			fakeExecutable(t, dir, tool.Name(), `printf 'input.go\n'`)
+			fakeExecutable(t, dir, tool.Name(), "difference")
 			result, err := tool.Execute(context.Background(), nil, ExecuteOptions{})
 			require.NoError(t, err)
 			require.False(t, result.Success)
 			require.Equal(t, "formatting changes required", result.Error)
-			fakeExecutable(t, dir, tool.Name(), `exit 0`)
+			fakeExecutable(t, dir, tool.Name(), "clean")
 			result, err = tool.Execute(context.Background(), nil, ExecuteOptions{})
 			require.NoError(t, err)
 			require.True(t, result.Success, result.Error)
