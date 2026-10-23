@@ -37,7 +37,11 @@ jobs:
           args: --timeout 5m
 
   test:
-    name: Test
+    # The master ruleset requires these checks by name. GitHub appends every
+    # matrix value to a job name that references none, so `Test` reported as
+    # `Test (<os>, <go>)` and each Go patch bump renamed the required check.
+    # If you add a matrix axis, put it in this name too, or legs will collide.
+    name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       # Without this, the first OS leg to fail cancels the other two. Across the
