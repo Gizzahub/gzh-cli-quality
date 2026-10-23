@@ -70,6 +70,7 @@ MDFORMAT := $(CURDIR)/bin/tools/mdformat$(shell $(GO) env GOEXE)
 MDFORMAT_TOOL_DIR := $(CURDIR)/bin/tools/python
 MDFORMAT_PYTHON := $(MDFORMAT_TOOL_DIR)/mdformat/$(if $(shell $(GO) env GOEXE),Scripts/python.exe,bin/python)
 MDFORMAT_CONSTRAINTS := $(CURDIR)/.make/mdformat-constraints.txt
+MDFORMAT_PYTHON_OK = "$(MDFORMAT_PYTHON)" -I -c 'import sys; sys.exit(sys.version_info < (3, 11))'
 # --version 출력을 awk에 그대로 파이프하지 않고 변수에 담는다: producer가 죽으면
 # && 체인이 awk 이전에 멈추므로 파싱 실패가 producer 실패를 가리지 않는다.
 MDFORMAT_VERSION_OK = { mdformat_version_output=$$("$(MDFORMAT)" --version 2>/dev/null) && printf '%s\n' "$$mdformat_version_output" | \
@@ -79,14 +80,15 @@ MDFORMAT_DEPS_OK = "$(MDFORMAT_PYTHON)" -I -c 'import sys, importlib.metadata as
 
 install-mdformat: ## install the pinned Markdown bundle into bin/tools
 	@mkdir -p "$(dir $(MDFORMAT))"
-	@if ! { $(MDFORMAT_VERSION_OK) && $(MDFORMAT_DEPS_OK) 2>/dev/null; }; then \
+	@if ! { $(MDFORMAT_PYTHON_OK) && $(MDFORMAT_VERSION_OK) && $(MDFORMAT_DEPS_OK); } 2>/dev/null; then \
 		command -v uv >/dev/null 2>&1 || { echo "uv is required to install mdformat" >&2; exit 1; }; \
-		UV_TOOL_DIR="$(MDFORMAT_TOOL_DIR)" UV_TOOL_BIN_DIR="$(dir $(MDFORMAT))" \
+		UV_PYTHON="$${UV_PYTHON->=3.11}" UV_TOOL_DIR="$(MDFORMAT_TOOL_DIR)" UV_TOOL_BIN_DIR="$(dir $(MDFORMAT))" \
 			uv tool install --quiet --force --constraints "$(MDFORMAT_CONSTRAINTS)" \
 				--with "mdformat-gfm==$(MDFORMAT_GFM_VERSION)" \
 				--with "mdformat-frontmatter==$(MDFORMAT_FRONTMATTER_VERSION)" \
 				"mdformat==$(MDFORMAT_VERSION)" || exit 1; \
 	fi
+	@$(MDFORMAT_PYTHON_OK) || { echo "mdformat requires Python >=3.11 at $(MDFORMAT_PYTHON)" >&2; exit 1; }
 	@$(MDFORMAT_VERSION_OK) || { echo "mdformat version/plugin set mismatch: $(MDFORMAT)" >&2; exit 1; }
 	@$(MDFORMAT_DEPS_OK) || { echo "mdformat dependencies do not match $(MDFORMAT_CONSTRAINTS)" >&2; exit 1; }
 
