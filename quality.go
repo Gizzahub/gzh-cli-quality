@@ -5,6 +5,7 @@ package quality
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -320,18 +321,18 @@ func (m *QualityManager) executeQuality(ctx context.Context, opts *executionOpti
 
 	if err != nil {
 		fmt.Printf("❌ 실행 중 오류 발생: %v\n", err)
-		return err
 	}
 
 	m.displayResults(results, duration, opts.verbose)
+	executionErr := errors.Join(err, executionResultError(results))
 
 	if opts.reportFormat != "" {
 		if err := m.generateReport(results, duration, plan.TotalFiles, projectRoot, opts.reportFormat, opts.outputPath); err != nil {
-			fmt.Printf("⚠️ 리포트 생성 실패: %v\n", err)
+			return errors.Join(executionErr, fmt.Errorf("generate %s report: %w", opts.reportFormat, err))
 		}
 	}
 
-	return executionResultError(results)
+	return executionErr
 }
 
 // executionResultError keeps tool failures visible to CLI callers and CI.

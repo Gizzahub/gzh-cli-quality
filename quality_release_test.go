@@ -2,6 +2,7 @@ package quality
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -78,6 +79,73 @@ func TestReleaseExecutionFailureAndReport(t *testing.T) {
 	require.Contains(t, string(report), "exit status 2")
 	require.NoError(t, executionResultError([]*tools.Result{{Success: true}}))
 	require.ErrorContains(t, executionResultError([]*tools.Result{nil}), "no execution result")
+}
+
+func TestRequestedReportFailureRemainsVisible(t *testing.T) {
+	executorFailure := errors.New("tool execution failed")
+	for _, tc := range []struct {
+		name, format, output string
+		toolFails            bool
+		executionError       error
+		wantReportError      string
+	}{
+		{name: "success", format: "json", output: "report.json"},
+		{name: "destination is directory", format: "json", output: ".", wantReportError: "generate json report"},
+		{name: "parent is file", format: "json", output: "blocked/report.json", wantReportError: "failed to create output directory"},
+		{name: "invalid format", format: "invalid", output: "report.invalid", wantReportError: "unsupported report format"},
+		{name: "tool and report fail", format: "invalid", output: "report.invalid", toolFails: true, wantReportError: "unsupported report format"},
+		{name: "executor and report fail", format: "invalid", output: "report.invalid", toolFails: true, executionError: executorFailure, wantReportError: "unsupported report format"},
+		{name: "tool fails report succeeds", format: "json", output: "report.json", toolFails: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Chdir(t.TempDir())
+			require.NoError(t, os.WriteFile("sample.go", []byte("package sample\n"), 0o600))
+			require.NoError(t, os.WriteFile("blocked", []byte("not a directory"), 0o600))
+			tool := &releaseTool{
+				mockTool: mockTool{name: "controlled", language: "Go", toolType: tools.LINT},
+				result:   &tools.Result{Tool: "controlled", Language: "Go", Success: !tc.toolFails, FilesProcessed: 1},
+				err:      tc.executionError,
+			}
+			if tc.toolFails {
+				tool.result.Error = "exit status 2"
+			}
+			manager := &QualityManager{
+				registry: tools.NewRegistry(),
+				planner:  executor.NewExecutionPlanner(releaseAnalyzer{tool: tool}),
+				executor: executor.NewParallelExecutor(1, time.Minute),
+			}
+			var commandError error
+			output := captureReleaseOutput(t, func() {
+				cmd := manager.newRunCmd()
+				cmd.SetArgs([]string{"--no-cache", "--report=" + tc.format, "--output=" + tc.output})
+				commandError = cmd.Execute()
+			})
+			require.Equal(t, 1, tool.calls)
+			if tc.toolFails {
+				require.ErrorContains(t, commandError, "tool controlled failed: exit status 2")
+				require.Contains(t, output, "0/1")
+			} else {
+				require.Contains(t, output, "1/1")
+			}
+			if tc.wantReportError != "" {
+				require.ErrorContains(t, commandError, tc.wantReportError)
+				if tc.format == "json" {
+					var pathError *os.PathError
+					require.ErrorAs(t, commandError, &pathError, "wrapping must preserve the filesystem cause")
+				}
+			} else {
+				report, err := os.ReadFile(tc.output)
+				require.NoError(t, err)
+				require.Contains(t, string(report), "controlled")
+				if !tc.toolFails {
+					require.NoError(t, commandError)
+				}
+			}
+			if tc.executionError != nil {
+				require.ErrorIs(t, commandError, tc.executionError)
+			}
+		})
+	}
 }
 
 func TestReleaseSummaryAndCacheCommands(t *testing.T) {

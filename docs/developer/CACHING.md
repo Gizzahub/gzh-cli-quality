@@ -2,6 +2,38 @@
 
 Design document for implementing a file-based caching system to improve gz-quality performance by avoiding redundant tool executions.
 
+## 현재 구현 계약 — 2026-10-24
+
+아래 설계 예시의 시간·속도 향상은 측정 결과가 아니다. 실제 설치된 gofumpt로
+측정한 cold miss / warm hit / 비캐시 비교는 [BENCHMARKS.md](BENCHMARKS.md)의
+2026-10-24 기록을 따른다. 이 workload에서 60배 목표를 충족하지 못했다.
+
+- 도구 버전은 파일마다 subprocess를 호출하지 않고 **한 task 안에서 한 번**
+  조회한다. 다음 task/실행에서는 다시 조회하므로 도구 업그레이드를 숨기지 않는다.
+  버전 조회 오류나 빈 값/`unknown`이면 캐시를 읽거나 쓰지 않고 도구를 실행한다.
+- `CacheKey`의 공개 필드는 유지한다. `String()`은 `ValidateKey`를 통과한 UTF-8
+  identity 전체 필드의 JSON을 SHA-256으로
+  해시한 64자리 소문자 hex인 **불투명 storage 식별자**다. 파일 절대 경로와 전체
+  content/config/options hash가 포함되며, 기존 8자리 hash 접두사 충돌이나
+  동일 content의 다른 파일 진단 재사용을 막는다. 식별자의 문자열 형식을 파싱하지 않는다.
+- 기존 접두사 기반 이름의 캐시는 새 이름에서 miss로 취급한다. 충돌 가능한
+  legacy fallback을 읽거나 migration을 이유로 기존 파일을 삭제하지 않는다.
+  사용자가 요청한 cache-clear와 기존 크기/수명 cleanup 정책은 그대로다.
+- 상대 파일 경로는 실행의 `ProjectRoot`를 기준으로 해석한다. options hash는
+  작업 디렉터리·명시한 config 경로·fix/format/lint mode·**순서가 있는 argv**·
+  명시적 `Env`를 JSON으로 구분하여 저장한다. 환경 map의 key 순서는 의미가 없다.
+- 기본 config 탐색 결과에 더해 명시한 `ConfigFile`의 실제 content도 검사한다.
+  명시한 config를 읽지 못하면 캐시를 사용하지 않는다.
+- JSON이 서로 다른 잘못된 UTF-8 bytes를 같은 replacement character로 바꾸므로,
+  identity 필드나 options(argv/Env/root/config 경로)에 잘못된 UTF-8이 있으면
+  캐시를 우회한다. 도구의 실제 입력을 정규화하거나 실행을 거부하지 않는다.
+
+캐시의 task별 probe와 파일별 진단·content/config/version/options 변경은 회귀
+테스트로 확인한다. 다만 현재 키는 파일 단위이며 다른 소스 파일, package dependency,
+탐색 목록 밖의 상위/사용자 설정이나 암묵적으로 상속한 환경 전체를 추적하지 않는다.
+따라서 이 파일 formatter 측정을 package 전체를 분석하는 linter의 정확성·성능
+보증으로 일반화하지 않는다. package 단위 cache 설계 변경은 이번 수정에 포함하지 않는다.
+
 ## Table of Contents
 
 - [Goals and Motivation](#goals-and-motivation)

@@ -200,6 +200,10 @@ func (e *ParallelExecutor) executeWithCache(ctx context.Context, task tools.Task
 	if len(task.Files) == 0 {
 		return task.Tool.Execute(ctx, task.Files, task.Options)
 	}
+	// Version discovery can spawn a subprocess. Snapshot it once for this task,
+	// never across executions, so upgrades still invalidate the next lookup.
+	version, versionErr := task.Tool.GetVersion()
+	task.Tool = &cacheVersionTool{QualityTool: task.Tool, version: version, err: versionErr}
 
 	// For single file, try direct cache lookup
 	if len(task.Files) == 1 {
@@ -209,6 +213,14 @@ func (e *ParallelExecutor) executeWithCache(ctx context.Context, task tools.Task
 	// For multiple files, process each file individually for better cache granularity
 	return e.executeMultiFileWithCache(ctx, task)
 }
+
+type cacheVersionTool struct {
+	tools.QualityTool
+	version string
+	err     error
+}
+
+func (t *cacheVersionTool) GetVersion() (string, error) { return t.version, t.err }
 
 // executeSingleFileWithCache executes a tool on a single file with cache support.
 func (e *ParallelExecutor) executeSingleFileWithCache(ctx context.Context, tool tools.QualityTool, filePath string, options tools.ExecuteOptions) (*tools.Result, error) {

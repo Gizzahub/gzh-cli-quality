@@ -4,6 +4,70 @@
 
 This document contains baseline performance benchmarks for the gzh-cli-quality project. Benchmarks measure the performance of critical operations across tools, detector, and executor packages.
 
+## 실제 formatter 캐시 측정 — 2026-10-24
+
+이 절이 현재 관측이며, 아래 2025년 수치는 당시 기록으로 유지한다. PRODUCT의
+캐시 60배 목표를 낮추거나 no-op mock benchmark로 충족했다고 판정하지 않는다.
+
+측정 기간은 2026-10-23~24, 환경은 Apple M5 Max / darwin arm64 / Go 1.27.3이다.
+기존 `$(go env GOPATH)/bin/gofumpt` v0.10.0 (go1.26.3)을 사용했고 새 formatter는
+설치하지 않았다. workload는 source `d7cf583210f2174d2c58746f6c939277546a5bbe`의
+tracked production Go 파일 35개, 224,789 bytes를 임시 디렉터리에 복사한 것이다.
+테스트·testdata는 이 **benchmark 입력**에서 제외하며 제품 테스트 커버리지의
+package/파일 선택이나 하한은 변경하지 않는다. 경로와 content를 차례로 결합한
+workload SHA-256은 `ec3ce86dbe97d934fe390f18379ba672378cfb791c0049c8dd06f579d7be8435`다.
+
+`BenchmarkCache_InstalledGofumpt`는 고정 ExecutionPlan과 실제 adapter / executor /
+disk cache를 사용한다. 각 반복의 도구 결과·처리 파일 수·Cached 여부를 검증하고 실제 실행·
+버전 조회 호출 수를 출력한다. check만 실행하며 workload bytes를 수정하지 않는다.
+ColdMiss는 **애플리케이션 캐시만** 비우고 그 삭제 시간은 측정에서 제외한다.
+WarmHit는 사전 한 번 실제 도구를 실행한 뒤 전부 적중하는 상태다. OS page cache를
+강제로 비우지 않았으며, 도구 설치·Go 빌드·workload 복사는 시간에 포함하지 않는다.
+
+`-benchtime=300ms -count=3`, task 1개 / worker 1개 결과이며 시간 단위는 ms/op다.
+수정 후 계열은 version snapshot과 cache identity 수정 후, 후속 invalid UTF-8
+cache 우회 방어를 추가하기 전 candidate를 측정했다. 최종 UTF-8 방어 코드는
+이 3회 성능 계열에서 다시 측정하지 않았다.
+
+| 경로     | 수정 전 3회                 | 수정 후 3회                 | 실제 tool 실행 / version 조회 (수정 전 → 후) |
+| -------- | --------------------------- | --------------------------- | -------------------------------------------- |
+| NoCache  | 22.116 / 33.900 / 24.373    | 20.759 / 19.031 / 20.539    | 1 / 0 → 1 / 0                                |
+| ColdMiss | 711.141 / 737.657 / 787.728 | 122.061 / 134.127 / 155.195 | 1 / 70 → 1 / 1                               |
+| WarmHit  | 507.485 / 442.358 / 311.095 | 30.199 / 30.094 / 28.793    | 0 / 35 → 0 / 1                               |
+
+확인된 병목은 파일마다 버전을 조회하고 miss 저장 때 또 조회한 subprocess였다.
+버전은 task 안에서만 재사용하고 다음 실행에서는 새로 조회하도록 수정했다.
+동시에 경로·전체 hash·argv 순서·명시적 config와 환경이 다른 결과를 재사용하지
+않도록 cache identity를 고쳤다. 버전 조회 단독 component는 6.749 / 7.412 /
+7.154ms/op여서 수정 후에도 한 번의 probe 비용이 크다. `CacheMetadataReads` component는
+실제 formatter 결과를 캐시에 채운 뒤 35개 `Get`만 측정하여 28.932 / 34.848 /
+26.875ms/op를 관측했다. `Get`은 적중마다 access metadata를 동기적으로 다시 쓰므로
+파일 read/JSON 처리/write 비용이 남는다. CPU profile에도 syscall 경로가 보이지만
+setup도 포함하므로 wall time 비율로 해석하지 않는다.
+안전한 버전 변경 감지를 없애거나 metadata 정책을 임의로 바꾸지는 않았다.
+
+최종 수정 후 중앙값은 비캐시 20.539ms, warm hit 30.094ms로 캐시가 더 느리다.
+앞선 수정 후 계열은 비캐시 15.120 / 20.905 / 18.253ms, cold miss 76.397 /
+54.751 / 54.868ms, warm hit 10.174 / 10.708 / 10.816ms로 중앙값 약 1.70배였다.
+동일 입력의 계열 간 차이 원인을 분리 측정하지 않았으므로 어느 계열도 보편적인
+개선 배율로 주장하지 않는다. **60배는 두 계열 모두 미충족**이며 캐시 효과도 일관되지 않았다.
+더 비싼 도구·더 큰 입력을 골라 목표를 달성한 것처럼 일반화하지 않는다.
+이 측정은 파일 formatter workload이며 package 전체를 분석하는 linter에는 일반화하지 않는다.
+
+재현에는 이미 설치된 gofumpt와 Git source revision이 필요하다. 저장소 root에서
+`QUALITY_BENCH_GOFUMPT`를 PATH가 해석하는 실제 gofumpt 절대 경로로,
+`QUALITY_BENCH_SOURCE_REF`를 위 SHA로 지정하고 다음 benchmark를 실행한다.
+도구가 설치되지 않았으면 이 opt-in benchmark는 설치하지 않고 그 이유를 알린다.
+
+```bash
+go test ./executor -run '^$' -bench '^BenchmarkCache_InstalledGofumpt$' -benchtime=300ms -count=3
+```
+
+`VersionProbe`와 `CacheMetadataReads`는 별도 component 진단이며 제품 처리량 결과가 아니다. 각 실행의
+tool version / source revision / 파일 수 / bytes / workload hash는 `-v`로 확인한다.
+명시적 config, content, 버전, 작업 디렉터리, argv, Env 변경과 cached 진단 경로는
+일반 회귀 테스트로 검증하며 benchmark를 정확성 검사의 대용으로 쓰지 않는다.
+
 ## Test Environment
 
 - **CPU**: Apple M1 Ultra (20 cores)

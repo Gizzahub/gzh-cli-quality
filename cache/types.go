@@ -5,6 +5,9 @@
 package cache
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"time"
 
 	"github.com/Gizzahub/gzh-cli-quality/tools"
@@ -33,24 +36,12 @@ type CacheKey struct {
 }
 
 // String returns a string representation of the cache key.
-// Format: {tool}-{version}-{file_hash[:8]}-{config_hash[:8]}-{options_hash[:8]}.
+// The storage name hashes the full identity, including the source path, without
+// embedding filesystem-unsafe tool version strings or truncating content hashes.
 func (ck CacheKey) String() string {
-	fileHashShort := ck.FileHash
-	if len(fileHashShort) > 8 {
-		fileHashShort = fileHashShort[:8]
-	}
-
-	configHashShort := ck.ConfigHash
-	if len(configHashShort) > 8 {
-		configHashShort = configHashShort[:8]
-	}
-
-	optionsHashShort := ck.OptionsHash
-	if len(optionsHashShort) > 8 {
-		optionsHashShort = optionsHashShort[:8]
-	}
-
-	return ck.ToolName + "-" + ck.ToolVersion + "-" + fileHashShort + "-" + configHashShort + "-" + optionsHashShort
+	data, _ := json.Marshal(ck) // CacheKey contains only strings.
+	hash := sha256.Sum256(data)
+	return hex.EncodeToString(hash[:])
 }
 
 // CachedResult represents a cached tool execution result.

@@ -6,17 +6,34 @@ package cache
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
+	"unicode/utf8"
 
 	"github.com/Gizzahub/gzh-cli-quality/tools"
 )
 
 // GenerateKey generates a cache key for a file and tool combination.
 func GenerateKey(filePath string, tool tools.QualityTool, options tools.ExecuteOptions) (CacheKey, error) {
+	// JSON storage normalizes invalid UTF-8. Bypass caching rather than merge
+	// distinct argv/environment bytes or change a tool's actual inputs.
+	values := make([]string, 0, 2+len(options.ExtraArgs)+2*len(options.Env))
+	values = append(values, options.ProjectRoot, options.ConfigFile)
+	values = append(values, options.ExtraArgs...)
+	for key, value := range options.Env {
+		values = append(values, key, value)
+	}
+	for _, value := range values {
+		if !utf8.ValidString(value) {
+			return CacheKey{}, fmt.Errorf("cache options contain invalid UTF-8")
+		}
+	}
+	if !filepath.IsAbs(filePath) && options.ProjectRoot != "" {
+		filePath = filepath.Join(options.ProjectRoot, filePath)
+	}
 	// 1. Calculate file hash
 	fileHash, err := hashFile(filePath)
 	if err != nil {
@@ -26,13 +43,21 @@ func GenerateKey(filePath string, tool tools.QualityTool, options tools.ExecuteO
 	// 2. Get tool version
 	toolVersion, err := tool.GetVersion()
 	if err != nil {
-		// If version cannot be determined, use "unknown"
-		// This will cause cache misses, which is safe
-		toolVersion = "unknown"
+		return CacheKey{}, fmt.Errorf("failed to determine tool version: %w", err)
+	}
+	if toolVersion == "" || toolVersion == "unknown" {
+		return CacheKey{}, fmt.Errorf("tool version is unknown")
 	}
 
 	// 3. Calculate config hash
 	configFiles := tool.FindConfigFiles(options.ProjectRoot)
+	if options.ConfigFile != "" {
+		configPath := options.ConfigFile
+		if !filepath.IsAbs(configPath) {
+			configPath = filepath.Join(options.ProjectRoot, configPath)
+		}
+		configFiles = append(configFiles, configPath)
+	}
 	configHash, err := hashFiles(configFiles)
 	if err != nil {
 		return CacheKey{}, fmt.Errorf("failed to hash config files: %w", err)
@@ -47,14 +72,18 @@ func GenerateKey(filePath string, tool tools.QualityTool, options tools.ExecuteO
 		absFilePath = filePath
 	}
 
-	return CacheKey{
+	key := CacheKey{
 		FilePath:    absFilePath,
 		FileHash:    fileHash,
 		ToolName:    tool.Name(),
 		ToolVersion: toolVersion,
 		ConfigHash:  configHash,
 		OptionsHash: optionsHash,
-	}, nil
+	}
+	if err := ValidateKey(key); err != nil {
+		return CacheKey{}, err
+	}
+	return key, nil
 }
 
 // hashFile calculates SHA256 hash of a file's content.
@@ -69,7 +98,7 @@ func hashFile(filePath string) (string, error) {
 }
 
 // hashFiles calculates SHA256 hash of multiple files combined.
-// Returns empty string if no files or all files don't exist.
+// Returns an error if an identified config cannot be read, so callers bypass cache.
 func hashFiles(filePaths []string) (string, error) {
 	if len(filePaths) == 0 {
 		return "", nil
@@ -86,14 +115,11 @@ func hashFiles(filePaths []string) (string, error) {
 	for _, path := range sortedPaths {
 		content, err := os.ReadFile(path)
 		if err != nil {
-			// If config file doesn't exist, skip it
-			// This is common (e.g., .prettierrc may not exist)
-			continue
+			return "", fmt.Errorf("read config %s: %w", path, err)
 		}
 
 		// Write file path and content to hasher
-		hasher.Write([]byte(path))
-		hasher.Write(content)
+		fmt.Fprintf(hasher, "%d:%s%d:%s", len(path), path, len(content), content)
 	}
 
 	hash := hasher.Sum(nil)
@@ -102,56 +128,20 @@ func hashFiles(filePaths []string) (string, error) {
 
 // hashOptions calculates SHA256 hash of execution options.
 func hashOptions(options tools.ExecuteOptions) string {
-	hasher := sha256.New()
-
-	// Hash relevant fields in deterministic order
-	// ProjectRoot intentionally excluded (path-specific)
-	// ConfigFile excluded (already in config hash)
-
-	// Fix flag
-	if options.Fix {
-		hasher.Write([]byte("fix:true"))
-	}
-
-	// FormatOnly flag
-	if options.FormatOnly {
-		hasher.Write([]byte("format-only:true"))
-	}
-
-	// LintOnly flag
-	if options.LintOnly {
-		hasher.Write([]byte("lint-only:true"))
-	}
-
-	// ExtraArgs (sorted for determinism)
-	if len(options.ExtraArgs) > 0 {
-		sortedArgs := make([]string, len(options.ExtraArgs))
-		copy(sortedArgs, options.ExtraArgs)
-		sort.Strings(sortedArgs)
-
-		hasher.Write([]byte("args:"))
-		hasher.Write([]byte(strings.Join(sortedArgs, ",")))
-	}
-
-	// Env variables (sorted by key)
-	if len(options.Env) > 0 {
-		keys := make([]string, 0, len(options.Env))
-		for k := range options.Env {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-
-		for _, k := range keys {
-			fmt.Fprintf(hasher, "env:%s=%s", k, options.Env[k])
-		}
-	}
-
-	hash := hasher.Sum(nil)
-	return hex.EncodeToString(hash)
+	// JSON frames each value, sorts environment map keys and preserves argv
+	// order. Working directory and explicit config choice affect tool behavior.
+	data, _ := json.Marshal(options) // ExecuteOptions contains only JSON-safe fields.
+	hash := sha256.Sum256(data)
+	return hex.EncodeToString(hash[:])
 }
 
 // ValidateKey validates that a cache key is well-formed.
 func ValidateKey(key CacheKey) error {
+	for _, value := range []string{key.FilePath, key.FileHash, key.ToolName, key.ToolVersion, key.ConfigHash, key.OptionsHash} {
+		if !utf8.ValidString(value) {
+			return fmt.Errorf("cache identity contains invalid UTF-8")
+		}
+	}
 	if key.FilePath == "" {
 		return fmt.Errorf("file path is empty")
 	}

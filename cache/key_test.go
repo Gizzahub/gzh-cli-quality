@@ -5,6 +5,7 @@ package cache
 
 import (
 	"context"
+	"encoding/hex"
 	"os"
 	"path/filepath"
 	"testing"
@@ -148,10 +149,10 @@ func TestCacheKey_String(t *testing.T) {
 
 	str := key.String()
 
-	// Should be: gofumpt-v0.7.0-a1b2c3d4-i9j0k1l2-q7r8s9t0
-	expected := "gofumpt-v0.7.0-a1b2c3d4-i9j0k1l2-q7r8s9t0"
-	if str != expected {
-		t.Errorf("String() = %s, want %s", str, expected)
+	// Identifiers are deterministic, opaque and safe as one storage filename.
+	decoded, err := hex.DecodeString(str)
+	if err != nil || len(decoded) != 32 || str != key.String() {
+		t.Errorf("invalid opaque cache identifier %q", str)
 	}
 }
 
@@ -285,15 +286,10 @@ func TestHashFiles(t *testing.T) {
 		t.Error("hashFiles should be deterministic regardless of order")
 	}
 
-	// Test with non-existent files (should not error, just skip)
-	hash3, err := hashFiles([]string{file1, "/nonexistent/file.yml"})
-	if err != nil {
-		t.Errorf("hashFiles should not error on non-existent files: %v", err)
-	}
-
-	// Hash should still be generated from existing files
-	if hash3 == "" {
-		t.Error("hashFiles should generate hash from existing files")
+	// A selected config that disappears must bypass cache, not hide the error.
+	_, err = hashFiles([]string{file1, filepath.Join(tmpDir, "missing.yml")})
+	if err == nil {
+		t.Error("hashFiles should reject an unreadable selected config")
 	}
 }
 
@@ -323,10 +319,10 @@ func TestHashOptions(t *testing.T) {
 			same: false,
 		},
 		{
-			name: "same extra args different order",
+			name: "argument order changes tool behavior",
 			opt1: tools.ExecuteOptions{ExtraArgs: []string{"--verbose", "--color"}},
 			opt2: tools.ExecuteOptions{ExtraArgs: []string{"--color", "--verbose"}},
-			same: true, // Sorted internally
+			same: false,
 		},
 	}
 

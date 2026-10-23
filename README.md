@@ -59,10 +59,19 @@ make install
 
 ```bash
 # 최신 안정 버전
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@v0.2.0
+go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@v0.1.3
 
 # 또는 최신 개발 버전
-go install github.com/Gizzahub/gzh-cli-quality/cmd/gz-quality@latest
+go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@latest
+```
+
+Go Install로 설치되는 실행 파일 이름은 `quality`입니다. 릴리스 archive와
+`make build`/`make install`은 `gz-quality`라는 이름을 사용합니다.
+
+#### Homebrew (macOS)
+
+```bash
+brew install --cask gizzahub/tap/gz-quality
 ```
 
 ### 기본 사용법
