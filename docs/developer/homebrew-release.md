@@ -44,7 +44,7 @@ GoReleaser 실행 경로다. broker의 그룹·명령·권한 정책·credential
 소유하며 이 저장소에서 복제하지 않는다. 정적 PAT나 저장소 Actions secret의
 존재를 게시 권한의 증거로 삼지 않는다. 토큰 값은 소스·로그·문서에 기록하지 않는다.
 
-1. 출시 품질 검사·독립 리뷰·정확한 후보 SHA·새 patch 태그를 확정하고 승인받는다.
+1. 출시 품질 검사·독립 리뷰·정확한 후보 SHA·승인된 버전 태그를 확정하고 승인받는다.
 1. 후보를 integration branch에 반영한 뒤 승인된 Git 경로로 태그를 먼저 push한다.
    원격 태그를 commit까지 peel한 SHA와 로컬 clean checkout의 SHA가 정확히
    같은지 재확인한다. 태그가 없거나 다르면 게시를 중단한다.
@@ -77,7 +77,11 @@ GitHub client는 이 값이 비어 있으면 요청에 `target_commitish`를 넣
 검증하고 임의의 historical `target_commitish`나 Workflows 쓰기 권한을 추가하지 않는다.
 이 소스 분석은 실제 App credential 권한 증명이나 게시 성공을 대신하지 않는다.
 
-다음 patch 준비 대상은 `v0.1.4`이며 아직 이 문서만으로 승인·태그·공개를 뜻하지 않는다.
+다음 minor 준비 대상은 `v0.2.0`이며 아직 이 문서만으로 승인·태그·공개를 뜻하지 않는다.
+v0.1.3 대비 추가된 `Storage.Touch`·`AccessedAt` 요구와 hit metadata 의미 변경을
+호환되지 않는 공개 Go 계약으로 명시하므로 minor를 올린다. migration 내용은
+[CACHING.md](CACHING.md#v013--v020-%EB%A7%88%EC%9D%B4%EA%B7%B8%EB%A0%88%EC%9D%B4%EC%85%98)를 따른다. JSON 필드 형식 유지가
+기존 접근 통계 의미의 호환을 뜻하지 않는다. CLI 명령·배포 실행 파일 이름은 유지한다.
 Go 설치 경로는 `github.com/Gizzahub/gzh-cli-quality/cmd/quality`이며,
 Go가 기본으로 만드는 파일 이름은 `quality`다. 배포 압축파일과 cask는
 `gz-quality`라는 파일 이름을 사용한다.

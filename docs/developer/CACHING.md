@@ -34,6 +34,26 @@ Design document for implementing a file-based caching system to improve gz-quali
 따라서 이 파일 formatter 측정을 package 전체를 분석하는 linter의 정확성·성능
 보증으로 일반화하지 않는다. package 단위 cache 설계 변경은 이번 수정에 포함하지 않는다.
 
+## v0.1.3 → v0.2.0 마이그레이션
+
+v0.2.0은 Go 캐시 API의 호환되지 않는 계약 변경을 포함한다. CLI 명령과
+`gz-quality` 배포 실행 파일 이름은 바뀌지 않는다.
+
+- 공개 `Storage` 인터페이스는 기존 여섯 메서드에 `Touch(key string) error`와
+  `AccessedAt(key string) (time.Time, error)`를 추가한 여덟 메서드를 요구한다.
+  사용자 정의 storage 구현과 mock도 두 메서드를 구현해야 한다.
+- 캐시 hit는 JSON을 다시 쓰지 않는다. `CacheMetadata.LastAccessed`와
+  `AccessCount`는 저장된 스냅샷이며 hit마다 갱신되는 시각·누적 횟수가 아니다.
+  기존 JSON 필드 형식을 유지한다는 사실은 v0.1.3의 갱신 의미를 보장하지 않는다.
+- `FilesystemStorage.AccessedAt`은 캐시 파일의 마지막 write 또는 touch 시각을
+  반환한다. 최근 접근에 따른 cleanup은 이 시각을 사용한다. 사용자 정의 storage도
+  write/touch 시각을 추적하고 `AccessedAt`으로 제공해야 한다.
+- `CacheStats.HitCount`는 해당 manager 인스턴스 세션에서 집계한 hit 수다.
+  프로세스를 넘어 저장되는 entry별 접근 횟수의 대체 지표가 아니다.
+
+기존 metadata를 hit별 접근 추적에 사용한 호출자는 시간 조회를 `AccessedAt`으로
+옮기고, 영속적인 entry별 누적 횟수가 필요하면 별도로 관리해야 한다.
+
 ## Table of Contents
 
 - [Goals and Motivation](#goals-and-motivation)

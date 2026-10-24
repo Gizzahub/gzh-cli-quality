@@ -59,7 +59,7 @@ make install
 
 ```bash
 # 특정 안정 버전
-go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@v0.1.4
+go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@v0.2.0
 
 # 최신 안정 버전
 go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@latest

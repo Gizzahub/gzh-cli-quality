@@ -59,17 +59,18 @@ type CachedResult struct {
 	Metadata CacheMetadata `json:"metadata"`
 }
 
-// CacheMetadata contains metadata about a cache entry.
+// CacheMetadata contains the entry's stored metadata snapshot. Get returns these
+// values unchanged, including legacy values; hits do not persist updated metadata.
 type CacheMetadata struct {
 	// CreatedAt is when the entry was created
 	CreatedAt time.Time `json:"created_at"`
 
-	// LastAccessed is when the entry was stored. Hits do not rewrite the
-	// entry; Storage.AccessedAt reports the last access instead.
+	// LastAccessed is the stored access timestamp (initialized by Set).
+	// Get does not refresh it; Storage.AccessedAt tracks writes and successful touches.
 	LastAccessed time.Time `json:"last_accessed"`
 
 	// AccessCount is kept for format compatibility and is no longer
-	// incremented on hits; CacheStats.HitCount counts hits.
+	// incremented on hits; CacheStats.HitCount counts this manager's session hits.
 	AccessCount int64 `json:"access_count"`
 
 	// SizeBytes is the size of the cached result in bytes
@@ -84,10 +85,12 @@ type CacheStats struct {
 	// SizeBytes is the total size of the cache in bytes
 	SizeBytes int64
 
-	// HitCount is the number of cache hits
+	// HitCount counts successful Gets in this manager instance, not persisted
+	// per-entry accesses. InvalidateAll resets the session counters.
 	HitCount int64
 
-	// MissCount is the number of cache misses
+	// MissCount counts cache misses in this manager instance and is not persisted.
+	// InvalidateAll resets the session counters.
 	MissCount int64
 
 	// HitRate is the cache hit rate (0.0 to 1.0)
@@ -111,7 +114,8 @@ type Storage interface {
 	// Delete deletes data from storage
 	Delete(key string) error
 
-	// Touch marks an entry as accessed now without rewriting its data
+	// Touch marks an entry as accessed now without rewriting its data.
+	// Manager.Get attempts Touch on hits but does not fail a hit if Touch fails.
 	Touch(key string) error
 
 	// AccessedAt returns when an entry was last written or touched
@@ -129,7 +133,8 @@ type Storage interface {
 
 // Manager is the interface for cache management operations.
 type Manager interface {
-	// Get retrieves a cached result
+	// Get retrieves a cached result with its stored metadata snapshot unchanged.
+	// Successful hits count in this manager's session and attempt a best-effort Touch.
 	Get(key CacheKey) (*CachedResult, error)
 
 	// Set stores a result in cache

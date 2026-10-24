@@ -83,6 +83,10 @@ release:
 
     Multi-language code quality tool orchestrator for Go, Python, JavaScript/TypeScript, and Rust projects.
 
+    ### Breaking cache API migration (v0.1.3 → v0.2.0)
+
+    Custom Go Storage implementations must add Touch(key string) error and AccessedAt(key string) (time.Time, error) to the existing six methods. Cache hits no longer rewrite CacheMetadata.LastAccessed or AccessCount: these fields are stored snapshots, despite the unchanged JSON field format. FilesystemStorage.AccessedAt reports the last file write or touch. CacheStats.HitCount counts only the current manager session, not persistent per-entry accesses. Update custom implementations and access-stat consumers before upgrading. CLI commands and the gz-quality binary name are unchanged.
+
     ### Installation
 
     **Using Go Install:**
