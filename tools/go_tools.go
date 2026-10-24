@@ -337,6 +337,10 @@ func NewGovulncheckTool() *GovulncheckTool {
 	}
 
 	tool.SetInstallCommand([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@latest"})
+	// `govulncheck --version` reports the `go` toolchain found on PATH and the
+	// date of the remote vulnerability database, neither of which is part of
+	// the govulncheck executable.
+	tool.SetVersionUncacheable()
 
 	tool.adapter = tool
 	return tool

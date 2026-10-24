@@ -141,9 +141,9 @@ func (fs *FilesystemStorage) List() ([]string, error) {
 			return err
 		}
 
-		// Skip directories
+		// Skip directories, and the version probes that share the cache root
 		if info.IsDir() {
-			return nil
+			return fs.skipVersions(path)
 		}
 
 		// Skip temp files
@@ -179,7 +179,10 @@ func (fs *FilesystemStorage) Size() (int64, error) {
 			return err
 		}
 
-		if !info.IsDir() && filepath.Ext(path) != ".tmp" {
+		if info.IsDir() {
+			return fs.skipVersions(path)
+		}
+		if filepath.Ext(path) != ".tmp" {
 			totalSize += info.Size()
 		}
 
@@ -195,6 +198,15 @@ func (fs *FilesystemStorage) Size() (int64, error) {
 // Close closes the storage backend.
 func (fs *FilesystemStorage) Close() error {
 	// Filesystem storage doesn't need explicit closing
+	return nil
+}
+
+// skipVersions keeps result walks out of the version cache directory, whose
+// entries VersionCache owns and are not result entries.
+func (fs *FilesystemStorage) skipVersions(dir string) error {
+	if dir == filepath.Join(fs.basePath, versionsDirName) {
+		return filepath.SkipDir
+	}
 	return nil
 }
 
@@ -234,8 +246,11 @@ func (fs *FilesystemStorage) CleanupCorrupted() (int, error) {
 			return err
 		}
 
-		// Skip directories and temp files
-		if info.IsDir() || filepath.Ext(path) == ".tmp" {
+		// Skip directories, version probes and temp files
+		if info.IsDir() {
+			return fs.skipVersions(path)
+		}
+		if filepath.Ext(path) == ".tmp" {
 			return nil
 		}
 

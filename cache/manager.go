@@ -6,6 +6,7 @@ package cache
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -17,6 +18,7 @@ import (
 // CacheManager implements the Manager interface.
 type CacheManager struct {
 	storage   Storage
+	versions  *VersionCache
 	enabled   bool
 	maxSize   int64
 	maxAge    time.Duration
@@ -33,10 +35,11 @@ func NewCacheManager(basePath string, maxSize int64, maxAge time.Duration) (*Cac
 	}
 
 	return &CacheManager{
-		storage: storage,
-		enabled: true,
-		maxSize: maxSize,
-		maxAge:  maxAge,
+		storage:  storage,
+		versions: NewVersionCache(filepath.Join(basePath, versionsDirName)),
+		enabled:  true,
+		maxSize:  maxSize,
+		maxAge:   maxAge,
 	}, nil
 }
 
@@ -170,6 +173,12 @@ func (cm *CacheManager) InvalidateAll() error {
 
 	for _, key := range keys {
 		_ = cm.storage.Delete(key)
+	}
+
+	if cm.versions != nil {
+		if err := cm.versions.Clear(); err != nil {
+			return err
+		}
 	}
 
 	// Reset counters
@@ -322,6 +331,16 @@ func (cm *CacheManager) Cleanup() error {
 	}
 
 	return nil
+}
+
+// ToolVersion returns tool's version for cache keys. While the cache is
+// enabled it reuses a version recorded for the same executable file; see
+// VersionCache.ToolVersion.
+func (cm *CacheManager) ToolVersion(tool tools.QualityTool) (string, error) {
+	if !cm.enabled || cm.versions == nil {
+		return tool.GetVersion()
+	}
+	return cm.versions.ToolVersion(tool)
 }
 
 // Close closes the cache manager.

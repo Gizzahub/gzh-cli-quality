@@ -28,6 +28,22 @@ func (t *measuredFormatter) GetVersion() (string, error) {
 	return t.QualityTool.GetVersion()
 }
 
+// probedFormatter forwards the wrapped tool's version probe, so the version
+// cache treats it exactly like the unwrapped tool. A bare measuredFormatter is
+// not a tools.VersionProber and so is probed on every run, which measures the
+// same path with the version cache off.
+type probedFormatter struct {
+	*measuredFormatter
+}
+
+func (t probedFormatter) VersionProbe() (executable string, flags []string) {
+	return t.QualityTool.(tools.VersionProber).VersionProbe()
+}
+
+func (t probedFormatter) VersionCacheable() bool {
+	return t.QualityTool.(tools.VersionProber).VersionCacheable()
+}
+
 func (t *measuredFormatter) Execute(ctx context.Context, files []string, options tools.ExecuteOptions) (*tools.Result, error) {
 	t.runs.Add(1)
 	return t.QualityTool.Execute(ctx, files, options)
@@ -124,9 +140,16 @@ func BenchmarkCache_InstalledGofumpt(b *testing.B) {
 		b.StopTimer()
 		b.ReportMetric(float64(len(keys)), "cache_reads/op")
 	})
-	for _, mode := range []string{"NoCache", "ColdMiss", "WarmHit"} {
+	// WarmHitNoVersionCache is WarmHit with the version cache off: the result
+	// cache still hits, but the tool version is probed on every run.
+	for _, mode := range []string{"NoCache", "ColdMiss", "WarmHit", "WarmHitNoVersionCache"} {
 		b.Run(mode, func(b *testing.B) {
-			tool := &measuredFormatter{QualityTool: tools.NewGofumptTool()}
+			measured := &measuredFormatter{QualityTool: tools.NewGofumptTool()}
+			var tool tools.QualityTool = probedFormatter{measured}
+			if mode == "WarmHitNoVersionCache" {
+				tool = measured
+			}
+			warm := mode == "WarmHit" || mode == "WarmHitNoVersionCache"
 			manager, err := cache.NewCacheManager(b.TempDir(), 100<<20, time.Hour)
 			require.NoError(b, err)
 			b.Cleanup(func() { require.NoError(b, manager.Close()) })
@@ -143,11 +166,11 @@ func BenchmarkCache_InstalledGofumpt(b *testing.B) {
 				require.Equal(b, len(files), results[0].FilesProcessed)
 				require.Equal(b, wantCached, results[0].Cached)
 			}
-			if mode == "WarmHit" {
+			if warm {
 				run(false)
 			}
-			tool.versions.Store(0)
-			tool.runs.Store(0)
+			measured.versions.Store(0)
+			measured.runs.Store(0)
 			b.ResetTimer()
 			for range b.N {
 				if mode == "ColdMiss" {
@@ -155,11 +178,11 @@ func BenchmarkCache_InstalledGofumpt(b *testing.B) {
 					require.NoError(b, manager.InvalidateAll())
 					b.StartTimer()
 				}
-				run(mode == "WarmHit")
+				run(warm)
 			}
 			b.StopTimer()
-			b.ReportMetric(float64(tool.versions.Load())/float64(b.N), "version_calls/op")
-			b.ReportMetric(float64(tool.runs.Load())/float64(b.N), "tool_runs/op")
+			b.ReportMetric(float64(measured.versions.Load())/float64(b.N), "version_calls/op")
+			b.ReportMetric(float64(measured.runs.Load())/float64(b.N), "tool_runs/op")
 		})
 	}
 }

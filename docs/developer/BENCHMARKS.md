@@ -54,6 +54,34 @@ setup도 포함하므로 wall time 비율로 해석하지 않는다.
 더 비싼 도구·더 큰 입력을 골라 목표를 달성한 것처럼 일반화하지 않는다.
 이 측정은 파일 formatter workload이며 package 전체를 분석하는 linter에는 일반화하지 않는다.
 
+### 실행 간 버전 캐시 추가 후 — 2026-10-24
+
+[CACHING.md](CACHING.md)의 "도구 버전 캐시"를 추가한 뒤 같은 환경·workload로 다시
+측정했다(workload SHA-256 위와 동일). benchmark wrapper가 `VersionProbe`/`VersionCacheable`을
+전달하므로 WarmHit는 실제 도구와 같은 경로를 탄다. `WarmHitNoVersionCache`는 같은
+WarmHit에서 wrapper가 `tools.VersionProber`를 구현하지 않게 하여 버전 캐시만 끈
+변형이다. 결과 캐시는 그대로 적중하고 버전은 실행마다 조회한다. ColdMiss는
+`InvalidateAll`이 버전 entry도 지우므로 조회가 1회 남는다.
+
+방법: `-benchtime=300ms -count=6`, task 1개 / worker 1개, 실행 전후 load average
+2.7~3.8(다른 VM 1개 동작 중, 그 밖의 무거운 작업 없음). 시간은 ms/op이고 6회의
+중앙값과 최소~최대 범위다. 같은 날 앞서 실행한 `-count=3` 계열은 CacheMetadataReads가
+37~61ms/op로 아래보다 40배 이상 커서 디스크 경합에 오염된 것으로 보고 폐기했다.
+
+| 경로                  | 중앙값 | 범위 (6회)      | 실제 tool 실행 / version 조회 |
+| --------------------- | ------ | --------------- | ----------------------------- |
+| NoCache               | 10.366 | 10.289 ~ 10.579 | 1 / 0                         |
+| ColdMiss              | 53.089 | 52.900 ~ 54.192 | 1 / 1                         |
+| WarmHit               | 1.522  | 1.508 ~ 1.551   | 0 / 0                         |
+| WarmHitNoVersionCache | 4.866  | 4.770 ~ 5.757   | 0 / 1                         |
+
+component: `VersionProbe` 2.871 (2.848 ~ 2.913), `CacheMetadataReads` 0.902
+(0.890 ~ 0.909)ms/op.
+
+버전 캐시는 warm hit에서 조회 1회를 없애 중앙값을 4.866 → 1.522ms로 줄였다. 비캐시
+대비 warm hit는 버전 캐시를 끄면 약 2.1배, 켜면 약 6.8배 빠르다. **60배는 미충족**이다.
+이 측정은 파일 formatter workload이며 package 전체를 분석하는 linter에는 일반화하지 않는다.
+
 재현에는 이미 설치된 gofumpt와 Git source revision이 필요하다. 저장소 root에서
 `QUALITY_BENCH_GOFUMPT`를 PATH가 해석하는 실제 gofumpt 절대 경로로,
 `QUALITY_BENCH_SOURCE_REF`를 위 SHA로 지정하고 다음 benchmark를 실행한다.
@@ -61,6 +89,12 @@ setup도 포함하므로 wall time 비율로 해석하지 않는다.
 
 ```bash
 go test ./executor -run '^$' -bench '^BenchmarkCache_InstalledGofumpt$' -benchtime=300ms -count=3
+```
+
+버전 캐시 on/off 비교(위 "실행 간 버전 캐시 추가 후" 표)는 같은 benchmark를 `-count=6`으로 실행했다.
+
+```bash
+GOWORK=off go test ./executor -run '^$' -bench '^BenchmarkCache_InstalledGofumpt$' -benchtime=300ms -count=6 -v
 ```
 
 `VersionProbe`와 `CacheMetadataReads`는 별도 component 진단이며 제품 처리량 결과가 아니다. 각 실행의

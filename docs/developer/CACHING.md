@@ -9,8 +9,10 @@ Design document for implementing a file-based caching system to improve gz-quali
 2026-10-24 기록을 따른다. 이 workload에서 60배 목표를 충족하지 못했다.
 
 - 도구 버전은 파일마다 subprocess를 호출하지 않고 **한 task 안에서 한 번**
-  조회한다. 다음 task/실행에서는 다시 조회하므로 도구 업그레이드를 숨기지 않는다.
-  버전 조회 오류나 빈 값/`unknown`이면 캐시를 읽거나 쓰지 않고 도구를 실행한다.
+  얻는다. 실행 사이에는 아래 "도구 버전 캐시" 절의 캐시가 실행 파일이
+  바뀌지 않은 동안에만 이전 조회 결과를 재사용하고, 그 밖에는 다시 조회하므로
+  도구 업그레이드를 숨기지 않는다. 버전 조회 오류나 빈 값/`unknown`이면 캐시를
+  읽거나 쓰지 않고 도구를 실행한다.
 - `CacheKey`의 공개 필드는 유지한다. `String()`은 `ValidateKey`를 통과한 UTF-8
   identity 전체 필드의 JSON을 SHA-256으로
   해시한 64자리 소문자 hex인 **불투명 storage 식별자**다. 파일 절대 경로와 전체
@@ -33,6 +35,59 @@ Design document for implementing a file-based caching system to improve gz-quali
 탐색 목록 밖의 상위/사용자 설정이나 암묵적으로 상속한 환경 전체를 추적하지 않는다.
 따라서 이 파일 formatter 측정을 package 전체를 분석하는 linter의 정확성·성능
 보증으로 일반화하지 않는다. package 단위 cache 설계 변경은 이번 수정에 포함하지 않는다.
+
+### 도구 버전 캐시
+
+도구 버전은 결과 cache key의 일부이므로, 오래된 버전을 재사용하면 다른 버전의
+도구가 만든 결과를 돌려주게 된다. 그래서 버전은 시간(TTL)이 아니라 **실행 파일
+자체의 identity**에 묶는다 (`cache/version.go`).
+
+- 대상: `tools.VersionProber`를 구현한 도구(`BaseTool` 기반 도구 전부)만.
+  `VersionProbe()`는 `GetVersion`이 실행하는 실행 파일 이름과 순서가 있는
+  version flag 목록을 돌려준다. `GetVersion`을 다른 방식으로 재정의하는 도구는
+  `VersionProbe`도 함께 재정의해야 한다.
+- opt-out: `VersionCacheable()`이 false인 도구는 캐시를 읽거나 쓰지 않고 매번
+  조회한다. version 출력이 실행 파일 외의 환경·네트워크·설정에도 의존하는 native
+  binary는 반드시 생성자에서 `SetVersionUncacheable()`을 호출해야 한다. 예:
+  `govulncheck --version`은 PATH의 `go` toolchain(`Go: go1.x`)과 원격 취약점
+  DB 갱신일(`DB updated:`)을 출력하므로 opt-out한다.
+- key(`cache.VersionKey`, 모든 필드가 같을 때만 hit):
+  `ToolName`, `ExecutablePath`(PATH 탐색 → 절대 경로 → symlink 해석 후 경로),
+  `ProbeFlags`(순서 포함), `Device`, `Inode`, `Size`, `ModTimeNs`, `ChangeTimeNs`.
+  ctime은 사용자가 되돌릴 수 없으므로 `cp -p`나 mtime을 복원한 제자리 덮어쓰기,
+  `chmod`도 다시 조회하게 만든다. 교체 설치(rename)는 inode로, 경로 변경(PATH,
+  symlink 대상 변경)은 경로로 miss가 된다.
+- 다음 경우에는 캐시하지 않고 매번 조회한다. 실행 파일만으로 버전이 결정된다고
+  보장할 수 없기 때문이다.
+  - inode/ctime을 읽을 수 없는 플랫폼: `syscall.Stat_t` 필드가 OS마다 달라
+    build tag로 나눈다(`version_stat_darwin.go`의 `Ctimespec`,
+    `version_stat_linux.go`의 `Ctim`). 그 밖의 OS(Windows 등)는
+    `version_stat_other.go`가 항상 조회를 선택한다. 추측한 대체 key나 TTL은 없다.
+  - symlink가 **다른 이름**의 파일로 해석될 때: mise·volta shim처럼 하나의
+    binary가 설정에 따라 버전을 고르는 경우다. 같은 이름의 symlink(Homebrew
+    `bin/` → `Cellar/`, 대상 이름이 같은 `update-alternatives` link 등)는
+    해석된 대상 경로로 key를 만들므로, 대상이 바뀌면 경로가 달라져 miss가 된다.
+  - hard link가 2개 이상일 때: rustup proxy(`~/.cargo/bin/rustfmt`)처럼
+    `rust-toolchain.toml`에 따라 버전이 바뀌는 경우다.
+  - `#!` script일 때: asdf·pyenv shim, Python console script처럼 버전이 script
+    밖의 파일에 있는 경우다.
+- 저장: 결과 cache 디렉터리 아래 `versions/{sha256(tool, path, flags)}.json`에
+  key와 버전을 저장한다. 같은 디렉터리의 임시 파일에 쓴 뒤 rename하므로 동시
+  실행이 쓰다 만 entry를 읽지 않는다. 해석된 경로가 같은 채로 파일만 바뀌면
+  같은 slot을 덮어쓴다. 경로가 바뀌면(brew·mise 업그레이드로 버전별 디렉터리가
+  달라지는 경우 등) 새 slot에 기록하며, 이전 entry는 `InvalidateAll` 전까지
+  남는다. 쓰는 도중 프로세스가 죽으면 `*.tmp`가 남을 수 있고, 이것도
+  `InvalidateAll`이 지운다. 조회 전후 stat이 다르면(조회 도중 교체) 기록하지
+  않는다. 잘못된 UTF-8 버전은 JSON이 다른 bytes로 바꾸므로 기록하지 않는다.
+- 오류: entry가 없거나 읽을 수 없거나 손상됐거나 key가 다르면 다시 조회하고
+  덮어쓴다. 저장 실패는 실행을 실패시키지 않는다. 조회 자체의 오류와
+  `unknown`은 지금처럼 그대로 돌려주며 기록하지 않는다.
+- 결과 storage의 `List`/`Size`/`CleanupCorrupted`는 `versions/`를 건너뛰므로
+  버전 entry는 결과 entry 수·크기·LRU에 포함되지 않는다. 사용자 cache-clear
+  (`InvalidateAll`)는 버전 entry도 지운다. 캐시가 비활성이면 매번 조회한다.
+- 남는 한계: 위 판별을 통과하면서 cwd나 환경 변수로 버전을 고르는 단일 binary는
+  도구가 opt-out하지 않으면 감지하지 못한다. 같은 inode를 같은 크기로 같은 coarse clock tick 안에 두 번
+  덮어쓰면 mtime/ctime이 같을 수 있다(Linux는 tick이 수 ms).
 
 ## v0.1.3 → v0.2.0 마이그레이션
 

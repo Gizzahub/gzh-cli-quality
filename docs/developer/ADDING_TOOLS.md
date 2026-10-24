@@ -65,6 +65,11 @@ ______________________________________________________________________
 | `FindConfigFiles()` | 설정 패턴으로 파일 탐색        |
 | `ExecuteCommand()`  | 명령 실행 및 Result 생성       |
 
+버전 캐시 규칙([CACHING.md](CACHING.md) "도구 버전 캐시"):
+
+- `GetVersion()`을 재정의하는 도구는 `VersionProbe()`도 같은 실행 파일·flag로 재정의해야 한다.
+- version 출력이 실행 파일 외의 환경·네트워크·설정에도 의존하는 native 도구(예: `govulncheck`)는 생성자에서 `SetVersionUncacheable()`을 호출해야 한다.
+
 ### 3.2 BaseTool 사용 예시
 
 ```go

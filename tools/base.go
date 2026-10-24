@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 )
@@ -21,7 +22,10 @@ type BaseTool struct {
 	executable     string
 	installCmd     []string
 	configPatterns []string
-	adapter        interface {
+	// versionUncacheable marks a version output that the executable file
+	// alone does not determine; see VersionProber.VersionCacheable.
+	versionUncacheable bool
+	adapter            interface {
 		BuildCommand([]string, ExecuteOptions) *exec.Cmd
 		ParseOutput(string) []Issue
 	}
@@ -78,14 +82,31 @@ func (t *BaseTool) Install() error {
 	return nil
 }
 
+// versionFlags are tried in order by GetVersion; the first non-empty output wins.
+var versionFlags = []string{"--version", "-v", "-V", "version"}
+
+// VersionProbe reports the executable and ordered flags GetVersion runs.
+func (t *BaseTool) VersionProbe() (executable string, flags []string) {
+	return t.executable, slices.Clone(versionFlags)
+}
+
+// VersionCacheable reports whether callers may reuse a version recorded for
+// the same executable file. It is true unless SetVersionUncacheable was called.
+func (t *BaseTool) VersionCacheable() bool {
+	return !t.versionUncacheable
+}
+
+// SetVersionUncacheable declares that the version output depends on more than
+// the executable file (environment, network), so it must be probed every time.
+func (t *BaseTool) SetVersionUncacheable() {
+	t.versionUncacheable = true
+}
+
 // GetVersion returns the version of the installed tool.
 func (t *BaseTool) GetVersion() (string, error) {
 	if !t.IsAvailable() {
 		return "", fmt.Errorf("tool %s is not installed", t.name)
 	}
-
-	// Try common version flags
-	versionFlags := []string{"--version", "-v", "-V", "version"}
 
 	for _, flag := range versionFlags {
 		cmd := exec.Command(t.executable, flag)

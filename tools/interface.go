@@ -61,6 +61,21 @@ type QualityTool interface {
 	Execute(ctx context.Context, files []string, options ExecuteOptions) (*Result, error)
 }
 
+// VersionProber is implemented by tools whose GetVersion runs executable
+// (resolved through PATH) with each of flags in order. Callers may then reuse a
+// GetVersion result for as long as that executable file is unchanged. A tool
+// that overrides GetVersion with a different probe must override VersionProbe
+// to match, or the reused version may come from another probe.
+type VersionProber interface {
+	VersionProbe() (executable string, flags []string)
+
+	// VersionCacheable reports whether the probe output is a function of the
+	// executable file alone. A tool whose version output also depends on the
+	// environment or the network (govulncheck prints the `go` found on PATH and
+	// the vulnerability database date) returns false and is probed every time.
+	VersionCacheable() bool
+}
+
 // ExecuteOptions contains options for tool execution.
 type ExecuteOptions struct {
 	// ProjectRoot is the root directory of the project

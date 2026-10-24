@@ -466,3 +466,10 @@ func TestGoimportsTool_ProjectRootNoGoMod(t *testing.T) {
 		}
 	}
 }
+
+func TestGovulncheckVersionIsNotCacheable(t *testing.T) {
+	// govulncheck --version prints the `go` on PATH and the vulnerability
+	// database date, so it must not be reused across runs.
+	assert.False(t, NewGovulncheckTool().VersionCacheable())
+	assert.True(t, NewGofumptTool().VersionCacheable())
+}
