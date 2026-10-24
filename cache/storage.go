@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 // FilesystemStorage implements Storage interface using the filesystem.
@@ -98,6 +99,33 @@ func (fs *FilesystemStorage) Delete(key string) error {
 	_ = os.Remove(dir) // Ignore errors (directory may not be empty)
 
 	return nil
+}
+
+// Touch sets the entry's modification time to now. It is a single
+// metadata syscall, unlike Write's temp-file write and rename.
+func (fs *FilesystemStorage) Touch(key string) error {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+
+	now := time.Now()
+	if err := os.Chtimes(fs.keyToPath(key), now, now); err != nil {
+		return fmt.Errorf("failed to touch cache file: %w", err)
+	}
+
+	return nil
+}
+
+// AccessedAt returns the entry's modification time, which Write and Touch set.
+func (fs *FilesystemStorage) AccessedAt(key string) (time.Time, error) {
+	fs.mu.RLock()
+	defer fs.mu.RUnlock()
+
+	info, err := os.Stat(fs.keyToPath(key))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to stat cache file: %w", err)
+	}
+
+	return info.ModTime(), nil
 }
 
 // List returns all keys in storage.

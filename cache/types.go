@@ -64,10 +64,12 @@ type CacheMetadata struct {
 	// CreatedAt is when the entry was created
 	CreatedAt time.Time `json:"created_at"`
 
-	// LastAccessed is when the entry was last accessed
+	// LastAccessed is when the entry was stored. Hits do not rewrite the
+	// entry; Storage.AccessedAt reports the last access instead.
 	LastAccessed time.Time `json:"last_accessed"`
 
-	// AccessCount is the number of times accessed
+	// AccessCount is kept for format compatibility and is no longer
+	// incremented on hits; CacheStats.HitCount counts hits.
 	AccessCount int64 `json:"access_count"`
 
 	// SizeBytes is the size of the cached result in bytes
@@ -108,6 +110,12 @@ type Storage interface {
 
 	// Delete deletes data from storage
 	Delete(key string) error
+
+	// Touch marks an entry as accessed now without rewriting its data
+	Touch(key string) error
+
+	// AccessedAt returns when an entry was last written or touched
+	AccessedAt(key string) (time.Time, error)
 
 	// List returns all keys in storage
 	List() ([]string, error)

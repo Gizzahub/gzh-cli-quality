@@ -206,6 +206,8 @@ type CacheStorage interface {
     Read(key string) ([]byte, error)
     Write(key string, data []byte) error
     Delete(key string) error
+    Touch(key string) error                   // mark accessed without rewriting
+    AccessedAt(key string) (time.Time, error) // last write or touch
     List() ([]string, error)
     Size() (int64, error)
 }
@@ -358,12 +360,17 @@ ______________________________________________________________________
   },
   "metadata": {
     "created_at": "2025-12-02T00:00:00Z",
-    "last_accessed": "2025-12-02T01:00:00Z",
-    "access_count": 5,
+    "last_accessed": "2025-12-02T00:00:00Z",
+    "access_count": 0,
     "size_bytes": 1024
   }
 }
 ```
+
+A cache hit does not rewrite this file. `last_accessed` and `access_count` keep the values
+written by `Set`; the filesystem backend records each hit by updating the file's modification
+time (`Storage.Touch`), and size-based eviction orders entries by that time
+(`Storage.AccessedAt`). Hit totals are in `CacheStats.HitCount`.
 
 ### Index Database (SQLite)
 

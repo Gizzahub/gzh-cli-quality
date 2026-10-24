@@ -80,13 +80,10 @@ func (cm *CacheManager) Get(key CacheKey) (*CachedResult, error) {
 		return nil, fmt.Errorf("cache entry expired")
 	}
 
-	// Update access metadata
-	cached.Metadata.LastAccessed = time.Now()
-	cached.Metadata.AccessCount++
-
-	// Write updated metadata back (synchronously to avoid race conditions in tests)
-	updatedData, _ := json.MarshalIndent(cached, "", "  ")
-	_ = cm.storage.Write(key.String(), updatedData)
+	// Record the access for LRU cleanup. Rewriting the entry here cost a
+	// temp-file write and rename per hit, which made warm hits no faster
+	// than running the tool (ISSUE-362 F2).
+	_ = cm.storage.Touch(key.String())
 
 	cm.hitCount.Add(1)
 	return &cached, nil
@@ -296,9 +293,15 @@ func (cm *CacheManager) Cleanup() error {
 				continue
 			}
 
+			// Hits touch the file instead of rewriting LastAccessed.
+			lastAccessed, err := cm.storage.AccessedAt(key)
+			if err != nil {
+				continue
+			}
+
 			entries = append(entries, entry{
 				key:          key,
-				lastAccessed: cached.Metadata.LastAccessed,
+				lastAccessed: lastAccessed,
 			})
 		}
 
