@@ -4,8 +4,10 @@
 package tools
 
 import (
+	"bytes"
 	"context"
 	"debug/buildinfo"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -116,9 +118,11 @@ func (t *BaseTool) SetVersionUncacheable() {
 	t.versionUncacheable = true
 }
 
-// GetVersion returns the version of the installed tool. A Go program with no
-// version flag (goimports) is identified by the build information embedded in
-// its executable. "unknown" means neither source named a version.
+// GetVersion returns the version of the installed tool. A command set by
+// SetVersionCommand runs once, and its failure is returned as an error.
+// Otherwise versionFlags are tried, and a Go program with no version flag
+// (goimports) is identified by the build information embedded in its
+// executable. "unknown" means no source named a version.
 func (t *BaseTool) GetVersion() (string, error) {
 	path, err := exec.LookPath(t.executable)
 	if err != nil {
@@ -128,6 +132,10 @@ func (t *BaseTool) GetVersion() (string, error) {
 	if len(t.versionCommand) > 0 {
 		output, err := exec.Command(t.executable, t.versionCommand...).Output()
 		if err != nil {
+			var exitErr *exec.ExitError
+			if errors.As(err, &exitErr) && len(bytes.TrimSpace(exitErr.Stderr)) > 0 {
+				return "", fmt.Errorf("failed to get %s version: %w: %s", t.name, err, bytes.TrimSpace(exitErr.Stderr))
+			}
 			return "", fmt.Errorf("failed to get %s version: %w", t.name, err)
 		}
 		if version := strings.TrimSpace(string(output)); version != "" {

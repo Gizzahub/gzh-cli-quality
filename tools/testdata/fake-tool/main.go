@@ -63,6 +63,7 @@ func main() {
 	case "version":
 		fmt.Println(strings.Join(os.Args[1:], " "))
 	case "fail":
+		fmt.Fprintln(os.Stderr, "fake-tool: component not installed")
 		os.Exit(1)
 	case "clean":
 	default:

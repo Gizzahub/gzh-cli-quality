@@ -59,7 +59,7 @@ ______________________________________________________________________
 | `Language()`        | 언어 반환                      |
 | `Type()`            | 도구 타입 반환                 |
 | `IsAvailable()`     | PATH에서 실행 파일 확인        |
-| `GetVersion()`      | --version 명령 실행            |
+| `GetVersion()`      | version flag 순서대로 실행, 실패 시 Go build info |
 | `Install()`         | 설정된 설치 명령 실행          |
 | `Upgrade()`         | Install과 동일 (대부분의 경우) |
 | `FindConfigFiles()` | 설정 패턴으로 파일 탐색        |
@@ -69,6 +69,7 @@ ______________________________________________________________________
 
 - `GetVersion()`을 재정의하는 도구는 `VersionProbe()`도 같은 실행 파일·flag로 재정의해야 한다.
 - version 출력이 실행 파일 외의 환경·네트워크·설정에도 의존하는 native 도구(예: `govulncheck`)는 생성자에서 `SetVersionUncacheable()`을 호출해야 한다.
+- 실행 파일의 하위 명령인 도구(예: `cargo clippy`)는 생성자에서 `SetVersionCommand("clippy", "--version")`처럼 고정 인자를 지정한다. 이 명령은 한 번만 실행되고 실패는 오류로 돌아온다. 하위 명령 구현은 실행 파일과 따로 바뀔 수 있으므로 `SetVersionUncacheable()`도 함께 호출한다.
 
 ### 3.2 BaseTool 사용 예시
 

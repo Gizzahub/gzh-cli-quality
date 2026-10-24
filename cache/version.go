@@ -38,7 +38,8 @@ type VersionKey struct {
 	// to, after following symlinks.
 	ExecutablePath string `json:"executable_path"`
 
-	// ProbeFlags are the version flags, in the order GetVersion tries them.
+	// ProbeFlags are the arguments GetVersion runs: the version flags in the
+	// order it tries them, or a tool's single version command.
 	ProbeFlags []string `json:"probe_flags"`
 
 	// Device and Inode identify the file, so replacing it by rename misses.

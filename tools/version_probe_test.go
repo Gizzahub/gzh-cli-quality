@@ -108,6 +108,7 @@ func TestRustSubcommandVersionProbe(t *testing.T) {
 			_, err = tc.tool.GetVersion()
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), "failed to get "+tc.tool.Name()+" version")
+			assert.Contains(t, err.Error(), "component not installed", "stderr explains the failure")
 		})
 	}
 }

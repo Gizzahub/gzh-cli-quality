@@ -44,8 +44,14 @@ Design document for implementing a file-based caching system to improve gz-quali
 
 - 대상: `tools.VersionProber`를 구현한 도구(`BaseTool` 기반 도구 전부)만.
   `VersionProbe()`는 `GetVersion`이 실행하는 실행 파일 이름과 순서가 있는
-  version flag 목록을 돌려준다. `GetVersion`을 다른 방식으로 재정의하는 도구는
-  `VersionProbe`도 함께 재정의해야 한다.
+  version flag 목록(또는 `SetVersionCommand`로 지정한 단일 인자 목록)을 돌려준다.
+  `GetVersion`을 다른 방식으로 재정의하는 도구는 `VersionProbe`도 함께 재정의해야 한다.
+- flag가 모두 버전을 출력하지 않으면 `GetVersion`은 Go 실행 파일에 내장된 build
+  info(`main module path`, 버전, Go release, 예: `golang.org/x/tools v0.38.0
+  go1.26.7`)를 쓴다. 같은 파일에서 읽으므로 stat identity 캐시와 맞물린다.
+  수정된 checkout 빌드(`vcs.modified=true`)와 VCS revision 없는 `(devel)` 빌드는
+  `unknown`이 되어 결과 캐시를 우회한다. 로컬 `replace`, `-tags`, vendor 차이는
+  build info 문자열에 드러나지 않는다.
 - opt-out: `VersionCacheable()`이 false인 도구는 캐시를 읽거나 쓰지 않고 매번
   조회한다. version 출력이 실행 파일 외의 환경·네트워크·설정에도 의존하는 native
   binary는 반드시 생성자에서 `SetVersionUncacheable()`을 호출해야 한다. 예:
