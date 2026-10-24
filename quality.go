@@ -115,6 +115,7 @@ func NewQualityCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "quality",
+		Args:  cobra.NoArgs,
 		Short: "통합 코드 품질 도구 (포매팅 + 린팅)",
 		Long: `gz quality는 여러 프로그래밍 언어의 코드 포매팅과 린팅을 통합 제공합니다.
 
