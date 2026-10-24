@@ -4,9 +4,15 @@
 package tools
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os/exec"
+	"regexp"
+	"slices"
 	"strings"
+	"time"
 )
 
 const (
@@ -27,10 +33,26 @@ func NewRustfmtTool() *RustfmtTool {
 	}
 
 	tool.SetInstallCommand([]string{"rustup", "component", "add", "rustfmt"})
+	tool.SetVersionUncacheable() // rustup may select a component using cwd or environment.
 	tool.SetConfigPatterns([]string{"rustfmt.toml", ".rustfmt.toml"})
 
 	tool.adapter = tool
 	return tool
+}
+
+// VersionProbe reports the actual configured command; toolchain probes are not cached.
+func (t *RustfmtTool) VersionProbe() (executable string, flags []string) {
+	return t.executable, rustProbeArgs(t.BaseTool, []string{"--version"})
+}
+
+// GetVersion reports the rustfmt component selected by the current process context.
+func (t *RustfmtTool) GetVersion() (string, error) {
+	return t.GetVersionForExecution(context.Background(), ExecuteOptions{})
+}
+
+// GetVersionForExecution probes rustfmt in the same directory and environment as execution.
+func (t *RustfmtTool) GetVersionForExecution(ctx context.Context, options ExecuteOptions) (string, error) {
+	return rustComponentVersion(ctx, t.BaseTool, []string{"--version"}, "rustfmt", options)
 }
 
 // BuildCommand builds the rustfmt command.
@@ -82,6 +104,54 @@ func NewClippyTool() *ClippyTool {
 
 	tool.adapter = tool
 	return tool
+}
+
+// VersionProbe reports the actual configured command; component probes are not cached.
+func (t *ClippyTool) VersionProbe() (executable string, flags []string) {
+	return t.executable, rustProbeArgs(t.BaseTool, []string{"clippy", "--version"})
+}
+
+// GetVersion reports clippy's version, rather than cargo's launcher version.
+func (t *ClippyTool) GetVersion() (string, error) {
+	return t.GetVersionForExecution(context.Background(), ExecuteOptions{})
+}
+
+// GetVersionForExecution probes the component selected by the execution's directory
+// and environment, including rustup's toolchain overrides.
+func (t *ClippyTool) GetVersionForExecution(ctx context.Context, options ExecuteOptions) (string, error) {
+	return rustComponentVersion(ctx, t.BaseTool, []string{"clippy", "--version"}, "clippy", options)
+}
+
+func rustProbeArgs(tool *BaseTool, defaults []string) []string {
+	if len(tool.versionCommand) > 0 {
+		return slices.Clone(tool.versionCommand)
+	}
+	return slices.Clone(defaults)
+}
+
+var rustVersionToken = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?(\+[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$`)
+
+func rustComponentVersion(ctx context.Context, tool *BaseTool, args []string, component string, options ExecuteOptions) (string, error) {
+	cmd := exec.CommandContext(ctx, tool.executable, rustProbeArgs(tool, args)...)
+	applyExecutionOptions(cmd, options)
+	cmd.WaitDelay = time.Second
+	output, err := cmd.Output()
+	if ctx.Err() != nil {
+		err = ctx.Err()
+	}
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && strings.TrimSpace(string(exitErr.Stderr)) != "" {
+			return "", fmt.Errorf("failed to get %s version: %w: %s", tool.name, err, strings.TrimSpace(string(exitErr.Stderr)))
+		}
+		return "", fmt.Errorf("failed to get %s version: %w", tool.name, err)
+	}
+	version := strings.TrimSpace(string(output))
+	fields := strings.Fields(version)
+	if len(fields) < 2 || fields[0] != component || !rustVersionToken.MatchString(fields[1]) {
+		return "unknown", nil
+	}
+	return version, nil
 }
 
 // BuildCommand builds the clippy command.
@@ -200,6 +270,21 @@ func NewCargoFmtTool() *CargoFmtTool {
 
 	tool.adapter = tool
 	return tool
+}
+
+// VersionProbe reports the actual configured command; component probes are not cached.
+func (t *CargoFmtTool) VersionProbe() (executable string, flags []string) {
+	return t.executable, rustProbeArgs(t.BaseTool, []string{"fmt", "--version"})
+}
+
+// GetVersion reports rustfmt's version, rather than cargo's launcher version.
+func (t *CargoFmtTool) GetVersion() (string, error) {
+	return t.GetVersionForExecution(context.Background(), ExecuteOptions{})
+}
+
+// GetVersionForExecution probes rustfmt in the same execution context as cargo fmt.
+func (t *CargoFmtTool) GetVersionForExecution(ctx context.Context, options ExecuteOptions) (string, error) {
+	return rustComponentVersion(ctx, t.BaseTool, []string{"fmt", "--version"}, "rustfmt", options)
 }
 
 // BuildCommand builds the cargo fmt command.

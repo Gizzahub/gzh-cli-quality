@@ -47,8 +47,7 @@ Design document for implementing a file-based caching system to improve gz-quali
   version flag 목록(또는 `SetVersionCommand`로 지정한 단일 인자 목록)을 돌려준다.
   `GetVersion`을 다른 방식으로 재정의하는 도구는 `VersionProbe`도 함께 재정의해야 한다.
 - flag가 모두 버전을 출력하지 않으면 `GetVersion`은 Go 실행 파일에 내장된 build
-  info(`main module path`, 버전, Go release, 예: `golang.org/x/tools v0.38.0
-  go1.26.7`)를 쓴다. 같은 파일에서 읽으므로 stat identity 캐시와 맞물린다.
+  info(`main module path`, 버전, Go release, 예: `golang.org/x/tools v0.38.0 go1.26.7`)를 쓴다. 같은 파일에서 읽으므로 stat identity 캐시와 맞물린다.
   수정된 checkout 빌드(`vcs.modified=true`)와 VCS revision 없는 `(devel)` 빌드는
   `unknown`이 되어 결과 캐시를 우회한다. 로컬 `replace`, `-tags`, vendor 차이는
   build info 문자열에 드러나지 않는다.
@@ -57,6 +56,25 @@ Design document for implementing a file-based caching system to improve gz-quali
   binary는 반드시 생성자에서 `SetVersionUncacheable()`을 호출해야 한다. 예:
   `govulncheck --version`은 PATH의 `go` toolchain(`Go: go1.x`)과 원격 취약점
   DB 갱신일(`DB updated:`)을 출력하므로 opt-out한다.
+- 도구별 버전 식별:
+  - `clippy`는 `cargo clippy --version`, `cargo-fmt`는 `cargo fmt --version`으로 각각
+    clippy·rustfmt 버전을 얻는다. cargo 버전으로 대신하지 않으며 빈 값·다른 component
+    출력·조회 실패는 결과 캐시를 우회한다.
+    독립 `rustfmt`도 `rustfmt --version`으로 선택된 component를 확인한다.
+    component 이름과 숫자 `MAJOR.MINOR.PATCH` token을 확인하며 stable/nightly 등의
+    suffix는 허용한다. `unknown`·`(devel)`·비버전 문자열은 prefix가 맞아도 캐시하지 않는다.
+  - Rust 세 adapter는 실행 파일 자체로 component 선택을 증명할 수 없어
+    `VersionCacheable=false`다. `VersionProbe`는 `SetVersionCommand`를 포함한 실제
+    argv를 돌려준다. task마다 직접 조회하며 같은 task의 파일들은 조회 결과를
+    공유한다. cargo 파일이 그대로여도 component만 갱신되면 다음 task의 결과 key는
+    달라져야 한다.
+  - Rust adapter의 선택적 `GetVersionForExecution(ctx, options)`는 실제 실행과 같은
+    `ProjectRoot`·환경 덮어쓰기를 적용한다. executor는 task당 한 번 이 probe를 우선하므로
+    cwd별 toolchain이나 `RUSTUP_TOOLCHAIN` 선택도 결과 key에 반영된다. 이 선택적 메서드가
+    없는 사용자 정의 도구는 기존 `GetVersion`·버전 캐시 경로를 유지한다. 필수 공개
+    `QualityTool`·`Storage`·`VersionProber` 인터페이스는 바뀌지 않는다.
+    실행 중 취소 원인은 `errors.Is`로 보존하고, 자식이 출력 pipe를 잡고 있어도
+    기존 실행 경로와 같은 1초 `WaitDelay`로 취소 후 대기를 제한한다.
 - key(`cache.VersionKey`, 모든 필드가 같을 때만 hit):
   `ToolName`, `ExecutablePath`(PATH 탐색 → 절대 경로 → symlink 해석 후 경로),
   `ProbeFlags`(순서 포함), `Device`, `Inode`, `Size`, `ModTimeNs`, `ChangeTimeNs`.

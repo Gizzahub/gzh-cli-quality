@@ -3,8 +3,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -15,11 +17,69 @@ func main() {
 	if err != nil {
 		fail(err)
 	}
+	if len(os.Args) == 2 && os.Args[1] == "--hold-version-pipe" {
+		deadline := time.Now().Add(10 * time.Second)
+		for time.Now().Before(deadline) {
+			if _, err := os.Stat(executable + ".release"); err == nil {
+				break
+			}
+			time.Sleep(20 * time.Millisecond)
+		}
+		if err := os.WriteFile(executable+".child.done", []byte("done"), 0o600); err != nil {
+			fail(err)
+		}
+		return
+	}
 	mode, err := os.ReadFile(executable + ".mode")
 	if err != nil {
 		fail(err)
 	}
 	switch string(mode) {
+	case "hold-version-pipe":
+		child := exec.Command(executable, "--hold-version-pipe")
+		child.Stdout, child.Stderr = os.Stdout, os.Stderr
+		if err := child.Start(); err != nil {
+			fail(err)
+		}
+		if err := os.WriteFile(executable+".child.pid", []byte(fmt.Sprint(child.Process.Pid)), 0o600); err != nil {
+			fail(err)
+		}
+		time.Sleep(30 * time.Second)
+	case "component-version":
+		log, err := os.OpenFile(executable+".calls", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+		if err != nil {
+			fail(err)
+		}
+		_, writeErr := fmt.Fprintln(log, strings.Join(os.Args[1:], " "))
+		closeErr := log.Close()
+		if writeErr != nil {
+			fail(writeErr)
+		}
+		if closeErr != nil {
+			fail(closeErr)
+		}
+		standalone := len(os.Args) >= 2 && os.Args[1] == "--version"
+		if standalone || (len(os.Args) >= 3 && os.Args[2] == "--version") {
+			data, err := os.ReadFile(executable + ".versions")
+			if err != nil {
+				fail(err)
+			}
+			var versions map[string]string
+			if local, err := os.ReadFile(".quality-component-versions"); err == nil {
+				data = local
+			}
+			if err := json.Unmarshal(data, &versions); err != nil {
+				fail(err)
+			}
+			key := os.Args[1]
+			if standalone {
+				key = "fmt"
+			}
+			if selected := os.Getenv("RUSTUP_TOOLCHAIN"); selected != "" {
+				key += "@" + selected
+			}
+			fmt.Println(versions[key])
+		}
 	case "observe":
 		cwd, err := os.Getwd()
 		if err != nil {

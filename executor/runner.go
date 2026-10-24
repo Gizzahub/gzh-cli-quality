@@ -203,7 +203,7 @@ func (e *ParallelExecutor) executeWithCache(ctx context.Context, task tools.Task
 	// Version discovery can spawn a subprocess. Snapshot it once for this task;
 	// across executions the cache may reuse it only while the executable file
 	// is unchanged, so upgrades still invalidate the next lookup.
-	version, versionErr := e.toolVersion(task.Tool)
+	version, versionErr := e.toolVersion(ctx, task.Tool, task.Options)
 	task.Tool = &cacheVersionTool{QualityTool: task.Tool, version: version, err: versionErr}
 
 	// For single file, try direct cache lookup
@@ -221,7 +221,16 @@ type toolVersionCache interface {
 	ToolVersion(tool tools.QualityTool) (string, error)
 }
 
-func (e *ParallelExecutor) toolVersion(tool tools.QualityTool) (string, error) {
+// executionVersionProber is optional; existing tools keep their GetVersion path.
+// Components selected by cwd or environment must be observed in execution context.
+type executionVersionProber interface {
+	GetVersionForExecution(context.Context, tools.ExecuteOptions) (string, error)
+}
+
+func (e *ParallelExecutor) toolVersion(ctx context.Context, tool tools.QualityTool, options tools.ExecuteOptions) (string, error) {
+	if prober, ok := tool.(executionVersionProber); ok {
+		return prober.GetVersionForExecution(ctx, options)
+	}
 	if versions, ok := e.cache.(toolVersionCache); ok {
 		return versions.ToolVersion(tool)
 	}

@@ -82,6 +82,7 @@ func TestBaseTool_GetVersion_BuildInfoFallback(t *testing.T) {
 func TestRustSubcommandVersionProbe(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("RUSTUP_TOOLCHAIN", "")
 
 	for _, tc := range []struct {
 		tool interface {
@@ -89,15 +90,17 @@ func TestRustSubcommandVersionProbe(t *testing.T) {
 			VersionProber
 		}
 		args []string
+		want string
 	}{
-		{NewClippyTool(), []string{"clippy", "--version"}},
-		{NewCargoFmtTool(), []string{"fmt", "--version"}},
+		{NewClippyTool(), []string{"clippy", "--version"}, "clippy 0.1.90"},
+		{NewCargoFmtTool(), []string{"fmt", "--version"}, "rustfmt 1.8.0"},
 	} {
 		t.Run(tc.tool.Name(), func(t *testing.T) {
-			fakeExecutable(t, dir, "cargo", "version")
+			path := fakeExecutable(t, dir, "cargo", "component-version")
+			require.NoError(t, os.WriteFile(path+".versions", []byte(`{"clippy":"clippy 0.1.90", "fmt":"rustfmt 1.8.0"}`), 0o600))
 			version, err := tc.tool.GetVersion()
 			require.NoError(t, err)
-			assert.Equal(t, tc.args[0]+" --version", version)
+			assert.Equal(t, tc.want, version)
 
 			executable, flags := tc.tool.VersionProbe()
 			assert.Equal(t, "cargo", executable)
