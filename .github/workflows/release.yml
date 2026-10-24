@@ -7,11 +7,11 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   goreleaser:
-    name: Release with GoReleaser
+    name: Build release artifacts without publishing
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -37,15 +37,6 @@ jobs:
         id: goreleaser
         run: echo "version=$(make -s print-goreleaser-version)" >> "$GITHUB_OUTPUT"
 
-      - name: Test tap write proof protocol offline
-        run: bin/tools/python/mdformat/bin/python -I -B scripts/test_verify_tap_write.py
-
-      - name: Verify tap publishing credential write and cleanup
-        timeout-minutes: 3
-        env:
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-        run: bin/tools/python/mdformat/bin/python -I -B scripts/verify_tap_write.py
-
       - name: Verify frozen checkout stayed clean
         run: |
           test -z "$(git status --porcelain)" || {
@@ -69,21 +60,19 @@ jobs:
           version: ${{ steps.goreleaser.outputs.version }}
           args: release --snapshot --clean
 
-      - name: Upload unpublished release candidate
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v7
-        with:
-          name: release-candidate
-          path: dist/
-          if-no-files-found: error
-
-      - name: Run GoReleaser
+      - name: Build tagged release artifacts without publishing
         if: github.event_name == 'push'
         uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: ${{ steps.goreleaser.outputs.version }}
-          args: release --clean
+          args: release --skip=publish --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Upload release build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ github.event_name == 'push' && 'release-tag-build' || 'release-candidate' }}
+          path: dist/
+          if-no-files-found: error
