@@ -58,10 +58,10 @@ make install
 #### Go Install
 
 ```bash
-# 최신 안정 버전
-go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@v0.1.3
+# 특정 안정 버전
+go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@v0.1.4
 
-# 또는 최신 개발 버전
+# 최신 안정 버전
 go install github.com/Gizzahub/gzh-cli-quality/cmd/quality@latest
 ```
 
