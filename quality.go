@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -44,7 +45,10 @@ func NewQualityManager() *QualityManager {
 
 	// Register all available tools
 	registerAllTools(registry)
+	return newQualityManager(registry)
+}
 
+func newQualityManager(registry tools.ToolRegistry) *QualityManager {
 	// Load configuration
 	cfg, err := config.LoadConfig("")
 	if err != nil {
@@ -111,7 +115,12 @@ func parseDuration(s string, defaultVal time.Duration) time.Duration {
 
 // NewQualityCmd creates the quality command.
 func NewQualityCmd() *cobra.Command {
-	manager := NewQualityManager()
+	// Building the command tree needs tool descriptions, but must not load
+	// configuration or create a cache before Cobra selects an operation.
+	registry := tools.NewRegistry()
+	registerAllTools(registry)
+	manager := &QualityManager{registry: registry}
+	initialize := sync.OnceFunc(func() { *manager = *newQualityManager(registry) })
 
 	cmd := &cobra.Command{
 		Use:   "quality",
@@ -159,15 +168,34 @@ func NewQualityCmd() *cobra.Command {
 	cmd.AddCommand(manager.newUpgradeCmd())
 	cmd.AddCommand(manager.newVersionCmd())
 	cmd.AddCommand(manager.newListCmd())
-	cmd.AddCommand(manager.newToolCmd())
+	toolCmd := manager.newToolCmd()
+	cmd.AddCommand(toolCmd)
 
 	// Cache management commands
 	cmd.AddCommand(manager.newCacheClearCmd())
 	cmd.AddCommand(manager.newCacheStatsCmd())
 
 	// Language-specific subcommands removed - use direct tool commands instead
+	initializeCommandsOnRun(cmd, toolCmd, manager, initialize)
 
 	return cmd
+}
+
+// Wrap operation callbacks rather than Cobra hooks, so an embedding command's
+// PersistentPreRun remains unchanged. Cobra validates flags/args before RunE.
+func initializeCommandsOnRun(root, toolGroup *cobra.Command, manager *QualityManager, initialize func()) {
+	for _, cmd := range root.Commands() {
+		if run := cmd.RunE; run != nil {
+			cmd.RunE = func(cmd *cobra.Command, args []string) error {
+				// The tool group's own callback also handles help and unknown tools.
+				if cmd != toolGroup || (len(args) > 0 && manager.registry.FindTool(args[0]) != nil) {
+					initialize()
+				}
+				return run(cmd, args)
+			}
+		}
+		initializeCommandsOnRun(cmd, toolGroup, manager, initialize)
+	}
 }
 
 // addCommonExecutionFlags adds common execution flags to a command.
