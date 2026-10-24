@@ -94,6 +94,10 @@ release:
     Download the appropriate binary for your platform below.
 
   footer: |
+    ### Known limitations
+
+    The PRODUCT target of a 60x cache speedup has not been demonstrated. Cache benefit varied across repeated measurements of the same formatter workload; no general speedup is claimed.
+
     **Full Changelog**: https://github.com/Gizzahub/gzh-cli-quality/compare/{{.PreviousTag}}...{{.Tag}}
 
     ---
