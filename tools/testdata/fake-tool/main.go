@@ -60,6 +60,10 @@ func main() {
 		time.Sleep(10 * time.Second)
 	case "difference":
 		fmt.Println("input.go")
+	case "version":
+		fmt.Println(strings.Join(os.Args[1:], " "))
+	case "fail":
+		os.Exit(1)
 	case "clean":
 	default:
 		fail(fmt.Errorf("unknown fixture mode %q", mode))

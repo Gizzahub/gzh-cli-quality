@@ -62,7 +62,9 @@ type QualityTool interface {
 }
 
 // VersionProber is implemented by tools whose GetVersion runs executable
-// (resolved through PATH) with each of flags in order. Callers may then reuse a
+// (resolved through PATH) with each of flags in order, or once with flags as
+// one argument list (BaseTool.SetVersionCommand), and may fall back to the
+// build information embedded in that executable. Callers may then reuse a
 // GetVersion result for as long as that executable file is unchanged. A tool
 // that overrides GetVersion with a different probe must override VersionProbe
 // to match, or the reused version may come from another probe.

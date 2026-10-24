@@ -72,6 +72,11 @@ func NewClippyTool() *ClippyTool {
 		BaseTool: NewBaseTool("clippy", "Rust", "cargo", LINT),
 	}
 
+	// cargo is a rustup proxy or a separate install; clippy-driver may change
+	// without cargo, so the version is probed every time.
+	tool.SetVersionCommand("clippy", "--version")
+	tool.SetVersionUncacheable()
+
 	tool.SetInstallCommand([]string{"rustup", "component", "add", "clippy"})
 	tool.SetConfigPatterns([]string{"clippy.toml", ".clippy.toml", "Cargo.toml"})
 
@@ -185,6 +190,10 @@ func NewCargoFmtTool() *CargoFmtTool {
 	tool := &CargoFmtTool{
 		BaseTool: NewBaseTool("cargo-fmt", "Rust", "cargo", FORMAT),
 	}
+
+	// rustfmt may change without cargo; see NewClippyTool.
+	tool.SetVersionCommand("fmt", "--version")
+	tool.SetVersionUncacheable()
 
 	tool.SetInstallCommand([]string{"rustup", "component", "add", "rustfmt"})
 	tool.SetConfigPatterns([]string{"rustfmt.toml", ".rustfmt.toml"})

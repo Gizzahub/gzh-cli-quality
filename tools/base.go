@@ -5,6 +5,7 @@ package tools
 
 import (
 	"context"
+	"debug/buildinfo"
 	"fmt"
 	"os"
 	"os/exec"
@@ -25,7 +26,9 @@ type BaseTool struct {
 	// versionUncacheable marks a version output that the executable file
 	// alone does not determine; see VersionProber.VersionCacheable.
 	versionUncacheable bool
-	adapter            interface {
+	// versionCommand, when set, replaces versionFlags; see SetVersionCommand.
+	versionCommand []string
+	adapter        interface {
 		BuildCommand([]string, ExecuteOptions) *exec.Cmd
 		ParseOutput(string) []Issue
 	}
@@ -85,9 +88,20 @@ func (t *BaseTool) Install() error {
 // versionFlags are tried in order by GetVersion; the first non-empty output wins.
 var versionFlags = []string{"--version", "-v", "-V", "version"}
 
-// VersionProbe reports the executable and ordered flags GetVersion runs.
+// VersionProbe reports the executable and the arguments GetVersion runs: the
+// command set by SetVersionCommand, or else the ordered versionFlags.
 func (t *BaseTool) VersionProbe() (executable string, flags []string) {
+	if len(t.versionCommand) > 0 {
+		return t.executable, slices.Clone(t.versionCommand)
+	}
 	return t.executable, slices.Clone(versionFlags)
+}
+
+// SetVersionCommand makes GetVersion run the executable once with args instead
+// of trying versionFlags, for a tool that is a subcommand of its executable
+// (`cargo clippy --version` reports clippy, `cargo --version` reports cargo).
+func (t *BaseTool) SetVersionCommand(args ...string) {
+	t.versionCommand = slices.Clone(args)
 }
 
 // VersionCacheable reports whether callers may reuse a version recorded for
@@ -102,10 +116,24 @@ func (t *BaseTool) SetVersionUncacheable() {
 	t.versionUncacheable = true
 }
 
-// GetVersion returns the version of the installed tool.
+// GetVersion returns the version of the installed tool. A Go program with no
+// version flag (goimports) is identified by the build information embedded in
+// its executable. "unknown" means neither source named a version.
 func (t *BaseTool) GetVersion() (string, error) {
-	if !t.IsAvailable() {
+	path, err := exec.LookPath(t.executable)
+	if err != nil {
 		return "", fmt.Errorf("tool %s is not installed", t.name)
+	}
+
+	if len(t.versionCommand) > 0 {
+		output, err := exec.Command(t.executable, t.versionCommand...).Output()
+		if err != nil {
+			return "", fmt.Errorf("failed to get %s version: %w", t.name, err)
+		}
+		if version := strings.TrimSpace(string(output)); version != "" {
+			return version, nil
+		}
+		return "unknown", nil
 	}
 
 	for _, flag := range versionFlags {
@@ -119,7 +147,44 @@ func (t *BaseTool) GetVersion() (string, error) {
 		}
 	}
 
+	if info, err := buildinfo.ReadFile(path); err == nil {
+		if version := buildInfoVersion(info); version != "" {
+			return version, nil
+		}
+	}
+
 	return "unknown", nil
+}
+
+// buildInfoVersion names a Go executable by its main module version and the
+// Go release that built it, since the standard library's go/format and
+// go/printer shape a formatter's output too. A build from a modified checkout
+// returns "": two such builds can differ while sharing one version (Go stamps
+// both "+dirty"). A "(devel)" build counts only with a clean VCS revision.
+func buildInfoVersion(info *buildinfo.BuildInfo) string {
+	if info.Main.Path == "" {
+		return ""
+	}
+	var revision, modified string
+	for _, setting := range info.Settings {
+		switch setting.Key {
+		case "vcs.revision":
+			revision = setting.Value
+		case "vcs.modified":
+			modified = setting.Value
+		}
+	}
+	if modified == "true" {
+		return ""
+	}
+	version := info.Main.Version
+	if version == "" || version == "(devel)" {
+		if revision == "" || modified != "false" {
+			return ""
+		}
+		version = "(devel) " + revision
+	}
+	return info.Main.Path + " " + version + " " + info.GoVersion
 }
 
 // Upgrade attempts to upgrade the tool to the latest version.
