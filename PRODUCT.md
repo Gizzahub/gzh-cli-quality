@@ -36,9 +36,13 @@ G1. **Integrated coverage**
 
 G2. **Cache efficiency**
 
-- Target: 파일 기반 캐시가 모두 적중하면 도구 실행·버전 조회 subprocess 0회, quality
-  자체 처리 시간 파일당 100µs 이하 (`BenchmarkCache_InstalledGofumpt` `-count=6` WarmHit
-  중앙값 ÷ 파일 수, workload와 측정 조건은 BENCHMARKS.md)
+- Target: 파일 기반 결과 캐시가 모두 적중하면 결과를 만드는 도구 실행 0회.
+  quality 자체 처리 시간은 지정된 Darwin gofumpt workload에서 파일당 100µs 이하
+  (`BenchmarkCache_InstalledGofumpt` `-count=6` WarmHit 중앙값 ÷ 파일 수,
+  workload와 측정 조건은 BENCHMARKS.md).
+- 버전 조회 subprocess 0회는 위 측정에서 실행 파일의 강한 identity로 버전 캐시를
+  재사용할 수 있을 때의 조건이다. Windows와 Rust 등의 안전한 버전 재조회는 유지하며,
+  모든 플랫폼·도구에 버전 subprocess 0회나 같은 시간 상한을 보증하지 않는다.
 - 비캐시 대비 배율은 참고값이다. 배율은 도구 실행 비용 ÷ quality 고정 비용이라 도구마다
   달라지고 quality가 소유하지 않는 도구 비용에 좌우된다. 2026-10-25 이전 목표 60배는
   gofumpt workload에서 버전 캐시 추가 후에도 약 6.8~7.9배로 미충족이었다
@@ -102,7 +106,8 @@ ______________________________________________________________________
 
 **Performance**
 
-- Registry 조회 < 20ns; 캐시 전부 적중 시 도구 실행·버전 조회 subprocess 0회·파일당 100µs 이하
+- Registry 조회 < 20ns; 결과 캐시 전부 적중 시 결과 도구 실행 0회.
+  G2에 지정한 Darwin gofumpt 측정에서 버전 subprocess 0회·파일당 100µs 이하.
 
 **Docs**
 

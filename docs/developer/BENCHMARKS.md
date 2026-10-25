@@ -6,8 +6,12 @@ This document contains baseline performance benchmarks for the gzh-cli-quality p
 
 ## G2 캐시 판정 기준 — 2026-10-25
 
-PRODUCT.md G2는 비캐시 대비 60배에서 "모두 적중 시 도구 실행·버전 조회 subprocess
-0회, quality 자체 처리 시간 파일당 100µs 이하"로 바뀌었다. 판정값은 아래 workload(source
+PRODUCT.md G2는 비캐시 대비 60배에서 "결과 캐시 모두 적중 시 결과 도구 실행 0회,
+지정된 Darwin gofumpt 측정에서 버전 subprocess 0회·파일당 100µs 이하"로 바뀌었다.
+버전 subprocess 0회는 실행 파일의 강한 identity로 버전 캐시를 재사용할 수 있는 이 측정의
+조건이다. Windows의 stat identity 미지원이나 Rust component의 cwd/환경 선택 때문에
+필요한 안전한 버전 조회를 없애지 않는다. 다른 플랫폼·도구에 버전 subprocess 0회 또는
+같은 시간 상한을 일반화하지 않는다. 판정값은 아래 workload(source
 `d7cf583`의 35파일)로 `BenchmarkCache_InstalledGofumpt`를 `-count=6` 실행한 WarmHit
 중앙값 ÷ 파일 수다. 배율은 비캐시 실행 비용 ÷ warm hit 비용이라 quality가 소유하지 않는
 도구 비용에 좌우된다. 아래 계열의 비캐시 약 10~11ms에서 60배는 WarmHit 약 0.17~0.19ms(파일당
@@ -16,7 +20,7 @@ PRODUCT.md G2는 비캐시 대비 60배에서 "모두 적중 시 도구 실행·
 이력은 아래에 그대로 보존한다. no-op mock benchmark는 도구 실행이 없어 이 판정에 쓰지 않는다.
 
 100µs는 아래 6회 계열 값의 약 2.2~2.3배다. 오버헤드가 그 이상 늘면 잡아내지만 2.2배
-미만의 퇴행은 놓친다. warm hit는 프로세스를 띄우지 않으므로 변동 원인은 디스크
+미만의 퇴행은 놓친다. 이 Darwin gofumpt 측정의 warm hit는 프로세스를 띄우지 않으므로 변동 원인은 디스크
 경합으로 추정하며(분리 측정 없음), 같은 workload에서 WarmHit 중앙값이 약 3.2배(1.522 → 4.824ms) 움직인 기록이 있다.
 
 | 계열 (모두 source `d7cf583` 35파일)               | WarmHit 중앙값 | 파일당   | 도구 실행 / 버전 조회 | 참고 배율 | 새 G2  |
@@ -31,6 +35,32 @@ PRODUCT.md G2는 비캐시 대비 60배에서 "모두 적중 시 도구 실행·
 계열을 새 기준으로 읽은 것이며 2026-10-25에 새로 측정하지 않았다. 미충족 계열의 원인을
 분리하거나 부하를 기록한 반복 측정으로 다시 판정하기 전에는 G2 충족을 확정하지 않는다. 이 workload는 `_test.go`와 `testdata/`만 제외하므로 testutil 같은
 보조 Go 파일도 포함한다.
+
+### 다음 G2 측정 프로토콜
+
+측정 전 독립 리뷰를 마친 clean source commit, harness SHA-256, 이미 설치된 gofumpt의
+절대 경로·버전·compiler·SHA-256과 host model/CPU 수/메모리/OS/Go 버전을 기록한다.
+source `d7cf583210f2174d2c58746f6c939277546a5bbe`의 35파일·224,789 bytes·workload digest는
+그대로 둔다. testutil·fixture도 포함하며 입력을 바꾸거나 새 formatter를 설치하지 않는다.
+
+기존 benchmark를 task 1개·worker 1개, `-benchtime=300ms -count=6 -v`로 한 번 실행한다.
+NoCache/ColdMiss/WarmHit/WarmHitNoVersionCache와 VersionProbe/CacheMetadataReads의
+6개 group 각각 6개 표본을 전부 보존한다. WarmHit의 파일당 값은 ns/op 표본의 중앙값을
+35와 1,000으로 나눈 µs/파일이다. 이는 executor·key/hash·cache I/O·결과 검증을 포함한
+batch 환산값이지, 개별 파일의 p95 지연이나 새 CLI 프로세스 시작 시간이 아니다.
+prewarm과 setup은 timer 밖이고, 실행 횟수 counter는 prewarm 뒤 초기화된다.
+
+정확성 조건과 timing을 구분한다. 이 Darwin 측정의 실행/버전 조회 횟수는 각각
+NoCache 1/0, ColdMiss 1/1, WarmHit 0/0, WarmHitNoVersionCache 0/1이어야 한다.
+ColdMiss는 기존 `InvalidateAll`로 결과·버전 캐시를 함께 비우며,
+CacheMetadataReads는 반복당 35회 읽기를 보고한다. content/config/argv/명시적 환경·버전
+변경의 무효화는 기존 회귀 검사로 확인하며 측정이 정확성 검사를 대신하지 않는다.
+
+실행 전후 load average와 다른 VM의 존재, 자체 heavy job 유무를 기록한다. 부하 때문에
+대기하면 실행하지 않았다고 남기고 다른 프로세스를 중지하지 않는다. 실행을 시작한 뒤에는
+부하 변화·실패·100µs 초과 표본도 모두 보존한다. 사전 선언한 resource admission과
+실제 관찰, raw log·tool-computed JSON·source/tool/harness 전후 해시는 task 증거에 둔다.
+관찰한 결과가 좋지 않다는 이유로 재실행하거나 표본을 제외하지 않는다.
 
 ## 실제 formatter 캐시 측정 — 2026-10-24
 
