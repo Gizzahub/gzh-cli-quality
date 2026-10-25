@@ -3,6 +3,7 @@ package quality
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -13,6 +14,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Gizzahub/gzh-cli-quality/cache"
 )
 
 type lazyFileState struct {
@@ -32,8 +35,11 @@ func lazySnapshot(t *testing.T, root string) map[string]lazyFileState {
 		if err != nil {
 			return err
 		}
-		item := lazyFileState{mode: info.Mode(), modified: info.ModTime()}
+		// Directory timestamp observations can change without a CLI write.
+		// Track directory existence/mode and retain full regular-file checks.
+		item := lazyFileState{mode: info.Mode()}
 		if !entry.IsDir() {
+			item.modified = info.ModTime()
 			data, err := os.ReadFile(path)
 			if err != nil {
 				return err
@@ -44,6 +50,40 @@ func lazySnapshot(t *testing.T, root string) map[string]lazyFileState {
 		return nil
 	}))
 	return state
+}
+
+func TestLazySnapshotDetectsMutations(t *testing.T) {
+	for _, mutation := range []string{"create directory", "remove directory", "file content", "file mtime", "directory mtime only"} {
+		t.Run(mutation, func(t *testing.T) {
+			root := t.TempDir()
+			directory := filepath.Join(root, "directory")
+			file := filepath.Join(root, "file")
+			require.NoError(t, os.Mkdir(directory, 0o700))
+			require.NoError(t, os.WriteFile(file, []byte("before"), 0o600))
+			before := lazySnapshot(t, root)
+			switch mutation {
+			case "create directory":
+				require.NoError(t, os.Mkdir(filepath.Join(root, "new-directory"), 0o700))
+			case "remove directory":
+				require.NoError(t, os.Remove(directory))
+			case "file content":
+				require.NoError(t, os.WriteFile(file, []byte("after"), 0o600))
+				// Even if a writer restores mtime, changed bytes must be detected.
+				require.NoError(t, os.Chtimes(file, before[file].modified, before[file].modified))
+			case "file mtime":
+				changed := before[file].modified.Add(-time.Hour)
+				require.NoError(t, os.Chtimes(file, changed, changed))
+			case "directory mtime only":
+				changed := time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
+				require.NoError(t, os.Chtimes(directory, changed, changed))
+			}
+			if mutation == "directory mtime only" {
+				require.Equal(t, before, lazySnapshot(t, root))
+			} else {
+				require.NotEqual(t, before, lazySnapshot(t, root))
+			}
+		})
+	}
 }
 
 func isolateLazyHome(t *testing.T, home string) {
@@ -145,8 +185,24 @@ func TestQualityLazyOperationRetainsCacheAndErrors(t *testing.T) {
 	require.DirExists(t, cacheDir)
 	calls, err := os.ReadFile(tool + ".calls")
 	require.NoError(t, err)
-	require.Equal(t, 2, bytes.Count(calls, []byte("\n")), "exactly one successful probe and one execution: %s", calls)
+	probes := 1
+	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
+		// version_stat_other.go deliberately reprobes where strong stat identity is unavailable.
+		probes = 2
+	}
+	require.Equal(t, probes, bytes.Count(calls, []byte("--version\n")), "successful version probes follow the platform identity contract: %s", calls)
+	require.Equal(t, probes+1, bytes.Count(calls, []byte("\n")), "no fallback probes or extra executions: %s", calls)
 	require.Equal(t, 1, bytes.Count(calls, []byte("sample.go")), "the second operation must hit the result cache: %s", calls)
+	storage, err := cache.NewFilesystemStorage(cacheDir)
+	require.NoError(t, err)
+	keys, err := storage.List()
+	require.NoError(t, err)
+	require.Len(t, keys, 1)
+	stored, err := storage.Read(keys[0])
+	require.NoError(t, err)
+	var cached cache.CachedResult
+	require.NoError(t, json.Unmarshal(stored, &cached))
+	require.Equal(t, "gofumpt v0.0.1", cached.Key.ToolVersion, "the result uses the successful numeric fixture identity")
 	parent.SetArgs([]string{"quality", "cache-stats"})
 	output := captureReleaseOutput(t, func() { require.NoError(t, parent.Execute()) })
 	require.Contains(t, output, "캐시 히트: 1회", "the command lifetime must retain its initialized manager")
