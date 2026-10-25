@@ -4,15 +4,43 @@
 
 This document contains baseline performance benchmarks for the gzh-cli-quality project. Benchmarks measure the performance of critical operations across tools, detector, and executor packages.
 
+## G2 캐시 판정 기준 — 2026-10-25
+
+PRODUCT.md G2는 비캐시 대비 60배에서 "모두 적중 시 도구 실행·버전 조회 subprocess
+0회, quality 자체 처리 시간 파일당 100µs 이하"로 바뀌었다. 판정값은 아래 workload(source
+`d7cf583`의 35파일)로 `BenchmarkCache_InstalledGofumpt`를 `-count=6` 실행한 WarmHit
+중앙값 ÷ 파일 수다. 배율은 비캐시 실행 비용 ÷ warm hit 비용이라 quality가 소유하지 않는
+도구 비용에 좌우된다. 아래 계열의 비캐시 약 10~11ms에서 60배는 WarmHit 약 0.17~0.19ms(파일당
+약 5µs) 이하를 요구하는데, 이는 적중 35회의 `CacheMetadataReads` component 0.902ms보다도
+작다. 그래서 quality가 소유한 비용만 판정한다. 배율은 참고값으로 계속 기록하고, 60배 미충족
+이력은 아래에 그대로 보존한다. no-op mock benchmark는 도구 실행이 없어 이 판정에 쓰지 않는다.
+
+100µs는 아래 6회 계열 값의 약 2.2~2.3배다. 오버헤드가 그 이상 늘면 잡아내지만 2.2배
+미만의 퇴행은 놓친다. warm hit는 프로세스를 띄우지 않으므로 변동 원인은 디스크
+경합으로 추정하며(분리 측정 없음), 같은 workload에서 WarmHit 중앙값이 약 3.2배(1.522 → 4.824ms) 움직인 기록이 있다.
+
+| 계열 (모두 source `d7cf583` 35파일)               | WarmHit 중앙값 | 파일당   | 도구 실행 / 버전 조회 | 참고 배율 | 새 G2  |
+| ------------------------------------------------- | -------------- | -------- | --------------------- | --------- | ------ |
+| 버전 캐시 추가 후 `-count=6` (아래 절)            | 1.522 ms       | 43.5 µs  | 0 / 0                 | 약 6.8배  | 충족   |
+| devbox TASK-356 `-count=6` (quality `42c5c0f`)    | 1.607675 ms    | 45.9 µs  | 0 / 0                 | 약 6.9배  | 충족   |
+| devbox ISSUE-362 동시 세션 `-count=3` (`42c5c0f`) | 4.824 ms       | 137.8 µs | 0 / 0                 | 약 7.9배  | 미충족 |
+
+판정 조건(`-count=6`)을 갖춘 두 계열은 충족하고 측정 전후 load average를 기록했다.
+다른 세션의 `-count=3` 계열은 미충족이며 부하를 기록하지 않았다. 그 계열은 NoCache도
+38.089ms로 높아 경합을 받은 것으로 추정하지만 원인을 분리하지 않았다. 이 판정은 보존된
+계열을 새 기준으로 읽은 것이며 2026-10-25에 새로 측정하지 않았다. 미충족 계열의 원인을
+분리하거나 부하를 기록한 반복 측정으로 다시 판정하기 전에는 G2 충족을 확정하지 않는다. 이 workload는 `_test.go`와 `testdata/`만 제외하므로 testutil 같은
+보조 Go 파일도 포함한다.
+
 ## 실제 formatter 캐시 측정 — 2026-10-24
 
-이 절이 현재 관측이며, 아래 2025년 수치는 당시 기록으로 유지한다. PRODUCT의
-캐시 60배 목표를 낮추거나 no-op mock benchmark로 충족했다고 판정하지 않는다.
+이 절은 2026-10-24 관측이며, 아래 2025년 수치는 당시 기록으로 유지한다. 당시 PRODUCT의
+캐시 60배 목표를 낮추거나 no-op mock benchmark로 충족했다고 판정하지 않았다.
 
 측정 기간은 2026-10-23~24, 환경은 Apple M5 Max / darwin arm64 / Go 1.27.3이다.
 기존 `$(go env GOPATH)/bin/gofumpt` v0.10.0 (go1.26.3)을 사용했고 새 formatter는
 설치하지 않았다. workload는 source `d7cf583210f2174d2c58746f6c939277546a5bbe`의
-tracked production Go 파일 35개, 224,789 bytes를 임시 디렉터리에 복사한 것이다.
+tracked Go 파일 35개(`_test.go`·`testdata/` 제외, testutil·fixture 포함), 224,789 bytes를 임시 디렉터리에 복사한 것이다.
 테스트·testdata는 이 **benchmark 입력**에서 제외하며 제품 테스트 커버리지의
 package/파일 선택이나 하한은 변경하지 않는다. 경로와 content를 차례로 결합한
 workload SHA-256은 `ec3ce86dbe97d934fe390f18379ba672378cfb791c0049c8dd06f579d7be8435`다.

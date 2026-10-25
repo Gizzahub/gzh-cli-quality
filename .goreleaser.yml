@@ -100,7 +100,7 @@ release:
   footer: |
     ### Known limitations
 
-    The PRODUCT target of a 60x cache speedup has not been demonstrated. Cache benefit varied across repeated measurements of the same formatter workload; no general speedup is claimed.
+    The cache target (no tool subprocess on a full hit and at most 100µs of gz-quality overhead per file) has not been confirmed: two recorded series met it and one exceeded it, and the cause of the difference was not isolated. Cache benefit varied across repeated measurements of the same formatter workload; no general speedup is claimed.
 
     **Full Changelog**: https://github.com/Gizzahub/gzh-cli-quality/compare/{{.PreviousTag}}...{{.Tag}}
 

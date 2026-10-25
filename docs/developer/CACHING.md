@@ -6,7 +6,9 @@ Design document for implementing a file-based caching system to improve gz-quali
 
 아래 설계 예시의 시간·속도 향상은 측정 결과가 아니다. 실제 설치된 gofumpt로
 측정한 cold miss / warm hit / 비캐시 비교는 [BENCHMARKS.md](BENCHMARKS.md)의
-2026-10-24 기록을 따른다. 이 workload에서 60배 목표를 충족하지 못했다.
+2026-10-24 기록을 따른다. 이 workload에서 당시 60배 목표를 충족하지 못했다.
+2026-10-25 바뀐 PRODUCT.md G2(적중 시 subprocess 0회·파일당 100µs 이하)의 계열별 판정은
+BENCHMARKS.md의 "G2 캐시 판정 기준" 절을 따른다.
 
 - 도구 버전은 파일마다 subprocess를 호출하지 않고 **한 task 안에서 한 번**
   얻는다. 실행 사이에는 아래 "도구 버전 캐시" 절의 캐시가 실행 파일이

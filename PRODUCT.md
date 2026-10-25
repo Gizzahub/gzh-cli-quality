@@ -36,7 +36,13 @@ G1. **Integrated coverage**
 
 G2. **Cache efficiency**
 
-- Target: 파일 기반 캐시 히트 시 재실행 >= 60x 빠름
+- Target: 파일 기반 캐시가 모두 적중하면 도구 실행·버전 조회 subprocess 0회, quality
+  자체 처리 시간 파일당 100µs 이하 (`BenchmarkCache_InstalledGofumpt` `-count=6` WarmHit
+  중앙값 ÷ 파일 수, workload와 측정 조건은 BENCHMARKS.md)
+- 비캐시 대비 배율은 참고값이다. 배율은 도구 실행 비용 ÷ quality 고정 비용이라 도구마다
+  달라지고 quality가 소유하지 않는 도구 비용에 좌우된다. 2026-10-25 이전 목표 60배는
+  gofumpt workload에서 버전 캐시 추가 후에도 약 6.8~7.9배로 미충족이었다
+  ([BENCHMARKS.md](docs/developer/BENCHMARKS.md)).
 
 G3. **Parallel throughput**
 
@@ -96,7 +102,7 @@ ______________________________________________________________________
 
 **Performance**
 
-- Registry 조회 < 20ns; 캐시 히트 시 재실행 >= 60x
+- Registry 조회 < 20ns; 캐시 전부 적중 시 도구 실행·버전 조회 subprocess 0회·파일당 100µs 이하
 
 **Docs**
 
