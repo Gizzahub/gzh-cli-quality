@@ -100,7 +100,7 @@ release:
   footer: |
     ### Known limitations
 
-    The cache target (no tool subprocess on a full hit and at most 100µs of gz-quality overhead per file) has not been confirmed: two recorded series met it and one exceeded it, and the cause of the difference was not isolated. Cache benefit varied across repeated measurements of the same formatter workload; no general speedup is claimed.
+    The designated Darwin gofumpt workload met the 100µs/file target in the latest declared series. A historical series exceeded it and the variation remains unexplained. Full result-cache hits avoid result-producing tool execution; necessary Windows/Rust version probes remain. No general speedup or universal stability is claimed.
 
     **Full Changelog**: https://github.com/Gizzahub/gzh-cli-quality/compare/{{.PreviousTag}}...{{.Tag}}
 
