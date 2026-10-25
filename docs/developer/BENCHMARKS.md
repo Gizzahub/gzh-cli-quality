@@ -62,6 +62,54 @@ CacheMetadataReads는 반복당 35회 읽기를 보고한다. content/config/arg
 실제 관찰, raw log·tool-computed JSON·source/tool/harness 전후 해시는 task 증거에 둔다.
 관찰한 결과가 좋지 않다는 이유로 재실행하거나 표본을 제외하지 않는다.
 
+### 2026-10-25 선언된 1회 재측정
+
+독립 리뷰·소유 release-quality 후 clean source
+`20c85c5935e6819f4f89f03bf9f499c1640adf3e`에서 위 프로토콜을 한 번 실행했다.
+이 절과 첨부 원문은 그 실행 후의 문서 후속이며 다시 측정한 결과가 아니다.
+executor/harness·설치 도구·고정 workload는 앞선 계열에서 바꾸지 않았다.
+
+- 환경: Apple M5 Max / Mac17,6, CPU 18개, 메모리 128GiB, Darwin 27.0.0 arm64,
+  Go 1.27.3. 이미 설치된 gofumpt v0.10.0(go1.26.3)을 사용했다.
+- 도구 SHA-256: `416e15e5494ba4c4b2adcd5e23180061540a0ef0b31c2a391b56a41cf2ec7678`.
+  harness SHA-256: `2244bc3593becf99274171cba0e803bc1bb585a829d2ebb1f88ce636a3b1fa8e`.
+  source·tree·두 해시는 측정 전후 일치했고 작업 트리는 clean이었다.
+- 입력: source `d7cf583210f2174d2c58746f6c939277546a5bbe`의 35파일·224,789 bytes,
+  digest `ec3ce86dbe97d934fe390f18379ba672378cfb791c0049c8dd06f579d7be8435`.
+  testutil·fixture를 포함하는 기존 입력을 그대로 사용했다.
+- 이번 자원 admission은 1분 load ≤4를 30초 간격 두 번 확인하는 조건이었다.
+  실제 값 2.8003·2.6992로 허용됐고 자체 heavy job은 없었다.
+  측정 직전 load(1/5/15분)는 2.2910/3.1299/2.9834, 직후는
+  3.7222/3.4102/3.0874였다. 기존 VM은 전후 모두 있었으며 중지하지 않았다.
+  이 admission은 이번 측정용이며 제품의 보편적인 부하 기준이 아니다.
+- 실행: task 1개·worker 1개, `-benchtime=300ms -count=6 -v`, 6개 group 각각 6표본
+  모두 보존. 종료코드 0, Go 보고 시간 20.649s, 전체 wall time 20.913879s.
+
+| 경로                  | 중앙값 ms/op | 최소~최대 ms/op (6회) | tool 실행 / version 조회 |
+| --------------------- | ------------ | --------------------- | ------------------------ |
+| NoCache               | 10.508766    | 10.493409 ~ 10.844414 | 1 / 0                    |
+| ColdMiss              | 53.4066995   | 52.918405 ~ 54.259798 | 1 / 1                    |
+| WarmHit               | 1.4973285    | 1.454063 ~ 1.558292   | 0 / 0                    |
+| WarmHitNoVersionCache | 4.837450     | 4.778864 ~ 5.131375   | 0 / 1                    |
+| VersionProbe          | 2.9366865    | 2.908619 ~ 3.033834   | 버전 조회 component      |
+| CacheMetadataReads    | 0.881199     | 0.874963 ~ 0.888418   | 35 cache reads/op        |
+
+WarmHit 중앙값 ÷ 35는 **42.780814µs/파일**로 이번 선언된 Darwin gofumpt 계열의
+100µs 기준을 충족했다. 참고 NoCache/WarmHit 배율은 7.018344배다. 각 표본의
+실행·조회 횟수와 35회 cache read도 기대값과 일치했다.
+
+이 한 계열은 보존된 137.8µs 계열의 원인을 분리하거나 모든 환경의 안정성을 증명하지
+않는다. 과거 미충족 계열과 원인 미확인 한계를 유지하며 F2의 전체 해소를 선언하지 않는다.
+개별 파일 p95·CLI startup·package linter·Windows/Rust 버전 조회 0회로 일반화하지 않는다.
+추가 retry나 profile 실행은 없었다.
+
+소유 원문: [전체 36표본 로그](cache-overhead-2026-10-25.log),
+[계산 결과·입력·해시 JSON](cache-overhead-2026-10-25.json),
+[자원 admission JSON](cache-overhead-2026-10-25-admission.json).
+JSON에는 VM 존재·프로세스 이름만 남기며 전체 프로세스 목록·인자·환경 덤프는 포함하지 않는다.
+raw benchmark SHA-256은
+`43451728d862ec8f9aadb7bd6b03039664824cf6e9877121b49bc2c8ecb74dcd`다.
+
 ## 실제 formatter 캐시 측정 — 2026-10-24
 
 이 절은 2026-10-24 관측이며, 아래 2025년 수치는 당시 기록으로 유지한다. 당시 PRODUCT의

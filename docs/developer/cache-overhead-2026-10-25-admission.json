@@ -1,0 +1,35 @@
+{
+  "source_sha": "20c85c5935e6819f4f89f03bf9f499c1640adf3e",
+  "protocol_sha256": "8550a2c52adc0f32915b70e96866023b87a550ed82a4ee8117ae5569c227c7bf",
+  "parent_cpu_slot_go": true,
+  "own_heavy_jobs": "none; parent confirmed all owning gates finished; observer launches no heavy job",
+  "readings": [
+    {
+      "utc": "2026-10-25T09:46:03.386563+00:00",
+      "load_average_1_5_15": [
+        2.80029296875,
+        3.55908203125,
+        3.1044921875
+      ],
+      "virtual_machine_present": true,
+      "virtual_machine_process_names": [
+        "com.apple.Virtualization.VirtualMachine"
+      ]
+    },
+    {
+      "utc": "2026-10-25T09:46:33.428393+00:00",
+      "load_average_1_5_15": [
+        2.69921875,
+        3.45703125,
+        3.08154296875
+      ],
+      "virtual_machine_present": true,
+      "virtual_machine_process_names": [
+        "com.apple.Virtualization.VirtualMachine"
+      ]
+    }
+  ],
+  "decision": "ADMITTED",
+  "private_source_receipt_sha256": "fbf4b15fbd98d0d700dda659df8fcbb97b77594e81147e32ed928c576ab5b850",
+  "privacy": "Full process name/path observations retained private ignored tmp only; safe receipt contains VM presence/name, no process arguments or environment dump."
+}

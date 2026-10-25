@@ -1,0 +1,50 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/Gizzahub/gzh-cli-quality/executor
+cpu: Apple M5 Max
+BenchmarkCache_InstalledGofumpt
+    real_cache_bench_test.go:106: tool=/Users/archmagece/go/bin/gofumpt version=v0.10.0 (go1.26.3) revision=d7cf583210f2174d2c58746f6c939277546a5bbe files=35 bytes=224789 workload_sha256=ec3ce86dbe97d934fe390f18379ba672378cfb791c0049c8dd06f579d7be8435
+BenchmarkCache_InstalledGofumpt/VersionProbe
+BenchmarkCache_InstalledGofumpt/VersionProbe-18         	     100	   3033834 ns/op
+BenchmarkCache_InstalledGofumpt/VersionProbe-18         	     123	   2926399 ns/op
+BenchmarkCache_InstalledGofumpt/VersionProbe-18         	     122	   2946974 ns/op
+BenchmarkCache_InstalledGofumpt/VersionProbe-18         	     122	   2908619 ns/op
+BenchmarkCache_InstalledGofumpt/VersionProbe-18         	     122	   2914681 ns/op
+BenchmarkCache_InstalledGofumpt/VersionProbe-18         	     122	   2983288 ns/op
+BenchmarkCache_InstalledGofumpt/CacheMetadataReads
+BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   	     400	    888418 ns/op	        35.00 cache_reads/op
+BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   	     399	    882085 ns/op	        35.00 cache_reads/op
+BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   	     369	    880313 ns/op	        35.00 cache_reads/op
+BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   	     408	    874963 ns/op	        35.00 cache_reads/op
+BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   	     398	    878071 ns/op	        35.00 cache_reads/op
+BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   	     405	    883299 ns/op	        35.00 cache_reads/op
+BenchmarkCache_InstalledGofumpt/NoCache
+BenchmarkCache_InstalledGofumpt/NoCache-18              	      30	  10575357 ns/op	         1.000 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/NoCache-18              	      33	  10513833 ns/op	         1.000 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/NoCache-18              	      32	  10844414 ns/op	         1.000 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/NoCache-18              	      31	  10503699 ns/op	         1.000 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/NoCache-18              	      33	  10493409 ns/op	         1.000 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/NoCache-18              	      33	  10495595 ns/op	         1.000 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/ColdMiss
+BenchmarkCache_InstalledGofumpt/ColdMiss-18             	       7	  53234637 ns/op	         1.000 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/ColdMiss-18             	       7	  53578762 ns/op	         1.000 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/ColdMiss-18             	       7	  53004512 ns/op	         1.000 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/ColdMiss-18             	       7	  54115410 ns/op	         1.000 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/ColdMiss-18             	       7	  52918405 ns/op	         1.000 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/ColdMiss-18             	       7	  54259798 ns/op	         1.000 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHit
+BenchmarkCache_InstalledGofumpt/WarmHit-18              	     238	   1509032 ns/op	         0 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHit-18              	     229	   1520146 ns/op	         0 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHit-18              	     241	   1558292 ns/op	         0 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHit-18              	     240	   1468945 ns/op	         0 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHit-18              	     247	   1454063 ns/op	         0 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHit-18              	     240	   1485625 ns/op	         0 tool_runs/op	         0 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache
+BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         	      72	   4826926 ns/op	         0 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         	      62	   5131375 ns/op	         0 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         	      74	   4828058 ns/op	         0 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         	      74	   4778864 ns/op	         0 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         	      67	   4846842 ns/op	         0 tool_runs/op	         1.000 version_calls/op
+BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         	      62	   4926796 ns/op	         0 tool_runs/op	         1.000 version_calls/op
+PASS
+ok  	github.com/Gizzahub/gzh-cli-quality/executor	20.649s

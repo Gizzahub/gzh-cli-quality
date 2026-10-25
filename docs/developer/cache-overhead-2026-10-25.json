@@ -1,0 +1,469 @@
+{
+  "source_before": {
+    "head": "20c85c5935e6819f4f89f03bf9f499c1640adf3e",
+    "tree": "645519b48892ccca194ea33ed48c07fdcd6981fd",
+    "tool_sha256": "416e15e5494ba4c4b2adcd5e23180061540a0ef0b31c2a391b56a41cf2ec7678",
+    "harness_sha256": "2244bc3593becf99274171cba0e803bc1bb585a829d2ebb1f88ce636a3b1fa8e"
+  },
+  "protocol_sha256": "8550a2c52adc0f32915b70e96866023b87a550ed82a4ee8117ae5569c227c7bf",
+  "admission_sha256": "fbf4b15fbd98d0d700dda659df8fcbb97b77594e81147e32ed928c576ab5b850",
+  "workload": {
+    "source_ref": "d7cf583210f2174d2c58746f6c939277546a5bbe",
+    "files": [
+      "cache/key.go",
+      "cache/manager.go",
+      "cache/storage.go",
+      "cache/types.go",
+      "cmd/quality/main.go",
+      "config/config.go",
+      "detector/language.go",
+      "detector/tools.go",
+      "executor/runner.go",
+      "git/utils.go",
+      "internal/errors/errors.go",
+      "internal/logger/logger.go",
+      "internal/testutil/testutil.go",
+      "quality.go",
+      "report/generator.go",
+      "tests/fixtures/sample.go",
+      "tools/base.go",
+      "tools/cpp_tools.go",
+      "tools/css_tools.go",
+      "tools/dockerfile_tools.go",
+      "tools/go_tools.go",
+      "tools/interface.go",
+      "tools/java_tools.go",
+      "tools/javascript_tools.go",
+      "tools/kotlin_tools.go",
+      "tools/markdown_tools.go",
+      "tools/parser.go",
+      "tools/protobuf_tools.go",
+      "tools/python_tools.go",
+      "tools/registry.go",
+      "tools/rust_tools.go",
+      "tools/shell_tools.go",
+      "tools/sql_tools.go",
+      "tools/toml_tools.go",
+      "tools/yaml_tools.go"
+    ],
+    "count": 35,
+    "bytes": 224789,
+    "sha256": "ec3ce86dbe97d934fe390f18379ba672378cfb791c0049c8dd06f579d7be8435"
+  },
+  "hardware": {
+    "model": "Mac17,6",
+    "cpu": "Apple M5 Max",
+    "logical_cpus": 18,
+    "memory_bytes": 137438953472,
+    "os": "Darwin27.0.0 arm64",
+    "go": "go1.27.3"
+  },
+  "tool": {
+    "path": "/Users/archmagece/go/bin/gofumpt",
+    "version": "v0.10.0",
+    "compiler": "go1.26.3",
+    "sha256": "416e15e5494ba4c4b2adcd5e23180061540a0ef0b31c2a391b56a41cf2ec7678"
+  },
+  "argv": [
+    "go",
+    "test",
+    "./executor",
+    "-run",
+    "^$",
+    "-bench",
+    "^BenchmarkCache_InstalledGofumpt$",
+    "-benchtime=300ms",
+    "-count=6",
+    "-v"
+  ],
+  "environment_overrides": {
+    "GOWORK": "off",
+    "QUALITY_BENCH_GOFUMPT": "/Users/archmagece/go/bin/gofumpt",
+    "QUALITY_BENCH_SOURCE_REF": "d7cf583210f2174d2c58746f6c939277546a5bbe"
+  },
+  "before_load": [
+    2.291015625,
+    3.1298828125,
+    2.9833984375
+  ],
+  "started_utc": "2026-10-25T09:47:39.367449+00:00",
+  "state": "QUALIFIED_SERIES_RECORDED",
+  "exit_code": 0,
+  "wall_seconds": 20.913879374973476,
+  "finished_utc": "2026-10-25T09:48:00.282148+00:00",
+  "after_load": [
+    3.72216796875,
+    3.41015625,
+    3.08740234375
+  ],
+  "source_after": {
+    "head": "20c85c5935e6819f4f89f03bf9f499c1640adf3e",
+    "tree": "645519b48892ccca194ea33ed48c07fdcd6981fd",
+    "tool_sha256": "416e15e5494ba4c4b2adcd5e23180061540a0ef0b31c2a391b56a41cf2ec7678",
+    "harness_sha256": "2244bc3593becf99274171cba0e803bc1bb585a829d2ebb1f88ce636a3b1fa8e"
+  },
+  "raw_log_sha256": "43451728d862ec8f9aadb7bd6b03039664824cf6e9877121b49bc2c8ecb74dcd",
+  "samples": {
+    "NoCache": [
+      {
+        "iterations": 30,
+        "ns_per_op": 10575357.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/NoCache-18              \t      30\t  10575357 ns/op\t         1.000 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 33,
+        "ns_per_op": 10513833.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/NoCache-18              \t      33\t  10513833 ns/op\t         1.000 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 32,
+        "ns_per_op": 10844414.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/NoCache-18              \t      32\t  10844414 ns/op\t         1.000 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 31,
+        "ns_per_op": 10503699.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/NoCache-18              \t      31\t  10503699 ns/op\t         1.000 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 33,
+        "ns_per_op": 10493409.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/NoCache-18              \t      33\t  10493409 ns/op\t         1.000 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 33,
+        "ns_per_op": 10495595.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/NoCache-18              \t      33\t  10495595 ns/op\t         1.000 tool_runs/op\t         0 version_calls/op"
+      }
+    ],
+    "ColdMiss": [
+      {
+        "iterations": 7,
+        "ns_per_op": 53234637.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/ColdMiss-18             \t       7\t  53234637 ns/op\t         1.000 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 7,
+        "ns_per_op": 53578762.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/ColdMiss-18             \t       7\t  53578762 ns/op\t         1.000 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 7,
+        "ns_per_op": 53004512.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/ColdMiss-18             \t       7\t  53004512 ns/op\t         1.000 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 7,
+        "ns_per_op": 54115410.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/ColdMiss-18             \t       7\t  54115410 ns/op\t         1.000 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 7,
+        "ns_per_op": 52918405.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/ColdMiss-18             \t       7\t  52918405 ns/op\t         1.000 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 7,
+        "ns_per_op": 54259798.0,
+        "metrics": {
+          "tool_runs/op": 1.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/ColdMiss-18             \t       7\t  54259798 ns/op\t         1.000 tool_runs/op\t         1.000 version_calls/op"
+      }
+    ],
+    "WarmHit": [
+      {
+        "iterations": 238,
+        "ns_per_op": 1509032.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHit-18              \t     238\t   1509032 ns/op\t         0 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 229,
+        "ns_per_op": 1520146.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHit-18              \t     229\t   1520146 ns/op\t         0 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 241,
+        "ns_per_op": 1558292.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHit-18              \t     241\t   1558292 ns/op\t         0 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 240,
+        "ns_per_op": 1468945.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHit-18              \t     240\t   1468945 ns/op\t         0 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 247,
+        "ns_per_op": 1454063.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHit-18              \t     247\t   1454063 ns/op\t         0 tool_runs/op\t         0 version_calls/op"
+      },
+      {
+        "iterations": 240,
+        "ns_per_op": 1485625.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 0.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHit-18              \t     240\t   1485625 ns/op\t         0 tool_runs/op\t         0 version_calls/op"
+      }
+    ],
+    "WarmHitNoVersionCache": [
+      {
+        "iterations": 72,
+        "ns_per_op": 4826926.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         \t      72\t   4826926 ns/op\t         0 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 62,
+        "ns_per_op": 5131375.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         \t      62\t   5131375 ns/op\t         0 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 74,
+        "ns_per_op": 4828058.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         \t      74\t   4828058 ns/op\t         0 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 74,
+        "ns_per_op": 4778864.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         \t      74\t   4778864 ns/op\t         0 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 67,
+        "ns_per_op": 4846842.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         \t      67\t   4846842 ns/op\t         0 tool_runs/op\t         1.000 version_calls/op"
+      },
+      {
+        "iterations": 62,
+        "ns_per_op": 4926796.0,
+        "metrics": {
+          "tool_runs/op": 0.0,
+          "version_calls/op": 1.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/WarmHitNoVersionCache-18         \t      62\t   4926796 ns/op\t         0 tool_runs/op\t         1.000 version_calls/op"
+      }
+    ],
+    "VersionProbe": [
+      {
+        "iterations": 100,
+        "ns_per_op": 3033834.0,
+        "metrics": {},
+        "raw_line": "BenchmarkCache_InstalledGofumpt/VersionProbe-18         \t     100\t   3033834 ns/op"
+      },
+      {
+        "iterations": 123,
+        "ns_per_op": 2926399.0,
+        "metrics": {},
+        "raw_line": "BenchmarkCache_InstalledGofumpt/VersionProbe-18         \t     123\t   2926399 ns/op"
+      },
+      {
+        "iterations": 122,
+        "ns_per_op": 2946974.0,
+        "metrics": {},
+        "raw_line": "BenchmarkCache_InstalledGofumpt/VersionProbe-18         \t     122\t   2946974 ns/op"
+      },
+      {
+        "iterations": 122,
+        "ns_per_op": 2908619.0,
+        "metrics": {},
+        "raw_line": "BenchmarkCache_InstalledGofumpt/VersionProbe-18         \t     122\t   2908619 ns/op"
+      },
+      {
+        "iterations": 122,
+        "ns_per_op": 2914681.0,
+        "metrics": {},
+        "raw_line": "BenchmarkCache_InstalledGofumpt/VersionProbe-18         \t     122\t   2914681 ns/op"
+      },
+      {
+        "iterations": 122,
+        "ns_per_op": 2983288.0,
+        "metrics": {},
+        "raw_line": "BenchmarkCache_InstalledGofumpt/VersionProbe-18         \t     122\t   2983288 ns/op"
+      }
+    ],
+    "CacheMetadataReads": [
+      {
+        "iterations": 400,
+        "ns_per_op": 888418.0,
+        "metrics": {
+          "cache_reads/op": 35.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   \t     400\t    888418 ns/op\t        35.00 cache_reads/op"
+      },
+      {
+        "iterations": 399,
+        "ns_per_op": 882085.0,
+        "metrics": {
+          "cache_reads/op": 35.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   \t     399\t    882085 ns/op\t        35.00 cache_reads/op"
+      },
+      {
+        "iterations": 369,
+        "ns_per_op": 880313.0,
+        "metrics": {
+          "cache_reads/op": 35.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   \t     369\t    880313 ns/op\t        35.00 cache_reads/op"
+      },
+      {
+        "iterations": 408,
+        "ns_per_op": 874963.0,
+        "metrics": {
+          "cache_reads/op": 35.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   \t     408\t    874963 ns/op\t        35.00 cache_reads/op"
+      },
+      {
+        "iterations": 398,
+        "ns_per_op": 878071.0,
+        "metrics": {
+          "cache_reads/op": 35.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   \t     398\t    878071 ns/op\t        35.00 cache_reads/op"
+      },
+      {
+        "iterations": 405,
+        "ns_per_op": 883299.0,
+        "metrics": {
+          "cache_reads/op": 35.0
+        },
+        "raw_line": "BenchmarkCache_InstalledGofumpt/CacheMetadataReads-18   \t     405\t    883299 ns/op\t        35.00 cache_reads/op"
+      }
+    ]
+  },
+  "summary": {
+    "NoCache": {
+      "median_ms_per_op": 10.508766,
+      "min_ms_per_op": 10.493409,
+      "max_ms_per_op": 10.844414
+    },
+    "ColdMiss": {
+      "median_ms_per_op": 53.4066995,
+      "min_ms_per_op": 52.918405,
+      "max_ms_per_op": 54.259798
+    },
+    "WarmHit": {
+      "median_ms_per_op": 1.4973285,
+      "min_ms_per_op": 1.454063,
+      "max_ms_per_op": 1.558292
+    },
+    "WarmHitNoVersionCache": {
+      "median_ms_per_op": 4.83745,
+      "min_ms_per_op": 4.778864,
+      "max_ms_per_op": 5.131375
+    },
+    "VersionProbe": {
+      "median_ms_per_op": 2.9366865,
+      "min_ms_per_op": 2.908619,
+      "max_ms_per_op": 3.033834
+    },
+    "CacheMetadataReads": {
+      "median_ms_per_op": 0.881199,
+      "min_ms_per_op": 0.874963,
+      "max_ms_per_op": 0.888418
+    }
+  },
+  "warm_hit_us_per_file": 42.780814285714285,
+  "target_us_per_file": 100,
+  "timing_within_target": true,
+  "counter_contract_pass": true,
+  "sample_count": 36,
+  "no_cache_over_warm_ratio": 7.018343670076406,
+  "limitations": "Fixed Darwin gofumpt in-process workload only; batch-amortized median, not individual-file p95/startup/package-linter guarantee. All samples retained; historical137.8us series unchanged; no causal attribution or universal stability claim.",
+  "private_source_receipt_sha256": "51014bf93579fd4a5b7a089932336e038d3cd0be054e472ba9624c81c33c33e1",
+  "before_virtual_machine_present": true,
+  "before_virtual_machine_process_names": [
+    "com.apple.Virtualization.VirtualMachine"
+  ],
+  "after_virtual_machine_present": true,
+  "after_virtual_machine_process_names": [
+    "com.apple.Virtualization.VirtualMachine"
+  ],
+  "privacy": "Full process name/path observations retained private ignored tmp only; safe receipt contains VM presence/name, no process arguments or environment dump."
+}
