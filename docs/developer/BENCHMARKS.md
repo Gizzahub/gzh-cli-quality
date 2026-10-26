@@ -39,29 +39,42 @@ PRODUCT.md G2는 비캐시 대비 60배에서 "결과 캐시 모두 적중 시 �
 
 ### 다음 G2 측정 프로토콜
 
-측정 전 독립 리뷰를 마친 clean source commit, harness SHA-256, 이미 설치된 gofumpt의
-절대 경로·버전·compiler·SHA-256과 host model/CPU 수/메모리/OS/Go 버전을 기록한다.
-source `d7cf583210f2174d2c58746f6c939277546a5bbe`의 35파일·224,789 bytes·workload digest는
-그대로 둔다. testutil·fixture도 포함하며 입력을 바꾸거나 새 formatter를 설치하지 않는다.
+실행 조건의 정본은 [`scripts/cache-bench-admission.py`](../../scripts/cache-bench-admission.py)의
+`PROTOCOL`과 판정 코드다. 기존 Go benchmark는 변경하지 않았다. 일반 `make bench`나 직접
+`go test -bench` 출력은 진단 자료이며 controller receipt 없이 새 G2 판정으로 사용하지 않는다.
 
-기존 benchmark를 task 1개·worker 1개, `-benchtime=300ms -count=6 -v`로 한 번 실행한다.
-NoCache/ColdMiss/WarmHit/WarmHitNoVersionCache와 VersionProbe/CacheMetadataReads의
-6개 group 각각 6개 표본을 전부 보존한다. WarmHit의 파일당 값은 ns/op 표본의 중앙값을
-35와 1,000으로 나눈 µs/파일이다. 이는 executor·key/hash·cache I/O·결과 검증을 포함한
-batch 환산값이지, 개별 파일의 p95 지연이나 새 CLI 프로세스 시작 시간이 아니다.
-prewarm과 setup은 timer 밖이고, 실행 횟수 counter는 prewarm 뒤 초기화된다.
+`make bench-g2 GOFUMPT_PATH=/absolute/already-installed/gofumpt G2_OUTPUT=tmp/new-series G2_CPU_SLOT_GO=1`
+은 독립 리뷰와 소유 검사 후 clean commit에서만 사용한다. `G2_CPU_SLOT_GO=1`은 다른 자체 heavy
+작업이 끝났다는 coordinator 선언이며 자동 증명으로 표현하지 않는다. 새 formatter를 설치하거나
+다른 프로세스를 중지하지 않는다. 결과 경로는 새 `tmp/` 하위 디렉터리여야 하며 덮어쓰기를 거부한다.
 
-정확성 조건과 timing을 구분한다. 이 Darwin 측정의 실행/버전 조회 횟수는 각각
-NoCache 1/0, ColdMiss 1/1, WarmHit 0/0, WarmHitNoVersionCache 0/1이어야 한다.
-ColdMiss는 기존 `InvalidateAll`로 결과·버전 캐시를 함께 비우며,
-CacheMetadataReads는 반복당 35회 읽기를 보고한다. content/config/argv/명시적 환경·버전
-변경의 무효화는 기존 회귀 검사로 확인하며 측정이 정확성 검사를 대신하지 않는다.
+Darwin arm64에서 1분 load ≤4를 30초 이상 간격으로 두 번 확인한다. 한 쌍이 미달하면 실제
+benchmark는 실행하지 않는다. admission 직후·측정 중 1초 간격·종료 후 관찰 중 하나라도 상한을
+넘으면 판정은 무효다. 이 관찰·admission 기준은 이 측정용이며 보편적인 제품 부하 기준이 아니다.
+Go benchmark의 기존 10분 기본 timeout을 명시하며 controller도 같은 시간에 취소·정리한다.
+실패·취소·부하 초과는 부분 raw log와 관측값을 보존하고 재시도하거나 나쁜 표본을 버리지 않는다.
+정상 완료에는 process group 종료 신호를 보내지 않으며, 잔류 group이 있으면 무효로 알린다.
+취소·timeout에는 직접 자식의 PID를 reap하지 않고 보존한 채 소유 session group을 확인한 뒤
+종료하고 마지막에 reap한다. 소유권을 확인할 수 없으면 넓은 종료 신호를 보내지 않고
+잔류 PGID와 cleanup 오류를 보존한다. 원래 취소·timeout 원인은 별도로 유지한다.
 
-실행 전후 load average와 다른 VM의 존재, 자체 heavy job 유무를 기록한다. 부하 때문에
-대기하면 실행하지 않았다고 남기고 다른 프로세스를 중지하지 않는다. 실행을 시작한 뒤에는
-부하 변화·실패·100µs 초과 표본도 모두 보존한다. 사전 선언한 resource admission과
-실제 관찰, raw log·tool-computed JSON·source/tool/harness 전후 해시는 task 증거에 둔다.
-관찰한 결과가 좋지 않다는 이유로 재실행하거나 표본을 제외하지 않는다.
+고정 입력은 `d7cf583210f2174d2c58746f6c939277546a5bbe`의 35파일·224,789 bytes·
+`ec3ce86dbe97d934fe390f18379ba672378cfb791c0049c8dd06f579d7be8435`다. testutil·fixture도
+포함한다. task 1개·worker 1개인 기존 harness를 `-benchtime=300ms -count=6 -v`로 한 번 실행한다.
+6개 group의 총 36표본이 모두 있어야 하고 WarmHit ns/op 중앙값 ÷35÷1,000이 100µs 이하여야 한다.
+NoCache/ColdMiss/WarmHit/WarmHitNoVersionCache의 tool/version counter는 각각 1/0, 1/1, 0/0,
+0/1이며 CacheMetadataReads는 35회/op다. 누락 counter·표본·입력 변경·실행 실패는 pass가 아니다.
+이는 batch 환산값이며 개별 파일 p95·CLI startup·다른 도구/플랫폼의 시간이나 버전 조회 보증이 아니다.
+
+receipt에는 raw 원문 hash, source/tree·harness/controller/tool 전후 hash, 도구 version/build info,
+Go·host model/CPU/memory/OS, load와 알려진 VM 이름의 존재를 보존한다. 전체 프로세스 인자나 환경
+dump는 수집하지 않는다. 알려진 VM 이름 관찰은 모든 외부 VM·다른 agent의 작업을 증명하지 않는다.
+내용·config·argv·명시적 환경·버전 무효화의 기존 회귀 검사는 timing과 별개로 유지한다.
+
+`make bench-g2-test`는 실제 부하를 만들거나 benchmark를 실행하지 않는 offline 검사다. 주입 load·
+실패·취소·변경 identity·경계값을 검사하고 아래 보존 원문도 재집계한다. controller의 `replay`는
+`--raw`, `--metadata`, `--admission`, `--output`을 받으며 과거 재집계임을 명시한다. 과거 원문에
+없던 중간 관찰을 만들거나 새 controller 조건으로 소급 통과를 주장하지 않는다.
 
 ### 2026-10-25 선언된 1회 재측정
 
@@ -102,7 +115,7 @@ WarmHit 중앙값 ÷ 35는 **42.780814µs/파일**로 이번 선언된 Darwin go
 이 한 계열은 보존된 137.8µs 계열의 원인을 분리하거나 모든 환경의 안정성을 증명하지
 않는다. 과거 미충족 계열과 원인 미확인 한계는 유지한다. 2026-10-26 사용자는 이 계열로 G2를
 판정하고, 위 admission·기록·`-count=6` 중앙값 조건을 benchmark 실행 코드로 강제하는 후속을
-택했다(devbox TASK-361). 그 전까지 이 절이 측정 조건의 기준이다.
+택했다(devbox TASK-361). 현재 실행 조건은 위 controller가 정본이며, 이 절은 당시 실행의 보존 기록이다.
 개별 파일 p95·CLI startup·package linter·Windows/Rust 버전 조회 0회로 일반화하지 않는다.
 추가 retry나 profile 실행은 없었다.
 

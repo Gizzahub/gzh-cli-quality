@@ -53,3 +53,12 @@ bench-compare: ## Compare current benchmarks with saved baseline (requires bench
 	@echo "Use 'benchstat bench.txt bench-new.txt' for detailed comparison"
 	@echo "(Install benchstat: go install golang.org/x/perf/cmd/benchstat@latest)"
 	@rm -f bench-new.txt
+
+.PHONY: bench-g2 bench-g2-test
+bench-g2: install-mdformat ## Run one explicitly admitted Darwin G2 series (requires GOFUMPT_PATH and G2_OUTPUT)
+	@mkdir -p tmp
+	@"$(MDFORMAT_PYTHON)" -I -B scripts/cache-bench-admission.py run --gofumpt "$(GOFUMPT_PATH)" --output "$(G2_OUTPUT)" $(if $(filter 1,$(G2_CPU_SLOT_GO)),--cpu-slot-go,)
+
+bench-g2-test: install-mdformat ## Offline admission/parser/replay tests; never runs a performance measurement
+	@mkdir -p tmp
+	@"$(MDFORMAT_PYTHON)" -I -B scripts/test-cache-bench-admission.py
