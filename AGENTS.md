@@ -8,7 +8,7 @@ ______________________________________________________________________
 
 **Binary**: `gz-quality`
 **Module**: `github.com/Gizzahub/gzh-cli-quality`
-**Go Version**: 1.24+
+**Go Version**: 1.26+ (development toolchain: 1.27.3; see `go.mod`)
 **Architecture**: Quality analysis CLI (Cobra-based)
 
 ### Core Principles
@@ -22,14 +22,13 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-## Module-Specific Guides (AGENTS.md)
+## Development Guides
 
 **Read these before modifying code:**
 
-| Guide        | Location                | Purpose                  |
-| ------------ | ----------------------- | ------------------------ |
-| Common Rules | `cmd/AGENTS_COMMON.md`  | Project-wide conventions |
-| Quality CLI  | `cmd/quality/AGENTS.md` | CLI-specific rules       |
+| Guide        | Location          | Purpose                  |
+| ------------ | ----------------- | ------------------------ |
+| Common Rules | `CONTRIBUTING.md` | Project-wide conventions |
 
 ______________________________________________________________________
 
@@ -53,7 +52,7 @@ ______________________________________________________________________
 
 ### Before Code Modification
 
-1. **Read AGENTS.md** for the module you're modifying
+1. **Read applicable AGENTS.md guidance** for the module you're modifying
 1. Check existing patterns in `internal/`, `cache/`, `tools/`
 1. Review CONTRIBUTING.md for guidelines
 
@@ -151,7 +150,7 @@ ______________________________________________________________________
 A: `tools/` - create or update `{language}_tools.go`
 
 **Q: Where to add new language support?**
-A: `detector/languages.go` - add language definition
+A: `detector/language.go` - add language definition
 
 **Q: Where to add caching logic?**
 A: `cache/` - use existing cache manager
@@ -170,4 +169,4 @@ A: See `.claudeignore`
 
 ______________________________________________________________________
 
-**Last Updated**: 2025-12-05
+**Last Updated**: 2026-10-27

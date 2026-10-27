@@ -6,7 +6,7 @@ gzh-cli-quality에 기여해주셔서 감사합니다! 이 문서는 프로젝�
 
 ### 요구사항
 
-- Go 1.24.0 이상
+- Go 1.26 이상 (개발 toolchain: Go 1.27.3, `go.mod` 기준)
 - Make
 - Git
 - golangci-lint (optional, `make lint` 실행시 필요)
