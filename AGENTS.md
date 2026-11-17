@@ -28,7 +28,7 @@ ______________________________________________________________________
 
 **Binary**: `gz-quality`
 **Module**: `github.com/Gizzahub/gzh-cli-quality`
-**Go Version**: 1.26+ (development toolchain: 1.27.3; see `go.mod`)
+**Go Version**: 1.26+ (development toolchain: 1.27.4; see `go.mod`)
 **Architecture**: Quality analysis CLI (Cobra-based)
 
 ### Core Principles
