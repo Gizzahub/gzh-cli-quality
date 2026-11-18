@@ -53,7 +53,7 @@ func (t *KtlintTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 		args = append(args, ktFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -147,7 +147,7 @@ func (t *DetektTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 	// Report format
 	args = append(args, "--report", "json:detekt-report.json")
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

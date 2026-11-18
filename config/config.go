@@ -181,7 +181,7 @@ func LoadConfig(configPath string) (*Config, error) {
 	}
 
 	// Read config file
-	data, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configPath) // #nosec G304 -- the config file the user passed or the project config that was discovered
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file %s: %w", configPath, err)
 	}
@@ -197,7 +197,7 @@ func LoadConfig(configPath string) (*Config, error) {
 // SaveConfig saves configuration to file.
 func SaveConfig(config *Config, configPath string) error {
 	// Create directory if it doesn't exist
-	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil { // #nosec G301 -- project config directory; the config is meant to be shared and committed
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
@@ -208,7 +208,7 @@ func SaveConfig(config *Config, configPath string) error {
 	}
 
 	// Write file
-	if err := os.WriteFile(configPath, data, 0o644); err != nil {
+	if err := os.WriteFile(configPath, data, 0o644); err != nil { // #nosec G306 -- project config is meant to be shared and committed
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 

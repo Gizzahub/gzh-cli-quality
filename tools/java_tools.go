@@ -42,7 +42,7 @@ func (t *GoogleJavaFormatTool) BuildCommand(files []string, options ExecuteOptio
 		args = append(args, javaFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -91,7 +91,7 @@ func (t *CheckstyleTool) BuildCommand(files []string, options ExecuteOptions) *e
 		args = append(args, ".")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -185,7 +185,7 @@ func (t *SpotbugsTool) BuildCommand(files []string, options ExecuteOptions) *exe
 		args = append(args, "build/classes", "target/classes") // Common build directories
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

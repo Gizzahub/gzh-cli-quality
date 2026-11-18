@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	log, err := os.OpenFile(os.Getenv("GZQ_FAKE_VERSION_TOOL_LOG"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+	log, err := os.OpenFile(os.Getenv("GZQ_FAKE_VERSION_TOOL_LOG"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600) // #nosec G703 -- test fixture; the log path comes from the test harness
 	if err != nil {
 		os.Exit(3)
 	}

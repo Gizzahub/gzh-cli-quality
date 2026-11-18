@@ -58,7 +58,7 @@ func (t *TaploTool) BuildCommand(files []string, options ExecuteOptions) *exec.C
 		args = append(args, "**/*.toml")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

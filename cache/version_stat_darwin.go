@@ -16,7 +16,7 @@ func statIdentity(info os.FileInfo) (fileIdentity, bool) {
 		return fileIdentity{}, false
 	}
 	return fileIdentity{
-		device:       uint64(uint32(st.Dev)), //nolint:gosec // G115: dev_t bits, compared only for equality.
+		device:       uint64(uint32(st.Dev)), // #nosec G115 -- dev_t bits, compared only for equality.
 		inode:        st.Ino,
 		links:        uint64(st.Nlink),
 		modTimeNs:    st.Mtimespec.Nano(),

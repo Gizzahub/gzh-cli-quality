@@ -503,3 +503,20 @@ func TestGetAllChangedFiles_Deduplication(t *testing.T) {
 	}
 	assert.Equal(t, 1, count, "File should appear only once after deduplication")
 }
+
+func TestOptionLikeRevisionIsRejected(t *testing.T) {
+	repoDir := setupGitRepo(t)
+	createAndCommitFile(t, repoDir, "initial.txt", "initial")
+	gitUtils := NewGitUtils(repoDir)
+	written := filepath.Join(t.TempDir(), "written-by-git")
+
+	_, err := gitUtils.GetChangedFiles("--output=" + written)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "must not start with '-'")
+	_, statErr := os.Stat(written)
+	assert.True(t, os.IsNotExist(statErr), "git must not have written %s", written)
+
+	err = gitUtils.ValidateCommitish("--output=" + written)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "must not start with '-'")
+}

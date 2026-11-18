@@ -43,7 +43,7 @@ func (t *ShellcheckTool) BuildCommand(files []string, options ExecuteOptions) *e
 		args = append(args, "*.sh")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -148,7 +148,7 @@ func (t *ShfmtTool) BuildCommand(files []string, options ExecuteOptions) *exec.C
 		args = append(args, ".")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

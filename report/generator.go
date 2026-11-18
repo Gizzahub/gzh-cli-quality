@@ -165,7 +165,7 @@ func (g *ReportGenerator) SaveJSON(report *Report, outputPath string) error {
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
 
-	if err := os.WriteFile(outputPath, data, 0o644); err != nil {
+	if err := os.WriteFile(outputPath, data, 0o644); err != nil { // #nosec G306 -- reports are meant to be read by others
 		return fmt.Errorf("failed to write report file: %w", err)
 	}
 
@@ -176,7 +176,7 @@ func (g *ReportGenerator) SaveJSON(report *Report, outputPath string) error {
 func (g *ReportGenerator) SaveHTML(report *Report, outputPath string) error {
 	html := g.generateHTML(report)
 
-	if err := os.WriteFile(outputPath, []byte(html), 0o644); err != nil {
+	if err := os.WriteFile(outputPath, []byte(html), 0o644); err != nil { // #nosec G306 -- reports are meant to be read by others
 		return fmt.Errorf("failed to write HTML report: %w", err)
 	}
 
@@ -348,7 +348,7 @@ func (g *ReportGenerator) generateHTML(report *Report) string {
 func (g *ReportGenerator) SaveMarkdown(report *Report, outputPath string) error {
 	md := g.generateMarkdown(report)
 
-	if err := os.WriteFile(outputPath, []byte(md), 0o644); err != nil {
+	if err := os.WriteFile(outputPath, []byte(md), 0o644); err != nil { // #nosec G306 -- reports are meant to be read by others
 		return fmt.Errorf("failed to write Markdown report: %w", err)
 	}
 

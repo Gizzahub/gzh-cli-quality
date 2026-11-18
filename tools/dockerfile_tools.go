@@ -47,7 +47,7 @@ func (t *HadolintTool) BuildCommand(files []string, options ExecuteOptions) *exe
 		args = append(args, "Dockerfile")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

@@ -6,6 +6,7 @@ package cache
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -245,5 +246,41 @@ func TestFilesystemStorage_CreateBasePath(t *testing.T) {
 	// Directory should exist
 	if _, err := os.Stat(nonExistentPath); os.IsNotExist(err) {
 		t.Error("Base path should be created")
+	}
+}
+
+func TestFilesystemStorage_CleanupCorruptedStaysInsideCache(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlink creation needs privileges on Windows")
+	}
+	base := t.TempDir()
+	storage, err := NewFilesystemStorage(base)
+	if err != nil {
+		t.Fatalf("NewFilesystemStorage failed: %v", err)
+	}
+	outside := filepath.Join(t.TempDir(), "outside.json")
+	if err := os.WriteFile(outside, []byte(`{"valid":true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(base, "results", "tool", "ab", "abcd.json")
+	if err := os.MkdirAll(filepath.Dir(link), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, link); err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := storage.CleanupCorrupted()
+	if err != nil {
+		t.Fatalf("CleanupCorrupted failed: %v", err)
+	}
+	if count != 1 {
+		t.Fatalf("an entry escaping the cache must count as corrupted, got %d", count)
+	}
+	if _, err := os.Lstat(link); !os.IsNotExist(err) {
+		t.Fatalf("escaping entry must be removed, Lstat err = %v", err)
+	}
+	if _, err := os.Stat(outside); err != nil {
+		t.Fatalf("file outside the cache must be untouched: %v", err)
 	}
 }

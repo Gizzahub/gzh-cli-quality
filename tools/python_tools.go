@@ -56,7 +56,7 @@ func (t *BlackTool) BuildCommand(files []string, options ExecuteOptions) *exec.C
 		args = append(args, pyFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -124,7 +124,7 @@ func (t *RuffTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cm
 		args = append(args, pyFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -300,7 +300,7 @@ func (t *PylintTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 		args = append(args, pyFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -395,7 +395,7 @@ func (t *MypyTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cm
 		args = append(args, pyFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -482,7 +482,7 @@ func (t *BanditTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 		args = append(args, pyFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

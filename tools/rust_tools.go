@@ -74,7 +74,7 @@ func (t *RustfmtTool) BuildCommand(files []string, options ExecuteOptions) *exec
 	rustFiles := FilterFilesByExtensions(files, []string{".rs"})
 	args = append(args, rustFiles...)
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -132,7 +132,7 @@ func rustProbeArgs(tool *BaseTool, defaults []string) []string {
 var rustVersionToken = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?(\+[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$`)
 
 func rustComponentVersion(ctx context.Context, tool *BaseTool, args []string, component string, options ExecuteOptions) (string, error) {
-	cmd := exec.CommandContext(ctx, tool.executable, rustProbeArgs(tool, args)...)
+	cmd := toolCommandContext(ctx, tool.executable, rustProbeArgs(tool, args)...)
 	applyExecutionOptions(cmd, options)
 	cmd.WaitDelay = time.Second
 	output, err := cmd.Output()
@@ -172,7 +172,7 @@ func (t *ClippyTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 	// Clippy works on the entire project, not individual files
 	args = append(args, "--", "-D", "warnings")
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -298,7 +298,7 @@ func (t *CargoFmtTool) BuildCommand(files []string, options ExecuteOptions) *exe
 	args = append(args, options.ExtraArgs...)
 
 	// cargo fmt works on the entire project
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

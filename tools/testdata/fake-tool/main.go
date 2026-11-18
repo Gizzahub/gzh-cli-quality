@@ -30,13 +30,13 @@ func main() {
 		}
 		return
 	}
-	mode, err := os.ReadFile(executable + ".mode")
+	mode, err := os.ReadFile(executable + ".mode") // #nosec G304 -- test fixture; the path comes from the test harness
 	if err != nil {
 		fail(err)
 	}
 	switch string(mode) {
 	case "hold-version-pipe":
-		child := exec.Command(executable, "--hold-version-pipe")
+		child := exec.Command(executable, "--hold-version-pipe") // #nosec G204 -- test fixture re-executing itself
 		child.Stdout, child.Stderr = os.Stdout, os.Stderr
 		if err := child.Start(); err != nil {
 			fail(err)
@@ -46,7 +46,7 @@ func main() {
 		}
 		time.Sleep(30 * time.Second)
 	case "component-version":
-		log, err := os.OpenFile(executable+".calls", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+		log, err := os.OpenFile(executable+".calls", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600) // #nosec G304 -- test fixture; the path comes from the test harness
 		if err != nil {
 			fail(err)
 		}
@@ -60,7 +60,7 @@ func main() {
 		}
 		standalone := len(os.Args) >= 2 && os.Args[1] == "--version"
 		if standalone || (len(os.Args) >= 3 && os.Args[2] == "--version") {
-			data, err := os.ReadFile(executable + ".versions")
+			data, err := os.ReadFile(executable + ".versions") // #nosec G304 -- test fixture; the path comes from the test harness
 			if err != nil {
 				fail(err)
 			}
@@ -90,7 +90,7 @@ func main() {
 		for _, arg := range os.Args[1:] {
 			fmt.Fprintf(&log, "arg=%s\n", arg)
 		}
-		if err := os.WriteFile(os.Getenv("QUALITY_TEST_LOG"), []byte(log.String()), 0o600); err != nil {
+		if err := os.WriteFile(os.Getenv("QUALITY_TEST_LOG"), []byte(log.String()), 0o600); err != nil { // #nosec G703 -- test fixture; the path comes from the test harness
 			fail(err)
 		}
 	case "format":
@@ -109,7 +109,7 @@ func main() {
 			}
 		}
 		if write {
-			if err := os.WriteFile(os.Getenv("QUALITY_TEST_FILE"), []byte("formatted\n"), 0o600); err != nil {
+			if err := os.WriteFile(os.Getenv("QUALITY_TEST_FILE"), []byte("formatted\n"), 0o600); err != nil { // #nosec G703 -- test fixture; the path comes from the test harness
 				fail(err)
 			}
 		}

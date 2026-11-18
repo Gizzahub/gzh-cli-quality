@@ -49,7 +49,7 @@ func (t *ClangFormatTool) BuildCommand(files []string, options ExecuteOptions) *
 		args = append(args, cppFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -102,7 +102,7 @@ func (t *ClangTidyTool) BuildCommand(files []string, options ExecuteOptions) *ex
 	// Add -- to separate clang-tidy args from compiler args
 	args = append(args, "--")
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

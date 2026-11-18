@@ -63,7 +63,7 @@ func (d *SystemToolDetector) checkCommonLocations(toolName string) bool {
 			continue
 		}
 		toolPath := filepath.Join(path, toolName)
-		if _, err := os.Stat(toolPath); err == nil {
+		if _, err := os.Stat(toolPath); err == nil { // #nosec G703 -- only stats a PATH entry joined with a tool name
 			return true
 		}
 	}
@@ -81,7 +81,7 @@ func (d *SystemToolDetector) GetToolVersion(toolName string) string {
 	versionFlags := []string{"--version", "-version", "-V", "-v"}
 
 	for _, flag := range versionFlags {
-		cmd := exec.Command(toolName, flag)
+		cmd := exec.Command(toolName, flag) // #nosec G204 -- argv without a shell; toolName is the program IsToolAvailable found and the flags are literals
 		output, err := cmd.CombinedOutput()
 		if err == nil {
 			version := strings.TrimSpace(string(output))
@@ -126,7 +126,7 @@ func (d *ConfigFileDetector) ValidateConfig(toolName, configPath string) error {
 		return err
 	}
 
-	file, err := os.Open(configPath)
+	file, err := os.Open(configPath) // #nosec G304 -- config path the caller detected, opened only to check it is readable
 	if err != nil {
 		return err
 	}

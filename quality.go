@@ -699,7 +699,7 @@ func (m *QualityManager) generateReport(results []*tools.Result, duration time.D
 	}
 
 	// Ensure output directory exists
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil { // #nosec G301 -- report directory the user chose; reports are meant to be read by others
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
@@ -805,7 +805,7 @@ func (m *QualityManager) runInit(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to generate YAML: %w", err)
 	}
 
-	if err := os.WriteFile(configPath, []byte(configYAML), 0o644); err != nil {
+	if err := os.WriteFile(configPath, []byte(configYAML), 0o644); err != nil { // #nosec G306 -- .gzquality.yml is a project file meant to be shared and committed
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 

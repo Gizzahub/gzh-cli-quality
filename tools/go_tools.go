@@ -43,7 +43,7 @@ func (t *GofumptTool) BuildCommand(files []string, options ExecuteOptions) *exec
 	goFiles := FilterFilesByExtensions(files, []string{".go"})
 	args = append(args, goFiles...)
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -91,7 +91,7 @@ func (t *GoimportsTool) BuildCommand(files []string, options ExecuteOptions) *ex
 	goFiles := FilterFilesByExtensions(files, []string{".go"})
 	args = append(args, goFiles...)
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -157,7 +157,7 @@ func (t *GolangciLintTool) BuildCommand(files []string, options ExecuteOptions) 
 		args = append(args, "./...")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -274,7 +274,7 @@ func (t *GosecTool) BuildCommand(files []string, options ExecuteOptions) *exec.C
 		args = append(args, "./...")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -309,8 +309,10 @@ func (t *GosecTool) ParseOutput(output string) []Issue {
 	for _, item := range gosecResults.Issues {
 		line := 0
 		col := 0
-		fmt.Sscanf(item.Line, "%d", &line)
-		fmt.Sscanf(item.Column, "%d", &col)
+		// gosec reports "12" or a range such as "12-14"; a value without a
+		// leading number stays 0, the unknown position.
+		_, _ = fmt.Sscanf(item.Line, "%d", &line)
+		_, _ = fmt.Sscanf(item.Column, "%d", &col)
 
 		issues = append(issues, Issue{
 			File:     item.File,
@@ -356,7 +358,7 @@ func (t *GovulncheckTool) BuildCommand(files []string, options ExecuteOptions) *
 	// govulncheck works on packages, not individual files
 	args = append(args, "./...")
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -451,7 +453,7 @@ func (t *GciTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd
 		args = append(args, ".")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -495,7 +497,7 @@ func (t *GolinesTool) BuildCommand(files []string, options ExecuteOptions) *exec
 		args = append(args, ".")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

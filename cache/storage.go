@@ -21,7 +21,7 @@ type FilesystemStorage struct {
 // NewFilesystemStorage creates a new filesystem storage backend.
 func NewFilesystemStorage(basePath string) (*FilesystemStorage, error) {
 	// Create base directory if it doesn't exist
-	if err := os.MkdirAll(basePath, 0o755); err != nil {
+	if err := os.MkdirAll(basePath, 0o700); err != nil {
 		return nil, fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
@@ -37,7 +37,7 @@ func (fs *FilesystemStorage) Read(key string) ([]byte, error) {
 
 	path := fs.keyToPath(key)
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 -- keyToPath builds the path under basePath from the cache key
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("cache miss: %s not found", key)
@@ -57,7 +57,7 @@ func (fs *FilesystemStorage) Write(key string, data []byte) error {
 
 	// Create directory if needed
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -65,7 +65,7 @@ func (fs *FilesystemStorage) Write(key string, data []byte) error {
 	tempPath := path + ".tmp"
 
 	// Write to temp file
-	if err := os.WriteFile(tempPath, data, 0o644); err != nil {
+	if err := os.WriteFile(tempPath, data, 0o600); err != nil {
 		return fmt.Errorf("failed to write temp file: %w", err)
 	}
 
@@ -241,7 +241,15 @@ func (fs *FilesystemStorage) CleanupCorrupted() (int, error) {
 
 	count := 0
 
-	err := filepath.Walk(fs.basePath, func(path string, info os.FileInfo, err error) error {
+	// Read and remove through a root bound to basePath, so a path that is
+	// swapped for a symlink during the walk cannot reach outside the cache.
+	root, err := os.OpenRoot(fs.basePath)
+	if err != nil {
+		return 0, fmt.Errorf("cleanup failed: %w", err)
+	}
+	defer root.Close()
+
+	err = filepath.Walk(fs.basePath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -254,11 +262,16 @@ func (fs *FilesystemStorage) CleanupCorrupted() (int, error) {
 			return nil
 		}
 
+		rel, err := filepath.Rel(fs.basePath, path)
+		if err != nil {
+			return err
+		}
+
 		// Try to read file
-		data, err := os.ReadFile(path)
+		data, err := root.ReadFile(rel)
 		if err != nil {
 			// Can't read: corrupted
-			_ = os.Remove(path)
+			_ = root.Remove(rel)
 			count++
 			return nil
 		}
@@ -266,7 +279,7 @@ func (fs *FilesystemStorage) CleanupCorrupted() (int, error) {
 		// Check if it's valid JSON (basic validation)
 		if len(data) == 0 || (data[0] != '{' && data[0] != '[') {
 			// Invalid JSON: corrupted
-			_ = os.Remove(path)
+			_ = root.Remove(rel)
 			count++
 			return nil
 		}

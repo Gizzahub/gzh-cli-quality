@@ -89,8 +89,8 @@ mdformat-native-test: install-mdformat ## Verify actual installer and native sel
 
 security: ## Run security scan (gosec)
 	@echo "Running security scan..."
-	@if command -v gosec >/dev/null 2>&1; then \
-		gosec -exclude-generated ./...; \
-	else \
-		echo "⚠️  gosec not installed. Install: go install github.com/securego/gosec/v2/cmd/gosec@latest"; \
-	fi
+	@if ! command -v gosec >/dev/null 2>&1; then \
+		echo "❌ gosec not installed. Install: go install github.com/securego/gosec/v2/cmd/gosec@v2.30.0" >&2; \
+		exit 1; \
+	fi; \
+	gosec -exclude-generated ./...

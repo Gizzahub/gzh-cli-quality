@@ -58,7 +58,7 @@ func (t *PrettierTool) BuildCommand(files []string, options ExecuteOptions) *exe
 		args = append(args, supportedFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -117,7 +117,7 @@ func (t *ESLintTool) BuildCommand(files []string, options ExecuteOptions) *exec.
 		args = append(args, jsFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
@@ -237,7 +237,7 @@ func (t *TSCTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd
 	}
 	// If no files specified, tsc will use tsconfig.json
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

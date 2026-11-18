@@ -52,7 +52,7 @@ func (t *StylelintTool) BuildCommand(files []string, options ExecuteOptions) *ex
 		args = append(args, "**/*.css", "**/*.scss")
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

@@ -88,7 +88,7 @@ func GenerateKey(filePath string, tool tools.QualityTool, options tools.ExecuteO
 
 // hashFile calculates SHA256 hash of a file's content.
 func hashFile(filePath string) (string, error) {
-	content, err := os.ReadFile(filePath)
+	content, err := os.ReadFile(filePath) // #nosec G304 -- config path found by tool config detection; read only to hash it
 	if err != nil {
 		return "", err
 	}
@@ -113,7 +113,7 @@ func hashFiles(filePaths []string) (string, error) {
 
 	// Hash each file's content
 	for _, path := range sortedPaths {
-		content, err := os.ReadFile(path)
+		content, err := os.ReadFile(path) // #nosec G304 -- config path found by tool config detection; read only to hash it
 		if err != nil {
 			return "", fmt.Errorf("read config %s: %w", path, err)
 		}

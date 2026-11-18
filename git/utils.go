@@ -48,9 +48,13 @@ func (g *GitUtils) GetChangedFiles(since string) ([]string, error) {
 		// Default to comparing with HEAD~1
 		since = "HEAD~1"
 	}
+	if err := rejectOptionLikeRevision(since); err != nil {
+		return nil, err
+	}
 
-	// Get changed files since the specified commit
-	cmd = exec.Command("git", "diff", "--name-only", since)
+	// Get changed files since the specified commit. The trailing "--" keeps
+	// git from reading a revision as a path.
+	cmd = exec.Command("git", "diff", "--name-only", since, "--") // #nosec G204 -- argv without a shell; rejectOptionLikeRevision keeps since from being read as a git option such as --output
 	cmd.Dir = g.projectRoot
 
 	output, err := cmd.Output()
@@ -200,12 +204,26 @@ func (g *GitUtils) ValidateCommitish(commitish string) error {
 		return fmt.Errorf("not a git repository")
 	}
 
-	cmd := exec.Command("git", "rev-parse", "--verify", commitish+"^{commit}")
+	if err := rejectOptionLikeRevision(commitish); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("git", "rev-parse", "--verify", commitish+"^{commit}") // #nosec G204 -- argv without a shell; rejectOptionLikeRevision keeps commitish from being read as a git option
 	cmd.Dir = g.projectRoot
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("invalid commit reference '%s': %w", commitish, err)
 	}
 
+	return nil
+}
+
+// rejectOptionLikeRevision refuses a revision that git would parse as an
+// option. `git diff --name-only --output=<path>` writes to <path>, so a
+// caller-supplied revision must never start with "-".
+func rejectOptionLikeRevision(revision string) error {
+	if strings.HasPrefix(revision, "-") {
+		return fmt.Errorf("invalid commit reference %q: must not start with '-'", revision)
+	}
 	return nil
 }

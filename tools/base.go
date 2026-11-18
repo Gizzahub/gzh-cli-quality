@@ -36,6 +36,21 @@ type BaseTool struct {
 	}
 }
 
+// toolCommand is the one place this package builds a process for a quality
+// tool, so the gosec reasoning below covers every tool invocation.
+func toolCommand(executable string, args ...string) *exec.Cmd {
+	// #nosec G204 -- argv without a shell. executable and install commands
+	// come only from string literals in the tool constructors; args are flags
+	// built by the adapter plus caller-selected project files and ExtraArgs.
+	return exec.Command(executable, args...)
+}
+
+// toolCommandContext is toolCommand bound to ctx.
+func toolCommandContext(ctx context.Context, executable string, args ...string) *exec.Cmd {
+	// #nosec G204 -- same inputs as toolCommand.
+	return exec.CommandContext(ctx, executable, args...)
+}
+
 // NewBaseTool creates a new base tool.
 func NewBaseTool(name, language, executable string, toolType ToolType) *BaseTool {
 	return &BaseTool{
@@ -78,7 +93,7 @@ func (t *BaseTool) Install() error {
 		return fmt.Errorf("no install command configured for %s", t.name)
 	}
 
-	cmd := exec.Command(t.installCmd[0], t.installCmd[1:]...)
+	cmd := toolCommand(t.installCmd[0], t.installCmd[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to install %s: %w\nOutput: %s", t.name, err, string(output))
@@ -130,7 +145,7 @@ func (t *BaseTool) GetVersion() (string, error) {
 	}
 
 	if len(t.versionCommand) > 0 {
-		output, err := exec.Command(t.executable, t.versionCommand...).Output()
+		output, err := toolCommand(t.executable, t.versionCommand...).Output()
 		if err != nil {
 			var exitErr *exec.ExitError
 			if errors.As(err, &exitErr) && len(bytes.TrimSpace(exitErr.Stderr)) > 0 {
@@ -145,7 +160,7 @@ func (t *BaseTool) GetVersion() (string, error) {
 	}
 
 	for _, flag := range versionFlags {
-		cmd := exec.Command(t.executable, flag)
+		cmd := toolCommand(t.executable, flag)
 		output, err := cmd.Output()
 		if err == nil {
 			version := strings.TrimSpace(string(output))
@@ -236,7 +251,7 @@ func (t *BaseTool) ExecuteCommand(ctx context.Context, cmd *exec.Cmd, files []st
 	}
 
 	// Rebuild with the caller's context while preserving command execution options.
-	contextCmd := exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+	contextCmd := toolCommandContext(ctx, cmd.Path, cmd.Args[1:]...)
 	contextCmd.Args = cmd.Args
 	contextCmd.Dir, contextCmd.Env, contextCmd.Stdin = cmd.Dir, cmd.Env, cmd.Stdin
 	contextCmd.Stdout, contextCmd.Stderr = cmd.Stdout, cmd.Stderr
@@ -275,7 +290,7 @@ func (t *BaseTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cm
 		args = append(args, options.ExtraArgs...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	// Set working directory
 	if options.ProjectRoot != "" {

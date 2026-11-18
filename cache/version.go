@@ -178,7 +178,7 @@ func (vc *VersionCache) store(key VersionKey, version string) error {
 	if err != nil {
 		return fmt.Errorf("failed to serialize version entry: %w", err)
 	}
-	if err := os.MkdirAll(vc.dir, 0o755); err != nil {
+	if err := os.MkdirAll(vc.dir, 0o700); err != nil {
 		return fmt.Errorf("failed to create version cache directory: %w", err)
 	}
 	temp, err := os.CreateTemp(vc.dir, "*.tmp")
@@ -253,7 +253,7 @@ type fileIdentity struct {
 }
 
 func isScript(path string) bool {
-	file, err := os.Open(path)
+	file, err := os.Open(path) // #nosec G304 -- the tool executable resolved from PATH, opened only to read its shebang
 	if err != nil {
 		return true // Unreadable: do not vouch for it.
 	}

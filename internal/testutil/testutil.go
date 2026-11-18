@@ -56,12 +56,12 @@ func TempFile(t *testing.T, dir, pattern, content string) string {
 func WriteFile(t *testing.T, dir, filename, content string) string {
 	t.Helper()
 
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil { // #nosec G301 -- test fixture directory under the test's temporary directory
 		t.Fatalf("failed to create directory: %v", err)
 	}
 
 	path := filepath.Join(dir, filename)
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { // #nosec G306 -- test fixture file under the test's temporary directory
 		t.Fatalf("failed to write file: %v", err)
 	}
 

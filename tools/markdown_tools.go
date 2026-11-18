@@ -53,7 +53,7 @@ func (t *MarkdownlintTool) BuildCommand(files []string, options ExecuteOptions) 
 		args = append(args, mdFiles...)
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot

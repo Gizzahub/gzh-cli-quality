@@ -55,7 +55,7 @@ func (t *BufTool) BuildCommand(files []string, options ExecuteOptions) *exec.Cmd
 		}
 	}
 
-	cmd := exec.Command(t.executable, args...)
+	cmd := toolCommand(t.executable, args...)
 
 	if options.ProjectRoot != "" {
 		cmd.Dir = options.ProjectRoot
