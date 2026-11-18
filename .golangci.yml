@@ -159,8 +159,8 @@ linters:
         - G104  # fmt.Sscanf in parsers
         - G204  # Subprocess launched with variable (needed for tool execution)
         - G304  # File path provided as taint input (needed for file operations)
-        - G306  # cache/report files at 0644
-        - G301  # CLI creates dirs at 0755
+        - G306  # make security checks it; shared config/report files stay 0644
+        - G301  # make security checks it; cache dirs are 0700, report dirs 0755
         - G122  # WalkDir on tool-owned cache paths
         - G703  # CLI reads user-configured paths
 

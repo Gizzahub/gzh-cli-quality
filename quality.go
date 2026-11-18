@@ -699,7 +699,7 @@ func (m *QualityManager) generateReport(results []*tools.Result, duration time.D
 	}
 
 	// Ensure output directory exists
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil { // #nosec G301 -- report directory the user chose; reports are meant to be read by others
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil { // #nosec G301 -- report directory the user chose or the project tmp/; reports are meant to be read by others
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
