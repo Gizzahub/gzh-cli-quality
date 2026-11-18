@@ -87,10 +87,6 @@ mdformat-install-test: install-mdformat ## Verify isolated mdformat installer fi
 mdformat-native-test: install-mdformat ## Verify actual installer and native selector
 	@"$(MDFORMAT_PYTHON)" -I scripts/test-mdformat-native.py
 
-security: ## Run security scan (gosec)
+security: install-gosec ## Run security scan (self-installs the pinned gosec first)
 	@echo "Running security scan..."
-	@if ! command -v gosec >/dev/null 2>&1; then \
-		echo "❌ gosec not installed. Install: go install github.com/securego/gosec/v2/cmd/gosec@v2.30.0" >&2; \
-		exit 1; \
-	fi; \
-	gosec -exclude-generated ./...
+	@"$(GOSEC_BIN)" -exclude-generated ./...

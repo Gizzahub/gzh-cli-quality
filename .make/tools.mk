@@ -1,7 +1,7 @@
 # .make/tools.mk - Tool installation
 # Included by main Makefile
 
-.PHONY: install-tools install-lint install-fumpt install-mdformat install-goreleaser
+.PHONY: install-tools install-lint install-gosec install-fumpt install-mdformat install-goreleaser
 .PHONY: print-golangci-version
 
 install-tools: install-lint install-fumpt install-mdformat ## Install all development tools
@@ -53,6 +53,27 @@ install-lint: ## Install golangci-lint (pinned, v2)
 		GOBIN="$(GOLANGCI_LINT_DIR)" $(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION); \
 		$(GOLANGCI_LINT_VERSION_OK) || { \
 			echo "⚠️  golangci-lint at $(GOLANGCI_LINT_BIN) is not $(GOLANGCI_LINT_MODULE) $(GOLANGCI_LINT_VERSION) built with $$($(GO) env GOVERSION)" >&2; \
+			exit 1; \
+		}; \
+	fi
+
+# Same two-part check as install-lint: the module version recorded inside the
+# binary and the toolchain that built it. gosec loads packages through x/tools,
+# so a binary built by an older Go fails on newer export data just as
+# golangci-lint did.
+GOSEC_VERSION_OK = $(GO) version -m "$(GOSEC_BIN)" 2>/dev/null | \
+	awk -v want="$$($(GO) env GOVERSION)" 'NR == 1 { built = $$NF } $$1 == "mod" && $$2 == "$(GOSEC_MODULE)" && $$3 == "$(GOSEC_VERSION)" { found = 1 } END { exit !(found && built == want) }'
+
+install-gosec: ## Install gosec (pinned) into bin/tools
+	@if $(GOSEC_VERSION_OK); then \
+		echo "✅ gosec $(GOSEC_VERSION) already installed: $(GOSEC_BIN)"; \
+	else \
+		echo "Installing gosec $(GOSEC_VERSION) to $(GOSEC_BIN)..."; \
+		mkdir -p "$(GOLANGCI_LINT_DIR)"; \
+		rm -f "$(GOSEC_BIN)"; \
+		GOBIN="$(GOLANGCI_LINT_DIR)" $(GO) install $(GOSEC_MODULE)/cmd/gosec@$(GOSEC_VERSION); \
+		$(GOSEC_VERSION_OK) || { \
+			echo "⚠️  gosec at $(GOSEC_BIN) is not $(GOSEC_MODULE) $(GOSEC_VERSION) built with $$($(GO) env GOVERSION)" >&2; \
 			exit 1; \
 		}; \
 	fi

@@ -53,6 +53,14 @@ GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
 GOLANGCI_LINT_DIR ?= $(CURDIR)/bin/tools
 GOLANGCI_LINT_BIN := $(GOLANGCI_LINT_DIR)/golangci-lint
 
+# Standalone gosec for `make security`, installed into the same repo-owned
+# bin/tools as golangci-lint so the scan never depends on whatever gosec is on
+# PATH. Standalone gosec is not redundant with golangci-lint's gosec: the
+# exclusion presets there drop rules this scan still checks.
+GOSEC_VERSION := v2.30.0
+GOSEC_MODULE := github.com/securego/gosec/v2
+GOSEC_BIN := $(GOLANGCI_LINT_DIR)/gosec
+
 # Shared by local release validation and the release workflow.
 GORELEASER_VERSION := v2.19.0
 GORELEASER_BIN := $(CURDIR)/bin/tools/goreleaser
